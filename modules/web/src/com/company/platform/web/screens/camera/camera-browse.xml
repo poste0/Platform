@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
+        caption="msg://browseCaption"
+        focusComponent="camerasTable"
+        messagesPack="com.company.platform.web.screens.camera">
+    <data readOnly="true">
+        <collection id="camerasDc"
+                    class="com.company.platform.entity.Camera"
+                    view="_local">
+            <loader id="camerasDl">
+                <query>
+                    <![CDATA[select e from platform_Camera e where e.user.id = :user]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="camerasTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="camerasTable"
+                dataLoader="camerasDl">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="camerasTable"
+                    width="100%"
+                    dataContainer="camerasDc">
+            <actions>
+                <action id="create" type="create"/>
+                <action id="edit" type="edit"/>
+                <action id="remove" type="remove"/>
+            </actions>
+            <columns>
+                <column id="address"/>
+            </columns>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="createBtn" action="camerasTable.create"/>
+                <button id="editBtn" action="camerasTable.edit"/>
+                <button id="removeBtn" action="camerasTable.remove"/>
+                <button id="check" invoke="checkConnection" caption="Test"/>
+                <button id="writeButton" invoke="write" caption="Start"/>
+                <button id="stopButton" invoke="stop" caption="Stop"/>
+                <textField id="isVideo"/>
+            </buttonsPanel>
+        </groupTable>
+        <hbox id="lookupActions" spacing="true" visible="false">
+            <button action="lookupSelectAction"/>
+            <button action="lookupCancelAction"/>
+        </hbox>
+    </layout>
+</window>
