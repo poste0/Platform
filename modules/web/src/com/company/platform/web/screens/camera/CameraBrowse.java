@@ -22,6 +22,8 @@ import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -61,6 +63,10 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     private List<CameraService> services;
 
+    private final SecurityContext context = AppContext.getSecurityContext();
+
+    private Executor executor;
+
     @Subscribe
     public void onInit(InitEvent event){
         camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
@@ -85,8 +91,6 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 writeButton.setEnabled(!isStopActive);
             }
         });*/
-
-
     }
 
 
@@ -130,7 +134,12 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     public void write() throws FrameGrabber.Exception, FrameRecorder.Exception {
         Camera item = camerasTable.getSingleSelected();
-        File file = new File(  LocalDateTime.now() + ".avi");
+        File file;
+        File path = new File(item.getId().toString());
+        if(!path.exists()) {
+            path.mkdir();
+        }
+        file = new File(path.getAbsolutePath() + "/" + LocalDateTime.now() + ".avi");
         try {
             file.createNewFile();
         } catch (IOException e) {
@@ -162,22 +171,27 @@ public class CameraBrowse extends StandardLookup<Camera> {
         });
         thread.setDaemon(true);
         //thread.run();
-        SecurityContext context = AppContext.getSecurityContext();
-        Executor executor = new ConcurrentTaskExecutor();
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    AppContext.setSecurityContext(context);
-                    temp.start(file);
-                    temp.write(file);
-                } catch (FrameRecorder.Exception e) {
-                    e.printStackTrace();
-                } catch (FrameGrabber.Exception e) {
-                    e.printStackTrace();
+        executor = new ConcurrentTaskExecutor();
+        try {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        AppContext.setSecurityContext(context);
+                        temp.start(file);
+                        temp.write(file);
+                    } catch (FrameRecorder.Exception e) {
+                        e.printStackTrace();
+                    } catch (FrameGrabber.Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
+            });
+            isVideo.setValue("recording");
+        }
+        catch (Exception e){
+            isVideo.setValue("Error");
+        }
         System.out.println("qwrqwrqwr");
         /*Camera item = camerasTable.getSingleSelected();
         FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(item.getAddress());
@@ -198,8 +212,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
     }
 
     public void stop() {
-        SecurityContext context = AppContext.getSecurityContext();
-        Executor executor = new ConcurrentTaskExecutor();
+        executor = new ConcurrentTaskExecutor();
         executor.execute(new Runnable() {
             @Override
             public void run() {

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
+        caption="msg://caption"
+        messagesPack="com.company.platform.web.screens.video">
+    <data readOnly="true">
+        <collection id="camerasDc"
+                    class="com.company.platform.entity.Camera"
+                    view="_local">
+            <loader id="camerasDl">
+                <query>
+                    <![CDATA[select e from platform_Camera e where e.user.id = :user]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <layout>
+        <tabSheet id="video">
+
+            <rows>
+                <row></row>
+            </rows>
+        </tabSheet>
+        <grid id="grid" visible="false">
+            <columns>
+                <column id="camera"/>
+                <column id="video"/>
+            </columns>
+            <rows>
+                <row></row>
+            </rows>
+        </grid>
+    </layout>
+</window>
