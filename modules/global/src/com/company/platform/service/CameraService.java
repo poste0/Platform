@@ -1,6 +1,8 @@
 package com.company.platform.service;
 
 import com.company.platform.entity.Camera;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
 
@@ -9,18 +11,10 @@ import java.io.File;
 public interface CameraService {
     String NAME = "platform_CameraService";
 
-    boolean testConnection() throws FrameGrabber.Exception;
+    FFmpegFrameGrabber getGrabber(String address) throws FrameGrabber.Exception;
 
-    void start(File file) throws FrameRecorder.Exception, FrameGrabber.Exception;
+    FFmpegFrameRecorder getRecorder(File file, FFmpegFrameGrabber grabber) throws FrameRecorder.Exception;
 
-    void write(File file) throws FrameGrabber.Exception, FrameRecorder.Exception;
 
-    void stop() throws FrameRecorder.Exception, FrameGrabber.Exception;
-
-    void setCamera(Camera camera);
-
-    Camera getCamera();
-
-    boolean isRecording();
 
 }

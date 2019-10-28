@@ -59,6 +59,9 @@ public class CameraBrowse extends StandardLookup<Camera> {
     @Inject
     private Button stopButton;
 
+    @Inject
+    private CameraService service;
+
     private boolean isStop = false;
 
     private List<CameraService> services;
@@ -66,6 +69,8 @@ public class CameraBrowse extends StandardLookup<Camera> {
     private final SecurityContext context = AppContext.getSecurityContext();
 
     private Executor executor;
+
+    private boolean isRecording;
 
     @Subscribe
     public void onInit(InitEvent event){
@@ -93,47 +98,59 @@ public class CameraBrowse extends StandardLookup<Camera> {
         });*/
     }
 
-
-    @Subscribe
-    public void onShowInit(AfterShowEvent event){
-        services = new ArrayList<>();
-        createServices();
-    }
-
-    private void createServices(){
-        List t = camerasDc.getItems();
-        t.forEach(new Consumer<Camera>() {
-            @Override
-            public void accept(Camera camera) {
-                System.out.println(AppContext.getApplicationContext().isSingleton(CameraService.NAME));
-                CameraService service = AppBeans.getPrototype(CameraService.NAME);
-                service.setCamera(camera);
-                services.add(service);
-            }
-        });
-    }
-
-
-
     public void checkConnection() {
         Camera item = camerasTable.getSingleSelected();
-        CameraService service = null;
-        for(CameraService temp: services){
-            if(temp.getCamera().getAddress().equals(item.getAddress())){
-                service = temp;
-                break;
-            }
-        }
         try {
-            boolean test = service.testConnection();
-            isVideo.setValue(test ? "Yes" : "Not");
+            if (isConnected(item)) {
+                isVideo.setValue("Ok");
+            } else {
+                isVideo.setValue("Bad");
+            }
         } catch (FrameGrabber.Exception e) {
             e.printStackTrace();
         }
+
+    }
+
+    private boolean isConnected(Camera item) throws FrameGrabber.Exception {
+        String address = item.getAddress();
+        FFmpegFrameGrabber grabber = service.getGrabber(address);
+        grabber.start();
+        boolean result = grabber.hasVideo();
+        grabber.stop();
+        grabber = null;
+        return result;
+
     }
 
     public void write() throws FrameGrabber.Exception, FrameRecorder.Exception {
         Camera item = camerasTable.getSingleSelected();
+        File file = prepareFile(item);
+        isRecording = true;
+        executor = new ConcurrentTaskExecutor();
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                AppContext.setSecurityContext(context);
+                FFmpegFrameGrabber grabber = null;
+                try {
+                    grabber = service.getGrabber(item.getAddress());
+                    grabber.setOption("rtsp_transport", "tcp");
+                    grabber.start();
+                    FFmpegFrameRecorder recorder = service.getRecorder(file, grabber);
+                    recorder.start();
+                    record(grabber, recorder);
+                } catch (FrameGrabber.Exception e) {
+                    e.printStackTrace();
+                } catch (FrameRecorder.Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+    }
+
+    private File prepareFile(Camera item){
         File file;
         File path = new File(item.getId().toString());
         if(!path.exists()) {
@@ -145,95 +162,18 @@ public class CameraBrowse extends StandardLookup<Camera> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        CameraService service = null;
-        for(CameraService temp: services){
-            if(temp.getCamera().getAddress().equals(item.getAddress())){
-                service = temp;
-                break;
-            }
-        }
-        Thread thread;
+        return file;
+    }
 
-        final CameraService temp = service;
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    temp.start(file);
-                    temp.write(file);
-                } catch (FrameRecorder.Exception e) {
-                    e.printStackTrace();
-                } catch (FrameGrabber.Exception e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
-        thread.setDaemon(true);
-        //thread.run();
-        executor = new ConcurrentTaskExecutor();
-        try {
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        AppContext.setSecurityContext(context);
-                        temp.start(file);
-                        temp.write(file);
-                    } catch (FrameRecorder.Exception e) {
-                        e.printStackTrace();
-                    } catch (FrameGrabber.Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            isVideo.setValue("recording");
+    private void record(FFmpegFrameGrabber grabber, FFmpegFrameRecorder recorder) throws FrameGrabber.Exception, FrameRecorder.Exception {
+        while(isRecording) {
+            Frame frame = grabber.grab();
+            recorder.record(frame);
         }
-        catch (Exception e){
-            isVideo.setValue("Error");
-        }
-        System.out.println("qwrqwrqwr");
-        /*Camera item = camerasTable.getSingleSelected();
-        FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(item.getAddress());
-        grabber.setOption("rtsp_transport", "tcp");
-        grabber.start();
-        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder("asdasd.avi", grabber.getImageWidth(), grabber.getImageHeight());
-        recorder.setVideoCodec(grabber.getVideoCodec());
-        recorder.setVideoBitrate(grabber.getVideoBitrate());
-        recorder.setFrameRate(grabber.getFrameRate());
-        recorder.start();
-        int e = 0;
-        while(e < 100){
-            Frame f = grabber.grabImage();
-            recorder.record(f);
-            e++;
-        }*/
-
     }
 
     public void stop() {
-        executor = new ConcurrentTaskExecutor();
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                AppContext.setSecurityContext(context);
-                Camera item = camerasTable.getSingleSelected();
-                CameraService service = null;
-                for(CameraService temp: services){
-                    if(temp.getCamera().getAddress().equals(item.getAddress())){
-                        service = temp;
-                        break;
-                    }
-                }
-                try {
-                    service.stop();
-                } catch (FrameRecorder.Exception e) {
-                    e.printStackTrace();
-                } catch (FrameGrabber.Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        isRecording = false;
     }
 
 
