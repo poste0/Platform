@@ -109,6 +109,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 CameraService service = AppBeans.getPrototype(CameraService.NAME);
                 service.setCamera(camera);
                 services.add(service);
+                System.out.println(124124);
             }
         });
     }
