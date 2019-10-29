@@ -11,10 +11,13 @@ import java.io.File;
 public interface CameraService {
     String NAME = "platform_CameraService";
 
-    FFmpegFrameGrabber getGrabber(String address) throws FrameGrabber.Exception;
+    //FFmpegFrameGrabber getGrabber(String address) throws FrameGrabber.Exception;
 
-    FFmpegFrameRecorder getRecorder(File file, FFmpegFrameGrabber grabber) throws FrameRecorder.Exception;
+    //FFmpegFrameRecorder getRecorder(File file, FFmpegFrameGrabber grabber) throws FrameRecorder.Exception;
 
+    void write(Camera camera);
+
+    void stop(Camera camera);
 
 
 }

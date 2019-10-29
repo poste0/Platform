@@ -150,20 +150,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
         });
     }
 
-    private File prepareFile(Camera item){
-        File file;
-        File path = new File(item.getId().toString());
-        if(!path.exists()) {
-            path.mkdir();
-        }
-        file = new File(path.getAbsolutePath() + "/" + LocalDateTime.now() + ".avi");
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return file;
-    }
+
 
     private void record(FFmpegFrameGrabber grabber, FFmpegFrameRecorder recorder) throws FrameGrabber.Exception, FrameRecorder.Exception {
         while(isRecording) {
