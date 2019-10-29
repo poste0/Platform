@@ -1,6 +1,7 @@
 package com.company.platform.service;
 
 import com.company.platform.entity.Camera;
+import com.haulmont.cuba.security.global.UserSession;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.FrameGrabber;
@@ -15,9 +16,10 @@ public interface CameraService {
 
     //FFmpegFrameRecorder getRecorder(File file, FFmpegFrameGrabber grabber) throws FrameRecorder.Exception;
 
-    void write(Camera camera);
+    void write(Camera camera) throws FrameGrabber.Exception, FrameRecorder.Exception;
 
     void stop(Camera camera);
 
+    void init();
 
 }

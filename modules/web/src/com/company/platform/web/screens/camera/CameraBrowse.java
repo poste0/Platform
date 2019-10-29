@@ -14,6 +14,7 @@ import com.haulmont.cuba.gui.model.DataLoader;
 import com.haulmont.cuba.gui.screen.*;
 import com.company.platform.entity.Camera;
 import com.haulmont.cuba.gui.screen.LookupComponent;
+import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.gui.components.CompositeComponent;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
@@ -75,6 +76,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
     @Subscribe
     public void onInit(InitEvent event){
         camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
+        service.init();
         /*camerasTable.addSelectionListener(new Consumer<Table.SelectionEvent<Camera>>() {
             @Override
             public void accept(Table.SelectionEvent<Camera> event) {
@@ -114,7 +116,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     private boolean isConnected(Camera item) throws FrameGrabber.Exception {
         String address = item.getAddress();
-        FFmpegFrameGrabber grabber = service.getGrabber(address);
+        FFmpegFrameGrabber grabber = null; //service.getGrabber(address);
         grabber.start();
         boolean result = grabber.hasVideo();
         grabber.stop();
@@ -125,29 +127,8 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     public void write() throws FrameGrabber.Exception, FrameRecorder.Exception {
         Camera item = camerasTable.getSingleSelected();
-        File file = prepareFile(item);
-        isRecording = true;
-        executor = new ConcurrentTaskExecutor();
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                AppContext.setSecurityContext(context);
-                FFmpegFrameGrabber grabber = null;
-                try {
-                    grabber = service.getGrabber(item.getAddress());
-                    grabber.setOption("rtsp_transport", "tcp");
-                    grabber.start();
-                    FFmpegFrameRecorder recorder = service.getRecorder(file, grabber);
-                    recorder.start();
-                    record(grabber, recorder);
-                } catch (FrameGrabber.Exception e) {
-                    e.printStackTrace();
-                } catch (FrameRecorder.Exception e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
+        UserSession session = AppBeans.get(UserSessionSource.class).getUserSession();
+        service.write(item);
     }
 
 
@@ -160,7 +141,8 @@ public class CameraBrowse extends StandardLookup<Camera> {
     }
 
     public void stop() {
-        isRecording = false;
+        Camera item = camerasTable.getSingleSelected();
+        service.stop(item);
     }
 
 
