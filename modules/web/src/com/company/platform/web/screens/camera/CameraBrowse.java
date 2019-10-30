@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -32,6 +33,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @UiController("platform_Camera.browse")
 @UiDescriptor("camera-browse.xml")
@@ -235,6 +238,27 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 }
             }
         });
+        File path = new File(camerasTable.getSingleSelected().getId().toString());
+        try {
+            Files.walk(Paths.get(path.toString())).filter(new Predicate<Path>() {
+                @Override
+                public boolean test(Path path) {
+                    return path.toFile().getName().contains(".avi") ? true : false;
+                }
+            }).collect(Collectors.toList()).forEach(new Consumer<Path>() {
+                @Override
+                public void accept(Path path) {
+                    try {
+                        Runtime.getRuntime().exec("ffmpeg -i " + path.toString() + " " + path.toString().substring(0, path.toString().length() - 5) + ".mp4");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

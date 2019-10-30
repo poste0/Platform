@@ -29,5 +29,8 @@
                 <row></row>
             </rows>
         </grid>
+        <hbox id="playerBox">
+
+        </hbox>
     </layout>
 </window>
