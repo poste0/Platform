@@ -40,8 +40,7 @@ public class Video extends Screen {
 
     private GridLayout grid;
 
-    @Inject
-    private UiComponents components;
+
 
     @Inject
     private CollectionContainer<Camera> camerasDc;
@@ -49,8 +48,66 @@ public class Video extends Screen {
     @Inject
     TabSheet video;
 
-    @Inject
-    private BoxLayout playerBox;
+
+
+    private class Renderer{
+        @Inject
+        private UiComponents components;
+
+        @Inject
+        private BoxLayout playerBox;
+
+        private Label videoname;
+
+        private Button watchButton;
+
+        private GridLayout layout;
+
+        private List<Path> paths;
+
+        private List<Camera> cameras;
+        public Renderer(List<Camera> cameras){
+            this.cameras = cameras;
+        }
+
+        private List<Path> getPaths(Camera camera) throws IOException {
+            File path = new File(camera.getId().toString());
+            Stream<Path> stream = Files.walk(Paths.get(path.toString()), FileVisitOption.FOLLOW_LINKS);
+            List<Path> result = stream.filter((value)->{
+                return value.toFile().getName().contains(".mp4") ? true : false;
+            }).collect(Collectors.toList());
+            return result;
+        }
+
+        public void render() throws IOException {
+            for(Camera camera: cameras){
+                List<Path> paths = getPaths(camera);
+                layout = components.create(GridLayout.NAME);
+                layout.setColumns(2);
+                this.layout.setRows(paths.size());
+
+
+                for(Path path: paths){
+                    videoname = components.create(Label.NAME);
+                    watchButton = components.create(Button.NAME);
+                    videoname.setValue(camera.getAddress());
+                    watchButton.setCaption("Watch");
+                    watchButton.addClickListener((clickEvent->{
+                        com.vaadin.ui.Video video = new com.vaadin.ui.Video();
+                        video.setSource(new FileResource(new File(path.toString())));
+                        video.setStyleName("video/mp4");
+                        Layout videoLayout = playerBox.unwrap(Layout.class);
+                        videoLayout.addComponent(video);
+                    }));
+                    layout.add(videoname, 0, paths.indexOf(path));
+                    layout.add(watchButton, 1, paths.indexOf(path));
+                }
+
+            }
+        }
+
+
+    }
 
     @Subscribe
     public void onInit(InitEvent event){
