@@ -88,19 +88,15 @@ public class Video extends Screen {
             layout.setRows(rowSize);
         }
 
-        private void setUpComponent(Component component){
-
-        }
-
         public void render() throws IOException {
             for(Camera camera: cameras){
                 List<Path> paths = getPaths(camera);
-                setUpLayout(2, paths.size());
+                setUpLayout(3, paths.size());
 
                 for(Path path: paths){
                     videoname = components.create(Label.NAME);
                     watchButton = components.create(Button.NAME);
-                    videoname.setValue(camera.getAddress());
+                    videoname.setValue(path.toString().split("/")[1]);
                     watchButton.setCaption("Watch");
                     watchButton.addClickListener((clickEvent->{
                         com.vaadin.ui.Video video = new com.vaadin.ui.Video();
