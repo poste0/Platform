@@ -62,6 +62,8 @@ public class Video extends Screen {
 
         private Button watchButton;
 
+        private Button deleteButton;
+
         private GridLayout layout;
 
         private List<Path> paths;
@@ -80,13 +82,20 @@ public class Video extends Screen {
             return result;
         }
 
+        private void setUpLayout(int columnSize, int rowSize){
+            layout = components.create(GridLayout.NAME);
+            layout.setColumns(columnSize);
+            layout.setRows(rowSize);
+        }
+
+        private void setUpComponent(Component component){
+
+        }
+
         public void render() throws IOException {
             for(Camera camera: cameras){
                 List<Path> paths = getPaths(camera);
-                layout = components.create(GridLayout.NAME);
-                layout.setColumns(2);
-                layout.setRows(paths.size());
-
+                setUpLayout(2, paths.size());
 
                 for(Path path: paths){
                     videoname = components.create(Label.NAME);
@@ -100,10 +109,20 @@ public class Video extends Screen {
                         Layout videoLayout = playerBox.unwrap(Layout.class);
                         videoLayout.addComponent(video);
                     }));
+                    deleteButton = components.create(Button.NAME);
+                    deleteButton.setCaption("Delete");
+                    deleteButton.addClickListener((clickEvent -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }));
                     layout.add(videoname, 0, paths.indexOf(path));
                     layout.add(watchButton, 1, paths.indexOf(path));
+                    layout.add(deleteButton, 2,  paths.indexOf(path));
                 }
-
+                video.addTab(camera.getAddress(), layout);
             }
         }
 
