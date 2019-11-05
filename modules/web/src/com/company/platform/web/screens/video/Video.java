@@ -38,7 +38,6 @@ public class Video extends Screen {
     @Inject
     private DataLoader camerasDl;
 
-    private GridLayout grid;
 
 
 
@@ -48,14 +47,16 @@ public class Video extends Screen {
     @Inject
     TabSheet video;
 
+    @Inject
+    private UiComponents components;
 
+    @Inject
+    private BoxLayout playerBox;
 
     private class Renderer{
-        @Inject
-        private UiComponents components;
 
-        @Inject
-        private BoxLayout playerBox;
+
+
 
         private Label videoname;
 
@@ -84,7 +85,7 @@ public class Video extends Screen {
                 List<Path> paths = getPaths(camera);
                 layout = components.create(GridLayout.NAME);
                 layout.setColumns(2);
-                this.layout.setRows(paths.size());
+                layout.setRows(paths.size());
 
 
                 for(Path path: paths){
@@ -114,7 +115,13 @@ public class Video extends Screen {
         camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
         camerasDl.load();
         List<Camera> cameras = camerasDc.getItems();
-        int j = 1;
+        Renderer renderer = new Renderer(cameras);
+        try {
+            renderer.render();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        /*int j = 1;
         for(Camera camera: cameras){
             File path = new File(camera.getId().toString());
             grid = components.create(GridLayout.NAME);
@@ -162,7 +169,11 @@ public class Video extends Screen {
                 e.printStackTrace();
             }
 
+
+
         }
+
+         */
 
 
     }
