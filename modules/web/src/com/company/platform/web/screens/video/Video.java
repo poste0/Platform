@@ -52,7 +52,6 @@ public class Video extends Screen {
 
     @Inject
     private BoxLayout playerBox;
-
     private class Renderer{
 
 
@@ -110,6 +109,11 @@ public class Video extends Screen {
                     deleteButton.addClickListener((clickEvent -> {
                         try {
                             Files.delete(path);
+                            video.removeTab(camera.getAddress());
+                            layout.remove(layout.getComponent(0, paths.indexOf(path)));
+                            layout.remove(layout.getComponent(1, paths.indexOf(path)));
+                            layout.remove(layout.getComponent(2, paths.indexOf(path)));
+                            video.addTab(camera.getAddress(), layout);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

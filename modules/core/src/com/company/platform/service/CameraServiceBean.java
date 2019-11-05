@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service(CameraService.NAME)
@@ -103,17 +104,25 @@ public class CameraServiceBean implements CameraService {
     private SecurityContext context;
 
     public CameraServiceBean(){
-        ffMpegs = new HashMap<>();
+
     }
 
     public void init(){
+        if(ffMpegs == null) {
+            ffMpegs = new HashMap<>();
+        }
         //context = AppBeans.get(SecurityContext.class);
         UserSessions tempUserSessions = AppBeans.get(UserSessions.NAME);
         List<UserSession> userSessions = tempUserSessions.getUserSessionsStream().collect(Collectors.toList());
 
 
 
-        userSessions.forEach(new Consumer<UserSession>() {
+        userSessions.stream().filter(new Predicate<UserSession>() {
+            @Override
+            public boolean test(UserSession userSession) {
+                return !ffMpegs.containsKey(userSession);
+            }
+        }).forEach(new Consumer<UserSession>() {
             @Override
             public void accept(UserSession userSession) {
                 DataManager dataManager = AppBeans.get(DataManager.NAME);
@@ -169,20 +178,37 @@ public class CameraServiceBean implements CameraService {
                         e.printStackTrace();
                     }
                 }
+                try {
+                    wrapper.recorder.stop();
+                    wrapper.grabber.stop();
+                } catch (FrameRecorder.Exception e) {
+                    e.printStackTrace();
+                } catch (FrameGrabber.Exception e) {
+                    e.printStackTrace();
+                }
+
                 System.out.println(124124124);
             }
         });
 
     }
 
-    public void stop(Camera camera){
+    public void stop(Camera camera) throws FrameRecorder.Exception, FrameGrabber.Exception {
         UserSession session = AppBeans.get(UserSessionSource.class).getUserSession();
         Map<Camera, FFMpegFrameWrapper> cameraMap = ffMpegs.get(session);
 
         FFMpegFrameWrapper wrapper = cameraMap.get(camera);
         wrapper.isRecording = false;
+
     }
 
+    public boolean isRecording(Camera camera){
+        UserSession session = AppBeans.get(UserSessionSource.class).getUserSession();
+        Map<Camera, FFMpegFrameWrapper> cameraMap = ffMpegs.get(session);
+
+        FFMpegFrameWrapper wrapper = cameraMap.get(camera);
+        return wrapper.isRecording;
+    }
 
 
 }

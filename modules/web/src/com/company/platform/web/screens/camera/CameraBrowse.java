@@ -2,6 +2,7 @@ package com.company.platform.web.screens.camera;
 
 import com.company.platform.entity.Camera;
 import com.company.platform.service.CameraService;
+import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.core.sys.AppContext;
@@ -16,6 +17,9 @@ import com.company.platform.entity.Camera;
 import com.haulmont.cuba.gui.screen.LookupComponent;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.gui.components.CompositeComponent;
+import com.haulmont.cuba.web.gui.components.WebButton;
+import com.haulmont.cuba.web.gui.components.WebLabel;
+import com.haulmont.cuba.web.gui.components.WebTextField;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
@@ -34,6 +38,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -80,6 +85,58 @@ public class CameraBrowse extends StandardLookup<Camera> {
     public void onInit(InitEvent event){
         camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
         service.init();
+        camerasTable.addGeneratedColumn("d", new GroupTable.ColumnGenerator() {
+            @Override
+            public Component generateCell(Entity entity) {
+               TextField temp = new WebTextField();
+                if (service.isRecording((Camera) entity)) {
+                    temp.setValue("Recording");
+                } else {
+                    temp.setValue("Waiting");
+                }
+                temp.setEditable(false);
+                temp.setSizeFull();
+                return temp;
+            }
+        });
+        writeButton.addClickListener(new Consumer<Button.ClickEvent>() {
+            @Override
+            public void accept(Button.ClickEvent clickEvent) {
+                camerasTable.addGeneratedColumn("d", new GroupTable.ColumnGenerator() {
+                    @Override
+                    public Component generateCell(Entity entity) {
+                        TextField temp = new WebTextField();
+                        if (service.isRecording((Camera) entity)) {
+                            temp.setValue("Recording");
+                        } else {
+                            temp.setValue("Waiting");
+                        }
+                        temp.setEditable(false);
+                        temp.setSizeFull();
+                        return temp;
+                    }
+                });
+            }
+        });
+        stopButton.addClickListener(new Consumer<Button.ClickEvent>() {
+            @Override
+            public void accept(Button.ClickEvent clickEvent) {
+                camerasTable.addGeneratedColumn("d", new GroupTable.ColumnGenerator() {
+                    @Override
+                    public Component generateCell(Entity entity) {
+                        TextField temp = new WebTextField();
+                        if (service.isRecording((Camera) entity)) {
+                            temp.setValue("Recording");
+                        } else {
+                            temp.setValue("Waiting");
+                        }
+                        temp.setEditable(false);
+                        temp.setSizeFull();
+                        return temp;
+                    }
+                });
+            }
+        });
         /*camerasTable.addSelectionListener(new Consumer<Table.SelectionEvent<Camera>>() {
             @Override
             public void accept(Table.SelectionEvent<Camera> event) {
@@ -145,8 +202,10 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     public void stop() {
         Camera item = camerasTable.getSingleSelected();
+
       File path = new File(camerasTable.getSingleSelected().getId().toString());
         try {
+            service.stop(item);
             Files.walk(Paths.get(path.toString())).filter(new Predicate<Path>() {
                 @Override
                 public boolean test(Path path) {
@@ -166,7 +225,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        service.stop(item);
+
       
     }
 
