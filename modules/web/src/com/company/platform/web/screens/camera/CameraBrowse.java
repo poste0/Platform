@@ -36,6 +36,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -81,14 +82,14 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     private boolean isRecording;
 
-    @Subscribe
-    public void onInit(InitEvent event){
-        camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
-        service.init();
-        camerasTable.addGeneratedColumn("d", new GroupTable.ColumnGenerator() {
-            @Override
-            public Component generateCell(Entity entity) {
-               TextField temp = new WebTextField();
+    private final Table.ColumnGenerator recordStatus = new Table.ColumnGenerator() {
+        @Override
+        public Component generateCell(Entity entity) {
+
+            if(Objects.isNull(entity)){
+                throw new IllegalArgumentException();
+            }
+                TextField temp = new WebTextField();
                 if (service.isRecording((Camera) entity)) {
                     temp.setValue("Recording");
                 } else {
@@ -97,44 +98,24 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 temp.setEditable(false);
                 temp.setSizeFull();
                 return temp;
-            }
-        });
+        }
+    };
+
+    @Subscribe
+    public void onInit(InitEvent event){
+        camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
+        service.init();
+        camerasTable.addGeneratedColumn("d", recordStatus);
         writeButton.addClickListener(new Consumer<Button.ClickEvent>() {
             @Override
             public void accept(Button.ClickEvent clickEvent) {
-                camerasTable.addGeneratedColumn("d", new GroupTable.ColumnGenerator() {
-                    @Override
-                    public Component generateCell(Entity entity) {
-                        TextField temp = new WebTextField();
-                        if (service.isRecording((Camera) entity)) {
-                            temp.setValue("Recording");
-                        } else {
-                            temp.setValue("Waiting");
-                        }
-                        temp.setEditable(false);
-                        temp.setSizeFull();
-                        return temp;
-                    }
-                });
+                camerasTable.addGeneratedColumn("d", recordStatus);
             }
         });
         stopButton.addClickListener(new Consumer<Button.ClickEvent>() {
             @Override
             public void accept(Button.ClickEvent clickEvent) {
-                camerasTable.addGeneratedColumn("d", new GroupTable.ColumnGenerator() {
-                    @Override
-                    public Component generateCell(Entity entity) {
-                        TextField temp = new WebTextField();
-                        if (service.isRecording((Camera) entity)) {
-                            temp.setValue("Recording");
-                        } else {
-                            temp.setValue("Waiting");
-                        }
-                        temp.setEditable(false);
-                        temp.setSizeFull();
-                        return temp;
-                    }
-                });
+                camerasTable.addGeneratedColumn("d", recordStatus);
             }
         });
         /*camerasTable.addSelectionListener(new Consumer<Table.SelectionEvent<Camera>>() {
@@ -162,6 +143,9 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     public void checkConnection() {
         Camera item = camerasTable.getSingleSelected();
+        if(Objects.isNull(item)){
+            return;
+        }
         try {
             if (isConnected(item)) {
                 isVideo.setValue("Ok");
@@ -175,19 +159,23 @@ public class CameraBrowse extends StandardLookup<Camera> {
     }
 
     private boolean isConnected(Camera item) throws FrameGrabber.Exception {
-        String address = item.getAddress();
-        FFmpegFrameGrabber grabber = null; //service.getGrabber(address);
+        /*String address = item.getAddress();
+        FFmpegFrameGrabber grabber = service.getGrabber(address);
         grabber.start();
         boolean result = grabber.hasVideo();
         grabber.stop();
         grabber = null;
         return result;
 
+         */
+        return true;
     }
 
     public void write() throws FrameGrabber.Exception, FrameRecorder.Exception {
         Camera item = camerasTable.getSingleSelected();
-        UserSession session = AppBeans.get(UserSessionSource.class).getUserSession();
+        if(Objects.isNull(item)){
+            throw new IllegalArgumentException();
+        }
         service.write(item);
     }
 
@@ -202,26 +190,22 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     public void stop() {
         Camera item = camerasTable.getSingleSelected();
-
-      File path = new File(camerasTable.getSingleSelected().getId().toString());
+        if(Objects.isNull(item)){
+            throw new IllegalArgumentException();
+        }
+      File path = new File(item.getId().toString());
         try {
             service.stop(item);
-            Files.walk(Paths.get(path.toString())).filter(new Predicate<Path>() {
-                @Override
-                public boolean test(Path path) {
-                    return path.toFile().getName().contains(".avi") ? true : false;
-                }
-            }).collect(Collectors.toList()).forEach(new Consumer<Path>() {
-                @Override
-                public void accept(Path path) {
-                    try {
-                        Runtime.getRuntime().exec("ffmpeg -i " + path.toString() + " " + path.toString().substring(0, path.toString().length() - 5) + ".mp4");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            Files.walk(Paths.get(path.toString()))
+                    .filter(path1 -> path1.toFile().getName().contains(".avi"))
+                    .collect(Collectors.toList()).forEach(path12 -> {
+                        try {
+                            Runtime.getRuntime().exec("ffmpeg -i " + path12.toString() + " " + path12.toString().substring(0, path12.toString().length() - 5) + ".mp4");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-                }
-            });
+                    });
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -23,4 +23,5 @@ public interface CameraService {
     void init();
 
     boolean isRecording(Camera camera);
+
 }

@@ -20,6 +20,7 @@ import com.vaadin.server.FileResource;
 import com.vaadin.ui.Layout;
 
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
@@ -27,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -73,6 +75,9 @@ public class Video extends Screen {
         }
 
         private List<Path> getPaths(Camera camera) throws IOException {
+            if(Objects.isNull(camera)){
+                throw new IllegalArgumentException();
+            }
             File path = new File(camera.getId().toString());
             Stream<Path> stream = Files.walk(Paths.get(path.toString()), FileVisitOption.FOLLOW_LINKS);
             List<Path> result = stream.filter((value)->{
@@ -82,6 +87,9 @@ public class Video extends Screen {
         }
 
         private void setUpLayout(int columnSize, int rowSize){
+            if(columnSize <= 0 || rowSize <= 0){
+                throw new IllegalArgumentException();
+            }
             layout = components.create(GridLayout.NAME);
             layout.setColumns(columnSize);
             layout.setRows(rowSize);
@@ -90,6 +98,9 @@ public class Video extends Screen {
         public void render() throws IOException {
             for(Camera camera: cameras){
                 List<Path> paths = getPaths(camera);
+                if(paths.size() == 0){
+                    continue;
+                }
                 setUpLayout(3, paths.size());
 
                 for(Path path: paths){
