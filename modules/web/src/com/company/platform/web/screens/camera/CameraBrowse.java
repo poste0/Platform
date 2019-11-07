@@ -171,12 +171,16 @@ public class CameraBrowse extends StandardLookup<Camera> {
         return true;
     }
 
-    public void write() throws FrameGrabber.Exception, FrameRecorder.Exception {
+    public void write() {
         Camera item = camerasTable.getSingleSelected();
         if(Objects.isNull(item)){
             throw new IllegalArgumentException();
         }
-        service.write(item);
+        try {
+            service.write(item);
+        } catch (FrameGrabber.Exception | FrameRecorder.Exception e) {
+            isVideo.setValue(e.getMessage());
+        }
     }
 
 

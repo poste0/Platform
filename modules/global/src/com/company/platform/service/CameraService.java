@@ -18,7 +18,7 @@ public interface CameraService {
 
     void write(Camera camera) throws FrameGrabber.Exception, FrameRecorder.Exception;
 
-    void stop(Camera camera) throws FrameRecorder.Exception, FrameGrabber.Exception;
+    void stop(Camera camera);
 
     void init();
 

@@ -146,32 +146,45 @@ public class CameraServiceBean implements CameraService {
         });
     }
 
-    public void write(Camera camera) throws FrameGrabber.Exception, FrameRecorder.Exception {
+    public void write(Camera camera) throws FrameGrabber.Exception {
         if(Objects.isNull(camera)){
             throw new IllegalArgumentException();
         }
+
         UserSession session = AppBeans.get(UserSessionSource.class).getUserSession();
         Map<Camera, FFMpegFrameWrapper> cameraMap = ffMpegs.get(session);
         FFMpegFrameWrapper wrapper = cameraMap.get(camera);
-        FFmpegFrameGrabber grabber = wrapper.getGrabber();
-        grabber.start();
-        FFmpegFrameRecorder recorder = wrapper.getRecorder();
-        recorder.start();
+
+        FFmpegFrameGrabber grabber;
+        try {
+            grabber = wrapper.getGrabber();
+            grabber.start();
+        } catch (FrameGrabber.Exception e) {
+            throw new FrameGrabber.Exception("An error while grabbing");
+        }
+
+        FFmpegFrameRecorder recorder;
+        try {
+            recorder = wrapper.getRecorder();
+            recorder.start();
+        }
+        catch(FrameRecorder.Exception e){
+            throw new FrameGrabber.Exception("An error while recording");
+        }
+
         executor = new ConcurrentTaskExecutor();
         executor.execute(() -> {
             //AppContext.setSecurityContext(context);
             wrapper.isRecording = true;
-            while(wrapper.isRecording){
-                try {
+            try {
+                while (wrapper.isRecording) {
+
                     Frame frame = grabber.grab();
                     recorder.record(frame);
-                } catch (FrameGrabber.Exception e) {
-                    e.printStackTrace();
-                } catch (FrameRecorder.Exception e) {
-                    e.printStackTrace();
+
                 }
-            }
-            try {
+
+
                 wrapper.recorder.stop();
                 wrapper.grabber.stop();
             } catch (FrameRecorder.Exception e) {
@@ -180,12 +193,13 @@ public class CameraServiceBean implements CameraService {
                 e.printStackTrace();
             }
 
+
             System.out.println(124124124);
         });
 
     }
 
-    public void stop(Camera camera) throws FrameRecorder.Exception, FrameGrabber.Exception {
+    public void stop(Camera camera) {
         if(Objects.isNull(camera)){
             throw new IllegalArgumentException();
         }
