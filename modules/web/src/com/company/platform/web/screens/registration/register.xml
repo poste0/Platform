@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd">
+    <dialogMode width="AUTO"/>
+    <layout>
+        <vbox id="registrationBox">
+            <hbox id="loginPasswordBox">
+                <textField id="loginTextField"/>
+                <textField id="passwordTextField"/>
+            </hbox>
+            <hbox id="buttonBox">
+                <button id="okButton" caption="Ok"/>
+                <button id="cancelButton" caption="Cancel"/>
+            </hbox>
+        </vbox>
+    </layout>
+</window>

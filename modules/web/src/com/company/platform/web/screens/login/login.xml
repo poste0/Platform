@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
+        extends="/com/haulmont/cuba/web/app/login/login-screen.xml">
+    <layout>
+        <vbox id="loginWrapper"
+              spacing="true">
+            <vbox id="loginMainBox"
+                    align="MIDDLE_CENTER"
+                    colspan="2"
+                    margin="true,false,false,false"
+                    spacing="true">
+                <button id="registerButton" caption="Register" stylename="c-login-submit-button" invoke="onRegisterButtonClick">
+                </button>
+            </vbox>
+
+        </vbox>
+    </layout>
+</window>
