@@ -33,7 +33,7 @@
             </actions>
             <columns>
                 <column id="address"/>
-                <column id="d"/>
+                <column id="recordStatus"/>
             </columns>
             <rowsCount/>
             <buttonsPanel id="buttonsPanel"

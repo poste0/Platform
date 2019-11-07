@@ -105,17 +105,17 @@ public class CameraBrowse extends StandardLookup<Camera> {
     public void onInit(InitEvent event){
         camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
         service.init();
-        camerasTable.addGeneratedColumn("d", recordStatus);
+        camerasTable.addGeneratedColumn("recordStatus", recordStatus);
         writeButton.addClickListener(new Consumer<Button.ClickEvent>() {
             @Override
             public void accept(Button.ClickEvent clickEvent) {
-                camerasTable.addGeneratedColumn("d", recordStatus);
+                camerasTable.addGeneratedColumn("recordStatus", recordStatus);
             }
         });
         stopButton.addClickListener(new Consumer<Button.ClickEvent>() {
             @Override
             public void accept(Button.ClickEvent clickEvent) {
-                camerasTable.addGeneratedColumn("d", recordStatus);
+                camerasTable.addGeneratedColumn("recordStatus", recordStatus);
             }
         });
         /*camerasTable.addSelectionListener(new Consumer<Table.SelectionEvent<Camera>>() {
