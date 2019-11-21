@@ -14,5 +14,5 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Gradle
-      run: ls ./gradlew deploy ./gradlew setupTomcat
+      run: ls; ./gradlew deploy; ./gradlew setupTomcat
       
