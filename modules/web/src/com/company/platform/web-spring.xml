@@ -12,8 +12,10 @@
         <property name="remoteServices">
             <map>
                 <entry key="platform_CameraService" value="com.company.platform.service.CameraService"/>
+                <entry key="platform_RegistrationService" value="com.company.platform.service.RegistrationService"/>
             </map>
         </property>
     </bean>
+
 
 </beans>
