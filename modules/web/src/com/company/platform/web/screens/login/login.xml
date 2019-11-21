@@ -9,6 +9,7 @@
                     colspan="2"
                     margin="true,false,false,false"
                     spacing="true">
+                <label id="existsLabel"/>
                 <button id="registerButton" caption="Register" stylename="c-login-submit-button" invoke="onRegisterButtonClick">
                 </button>
             </vbox>

@@ -3,13 +3,18 @@
     <dialogMode width="AUTO"/>
     <layout>
         <vbox id="registrationBox">
-            <hbox id="loginPasswordBox">
+            <hbox id="loginBox">
+                <label id="loginLabel" value="Enter your user name"/>
                 <textField id="loginTextField"/>
+            </hbox>
+            <hbox id="passwordBox">
+                <label id="passwordLabel" value="Enter password"/>
                 <textField id="passwordTextField"/>
             </hbox>
+            <label id="errorLabel" css="color:red"/>
             <hbox id="buttonBox">
-                <button id="okButton" caption="Ok"/>
-                <button id="cancelButton" caption="Cancel"/>
+                <button id="okButton" caption="Ok" invoke="onOkButton"/>
+                <button id="cancelButton" caption="Cancel" invoke="onCancelButton"/>
             </hbox>
         </vbox>
     </layout>
