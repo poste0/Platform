@@ -124,6 +124,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
                     try {
                         service.write(camera);
                         camera.setStatus(Camera.Status.RECORDING);
+                        dataManager.commit(camera);
                     } catch (FrameGrabber.Exception e) {
                         e.printStackTrace();
                     } catch (FrameRecorder.Exception e) {
@@ -156,7 +157,8 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
                     stop();
-                    (camera).setStatus(Camera.Status.NOT_CONNECTED);
+                    camera.setStatus(Camera.Status.NOT_CONNECTED);
+                    dataManager.commit(camera);
                     fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
 
                 }
