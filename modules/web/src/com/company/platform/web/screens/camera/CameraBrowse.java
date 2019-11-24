@@ -154,7 +154,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
-                    service.stop((Camera) entity);
+                    stop();
                     ((Camera) entity).setStatus(Camera.Status.CONNECTED);
                     fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
 
