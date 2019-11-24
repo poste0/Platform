@@ -121,6 +121,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 public void accept(Button.ClickEvent clickEvent) {
                     try {
                         service.write((Camera) entity);
+                        ((Camera) entity).setStatus("Recording");
                     } catch (FrameGrabber.Exception e) {
                         e.printStackTrace();
                     } catch (FrameRecorder.Exception e) {
@@ -146,6 +147,9 @@ public class CameraBrowse extends StandardLookup<Camera> {
             if(!service.isRecording((Camera) entity)){
                 temp.setEnabled(false);
                 return temp;
+            }
+            else{
+                temp.setEnabled(true);
             }
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
