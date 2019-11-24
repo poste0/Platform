@@ -36,6 +36,7 @@
                 <column id="status"/>
                 <column id="recordButton"/>
                 <column id="stoppButton"/>
+                <column id="testButton"/>
             </columns>
             <rowsCount/>
             <buttonsPanel id="buttonsPanel"

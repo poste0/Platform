@@ -238,9 +238,9 @@ public class CameraServiceBean implements CameraService {
     }
 
     public boolean testConnection(Camera camera){
-       FFMpegFrameWrapper wrapper = getWrapper(camera);
+
         try {
-            FFmpegFrameGrabber grabber = wrapper.getGrabber();
+            FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(camera.getAddress());
             grabber.start();
             grabber.stop();
             return true;

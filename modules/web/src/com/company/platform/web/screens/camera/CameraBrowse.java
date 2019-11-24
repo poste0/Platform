@@ -30,9 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -76,6 +74,8 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     private boolean isRecording;
 
+    private final Screen screen = this;
+
     private final Table.ColumnGenerator recordStatus = new Table.ColumnGenerator() {
         @Override
         public Component generateCell(Entity entity) {
@@ -112,22 +112,22 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 temp.setEnabled(false);
                 return temp;
             }
+            if(!Objects.isNull(((Camera) entity).getStatus()) && ((Camera) entity).getStatus().equals("Failed")){
+                temp.setEnabled(false);
+                return temp;
+            }
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
                     try {
-                        if(!service.testConnection((Camera) entity)){
-                            ((Camera) entity).setStatus("No connect");
-                        }
-                        else{
-                            service.write((Camera) entity);
-                            ((Camera) entity).setStatus("Recording");
-                            temp.setEnabled(false);
-                            camerasTable.addGeneratedColumn("stoppButton", stoppButton);
-                        }
-                    } catch (IOException e) {
+                        service.write((Camera) entity);
+                    } catch (FrameGrabber.Exception e) {
+                        e.printStackTrace();
+                    } catch (FrameRecorder.Exception e) {
                         e.printStackTrace();
                     }
+                    fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
+
                 }
             });
             return temp;
@@ -150,21 +150,46 @@ public class CameraBrowse extends StandardLookup<Camera> {
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
-                    if(!service.testConnection((Camera) entity)){
-                        ((Camera) entity).setStatus("Not connected");
-                    }
-                    else{
-                        service.stop((Camera) entity);
-                    }
+                    service.stop((Camera) entity);
+                    fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
+
                 }
             });
             return temp;
         }
     };
 
+    private final Table.ColumnGenerator testButton = new Table.ColumnGenerator() {
+        @Override
+        public Component generateCell(Entity entity) {
+            if(Objects.isNull(entity)){
+                throw new IllegalArgumentException();
+            }
+
+            Button temp = new WebButton();
+            temp.setCaption("Test");
+            temp.addClickListener(new Consumer<Button.ClickEvent>() {
+                @Override
+                public void accept(Button.ClickEvent clickEvent) {
+                    if(service.testConnection((Camera) entity)){
+                        camerasTable.getSingleSelected().setStatus("Connected");
+                    }
+                    else{
+                        camerasTable.getSingleSelected().setStatus("Failed");
+                    }
+                    fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
+                }
+            });
+            return temp;
+        }
+    };
+
+
+
     private void addGeneratedColumns(){
         camerasTable.addGeneratedColumn("recordButton", recordButton);
         camerasTable.addGeneratedColumn("stoppButton", stoppButton);
+        camerasTable.addGeneratedColumn("testButton", testButton);
     }
     @Subscribe
     public void onInit(InitEvent event){
