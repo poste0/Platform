@@ -9,28 +9,20 @@ import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
 import com.haulmont.cuba.gui.components.*;
-import com.haulmont.cuba.gui.executors.BackgroundTask;
-import com.haulmont.cuba.gui.executors.BackgroundTaskHandler;
-import com.haulmont.cuba.gui.executors.BackgroundWorker;
-import com.haulmont.cuba.gui.executors.TaskLifeCycle;
 import com.haulmont.cuba.gui.model.CollectionContainer;
 import com.haulmont.cuba.gui.model.DataLoader;
 import com.haulmont.cuba.gui.screen.*;
 import com.haulmont.cuba.gui.screen.LookupComponent;
-import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.gui.components.WebButton;
 import com.haulmont.cuba.web.gui.components.WebTextField;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -80,25 +72,21 @@ public class CameraBrowse extends StandardLookup<Camera> {
     @Inject
     private DataManager dataManager;
 
+
+
     private final Table.ColumnGenerator recordStatus = new Table.ColumnGenerator() {
         @Override
         public Component generateCell(Entity entity) {
 
-            if(Objects.isNull(entity)){
+            if (Objects.isNull(entity)) {
                 throw new IllegalArgumentException();
             }
-                TextField temp = new WebTextField();
-                if (service.isRecording((Camera) entity)) {
-                    temp.setValue("Recording");
-                } else {
-                    temp.setValue("Waiting");
-                }
-            if(!service.testConnection((Camera) entity)){
-                temp.setValue("Not connected");
-            }
+
+            Camera camera = (Camera) entity;
+            TextField temp = new WebTextField();
             temp.setEditable(false);
-            temp.setSizeFull();
-                return temp;
+            temp.setValue(service.getStatus(camera).toString());
+            return temp;
         }
     };
 
@@ -114,22 +102,14 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
             Button temp = new WebButton();
             temp.setCaption("Record");
-            if(!camera.getStatus().equals(Camera.Status.CONNECTED)){
+            if(service.getStatus(camera).equals(CameraService.Status.RECORDING)){
                 temp.setEnabled(false);
                 return temp;
             }
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
-                    try {
-                        service.write(camera);
-                        camera.setStatus(Camera.Status.RECORDING);
-                        dataManager.commit(camera);
-                    } catch (FrameGrabber.Exception e) {
-                        e.printStackTrace();
-                    } catch (FrameRecorder.Exception e) {
-                        e.printStackTrace();
-                    }
+                    write();
                     fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
 
                 }
@@ -149,7 +129,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
             Button temp = new WebButton();
             temp.setCaption("Stop");
-            if(!camera.getStatus().equals(Camera.Status.RECORDING)){
+            if(!service.getStatus(camera).equals(CameraService.Status.RECORDING)){
                 temp.setEnabled(false);
                 return temp;
             }
@@ -157,8 +137,6 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
                     stop();
-                    camera.setStatus(Camera.Status.NOT_CONNECTED);
-                    dataManager.commit(camera);
                     fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
 
                 }
@@ -178,21 +156,14 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
             Button temp = new WebButton();
             temp.setCaption("Test");
-            if(!camera.getStatus().equals(Camera.Status.NOT_CONNECTED) && !camera.getStatus().equals(Camera.Status.CONNECTED)){
+
+            if(!service.getStatus(camera).equals(CameraService.Status.NOT_CONNECTED)){
                 temp.setEnabled(false);
                 return temp;
             }
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
-                    if(service.testConnection(camera)){
-                        camerasTable.getSingleSelected().setStatus(Camera.Status.CONNECTED);
-                    }
-                    else{
-                        camerasTable.getSingleSelected().setStatus(Camera.Status.NOT_CONNECTED);
-
-                    }
-                    dataManager.commit(camera);
                     fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
                 }
             });
@@ -206,6 +177,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
         camerasTable.addGeneratedColumn("recordButton", recordButton);
         camerasTable.addGeneratedColumn("stoppButton", stoppButton);
         camerasTable.addGeneratedColumn("testButton", testButton);
+        camerasTable.addGeneratedColumn("recordStatus", recordStatus);
     }
     @Subscribe
     public void onInit(InitEvent event){
@@ -213,6 +185,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
         service.init();
         addGeneratedColumns();
     }
+
     public void checkConnection() {
         Camera item = camerasTable.getSingleSelected();
         if(Objects.isNull(item)){

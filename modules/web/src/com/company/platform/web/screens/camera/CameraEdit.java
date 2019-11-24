@@ -67,7 +67,6 @@ public class CameraEdit extends StandardEditor<Camera> {
 
         Camera camera = getEditedEntity();
         camera.setAddress(address.toString());
-        camera.setStatus(Camera.Status.NOT_CONNECTED);
         cameraService.update(AppBeans.get(UserSessionSource.class).getUserSession().getUser(), camera);
 
         close(WINDOW_COMMIT_AND_CLOSE_ACTION);

@@ -21,22 +21,6 @@ public class Camera extends StandardEntity {
     @JoinColumn(name = "USER_ID")
     private User user;
 
-    @Column(name = "STATUS")
-    private Status status;
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public enum Status{
-        NOT_CONNECTED, CONNECTED, RECORDING;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-
     public void setUser(User user) {
         this.user = user;
     }

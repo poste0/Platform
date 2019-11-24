@@ -33,7 +33,6 @@
             </actions>
             <columns>
                 <column id="address"/>
-                <column id="status"/>
                 <column id="recordButton"/>
                 <column id="stoppButton"/>
                 <column id="testButton"/>

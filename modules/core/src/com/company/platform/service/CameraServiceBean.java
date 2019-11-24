@@ -1,5 +1,6 @@
 package com.company.platform.service;
 
+import com.company.platform.core.CameraStatusBean;
 import com.company.platform.entity.Camera;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.DataManager;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 
 @Service(CameraService.NAME)
 public class CameraServiceBean implements CameraService {
+
 
     public FFmpegFrameGrabber getGrabber(String address) throws FrameGrabber.Exception {
         FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(address);
@@ -106,7 +108,7 @@ public class CameraServiceBean implements CameraService {
 
     }
 
-    private Map<UserSession, Map<Camera, FFMpegFrameWrapper>> ffMpegs;
+    private Map<UserSession, List<FFMpegFrameWrapper>> ffMpegs;
 
     private Executor executor;
 
@@ -138,9 +140,11 @@ public class CameraServiceBean implements CameraService {
                 .forEach(userSession -> {
                     List<Camera> cameras = dataManager.loadValue("SELECT c FROM platform_Camera c " +
                             "WHERE c.user.id = :user", Camera.class).setParameters(Collections.singletonMap("user", userSession.getUser().getId())).list();
-                    Map<Camera, FFMpegFrameWrapper> ffMpegMap = new HashMap<>();
-                    cameras.forEach(camera -> ffMpegMap.put(camera, new FFMpegFrameWrapper(camera)));
-                    ffMpegs.put(userSession, ffMpegMap);
+                    List<FFMpegFrameWrapper> wrappers = new ArrayList<>();
+                    cameras.forEach(camera -> {
+                        wrappers.add(new FFMpegFrameWrapper(camera));
+                    });
+                    ffMpegs.put(userSession, wrappers);
                 });
     }
 
@@ -166,6 +170,7 @@ public class CameraServiceBean implements CameraService {
         catch(FrameRecorder.Exception e){
             throw new FrameGrabber.Exception("An error while recording");
         }
+
 
         executor = new ConcurrentTaskExecutor();
         executor.execute(() -> {
@@ -194,8 +199,13 @@ public class CameraServiceBean implements CameraService {
 
     private FFMpegFrameWrapper getWrapper(Camera camera){
         UserSession session = AppBeans.get(UserSessionSource.class).getUserSession();
-        Map<Camera, FFMpegFrameWrapper> cameraMap = ffMpegs.get(session);
-        FFMpegFrameWrapper wrapper = cameraMap.get(camera);
+        List<FFMpegFrameWrapper> wrappers = ffMpegs.get(session);
+        FFMpegFrameWrapper wrapper = null;
+        for(FFMpegFrameWrapper w: wrappers){
+            if(w.camera.getId().equals(camera.getId())){
+                wrapper = w;
+            }
+        }
         return wrapper;
     }
 
@@ -216,11 +226,11 @@ public class CameraServiceBean implements CameraService {
     public void update(User user, Camera camera){
         FFMpegFrameWrapper wrapper = new FFMpegFrameWrapper(camera);
         UserSession userSession = AppBeans.get(UserSessionSource.class).getUserSession();
-        Map<Camera, FFMpegFrameWrapper> cameraMap = ffMpegs.get(userSession);
-        cameraMap.put(camera, wrapper);
+        List<FFMpegFrameWrapper> wrappers = ffMpegs.get(userSession);
+        wrappers.add(new FFMpegFrameWrapper(camera));
 
 
-        ffMpegs.put(userSession, cameraMap);
+        ffMpegs.put(userSession, wrappers);
     }
 
     public boolean testConnection(Camera camera){
@@ -233,6 +243,12 @@ public class CameraServiceBean implements CameraService {
         } catch (FrameGrabber.Exception e) {
             return false;
         }
+    }
+
+    public Status getStatus(Camera camera){
+        CameraStatusBean statusBean = AppBeans.get(CameraStatusBean.NAME);
+
+        return statusBean.getCameraStatus(camera, testConnection(camera), isRecording(camera));
     }
 
 

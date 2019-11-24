@@ -15,6 +15,10 @@ import java.net.UnknownHostException;
 public interface CameraService {
     String NAME = "platform_CameraService";
 
+    public enum Status{
+        NOT_CONNECTED, CONNECTED, RECORDING;
+    }
+
     //FFmpegFrameGrabber getGrabber(String address) throws FrameGrabber.Exception;
 
     //FFmpegFrameRecorder getRecorder(File file, FFmpegFrameGrabber grabber) throws FrameRecorder.Exception;
@@ -30,4 +34,6 @@ public interface CameraService {
     void update(User user, Camera camera);
 
     boolean testConnection(Camera camera);
+
+    Status getStatus(Camera camera);
 }
