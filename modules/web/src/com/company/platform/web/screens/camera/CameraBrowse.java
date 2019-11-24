@@ -110,7 +110,6 @@ public class CameraBrowse extends StandardLookup<Camera> {
             temp.setCaption("Record");
             if(service.isRecording((Camera) entity)){
                 temp.setEnabled(false);
-                addGeneratedColumns();
                 return temp;
             }
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
