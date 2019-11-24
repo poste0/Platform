@@ -22,13 +22,17 @@ public class Camera extends StandardEntity {
     private User user;
 
     @Column(name = "STATUS")
-    private String status = "None";
+    private Status status = Status.NOT_CONNECTED;
 
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
-    public String getStatus() {
+    public enum Status{
+        NOT_CONNECTED, CONNECTED, RECORDING;
+    }
+
+    public Status getStatus() {
         return status;
     }
 

@@ -112,7 +112,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 temp.setEnabled(false);
                 return temp;
             }
-            if(!Objects.isNull(((Camera) entity).getStatus()) && ((Camera) entity).getStatus().equals("Failed")){
+            if(!Objects.isNull(((Camera) entity).getStatus()) && ((Camera) entity).getStatus().equals(Camera.Status.NOT_CONNECTED)){
                 temp.setEnabled(false);
                 return temp;
             }
@@ -121,7 +121,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 public void accept(Button.ClickEvent clickEvent) {
                     try {
                         service.write((Camera) entity);
-                        ((Camera) entity).setStatus("Recording");
+                        ((Camera) entity).setStatus(Camera.Status.RECORDING);
                     } catch (FrameGrabber.Exception e) {
                         e.printStackTrace();
                     } catch (FrameRecorder.Exception e) {
@@ -155,6 +155,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
                     service.stop((Camera) entity);
+                    ((Camera) entity).setStatus(Camera.Status.CONNECTED);
                     fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
 
                 }
@@ -176,10 +177,10 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
                     if(service.testConnection((Camera) entity)){
-                        camerasTable.getSingleSelected().setStatus("Connected");
+                        camerasTable.getSingleSelected().setStatus(Camera.Status.CONNECTED);
                     }
                     else{
-                        camerasTable.getSingleSelected().setStatus("Failed");
+                        camerasTable.getSingleSelected().setStatus(Camera.Status.NOT_CONNECTED);
                     }
                     fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
                 }
