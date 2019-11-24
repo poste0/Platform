@@ -4,6 +4,7 @@ import com.company.platform.entity.Camera;
 import com.company.platform.service.CameraService;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.AppBeans;
+import com.haulmont.cuba.core.global.DataManager;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
@@ -75,6 +76,9 @@ public class CameraBrowse extends StandardLookup<Camera> {
     private boolean isRecording;
 
     private final Screen screen = this;
+
+    @Inject
+    private DataManager dataManager;
 
     private final Table.ColumnGenerator recordStatus = new Table.ColumnGenerator() {
         @Override
@@ -181,6 +185,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
                     }
                     else{
                         camerasTable.getSingleSelected().setStatus(Camera.Status.NOT_CONNECTED);
+
                     }
                     fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
                 }

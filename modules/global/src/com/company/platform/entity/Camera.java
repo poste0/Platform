@@ -22,7 +22,7 @@ public class Camera extends StandardEntity {
     private User user;
 
     @Column(name = "STATUS")
-    private Status status = Status.NOT_CONNECTED;
+    private Status status;
 
     public void setStatus(Status status) {
         this.status = status;
