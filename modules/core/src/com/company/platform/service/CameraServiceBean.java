@@ -153,12 +153,13 @@ public class CameraServiceBean implements CameraService {
             throw new IllegalArgumentException();
         }
         FFMpegFrameWrapper wrapper = getWrapper(camera);
-
+        wrapper.isRecording = true;
         FFmpegFrameGrabber grabber;
         try {
             grabber = wrapper.getGrabber();
             grabber.start();
         } catch (FrameGrabber.Exception e) {
+            wrapper.isRecording = false;
             throw new FrameGrabber.Exception("An error while grabbing");
         }
 
@@ -168,6 +169,7 @@ public class CameraServiceBean implements CameraService {
             recorder.start();
         }
         catch(FrameRecorder.Exception e){
+            wrapper.isRecording = false;
             throw new FrameGrabber.Exception("An error while recording");
         }
 
@@ -175,7 +177,7 @@ public class CameraServiceBean implements CameraService {
         executor = new ConcurrentTaskExecutor();
         executor.execute(() -> {
             //AppContext.setSecurityContext(context);
-            wrapper.isRecording = true;
+
             try {
                 while (wrapper.isRecording) {
 
