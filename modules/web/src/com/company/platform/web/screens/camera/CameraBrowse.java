@@ -110,13 +110,11 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 throw new IllegalArgumentException();
             }
 
+            Camera camera = (Camera) entity;
+
             Button temp = new WebButton();
             temp.setCaption("Record");
-            if(service.isRecording((Camera) entity)){
-                temp.setEnabled(false);
-                return temp;
-            }
-            if(!Objects.isNull(((Camera) entity).getStatus()) && ((Camera) entity).getStatus().equals(Camera.Status.NOT_CONNECTED)){
+            if(!camera.getStatus().equals(Camera.Status.CONNECTED)){
                 temp.setEnabled(false);
                 return temp;
             }
@@ -124,8 +122,8 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
                     try {
-                        service.write((Camera) entity);
-                        ((Camera) entity).setStatus(Camera.Status.RECORDING);
+                        service.write(camera);
+                        camera.setStatus(Camera.Status.RECORDING);
                     } catch (FrameGrabber.Exception e) {
                         e.printStackTrace();
                     } catch (FrameRecorder.Exception e) {
@@ -146,20 +144,19 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 throw new IllegalArgumentException();
             }
 
+            Camera camera = (Camera) entity;
+
             Button temp = new WebButton();
             temp.setCaption("Stop");
-            if(!service.isRecording((Camera) entity)){
+            if(!camera.getStatus().equals(Camera.Status.RECORDING)){
                 temp.setEnabled(false);
                 return temp;
-            }
-            else{
-                temp.setEnabled(true);
             }
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
                     stop();
-                    ((Camera) entity).setStatus(Camera.Status.CONNECTED);
+                    (camera).setStatus(Camera.Status.NOT_CONNECTED);
                     fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
 
                 }
@@ -175,18 +172,25 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 throw new IllegalArgumentException();
             }
 
+            Camera camera = (Camera) entity;
+
             Button temp = new WebButton();
             temp.setCaption("Test");
+            if(!camera.getStatus().equals(Camera.Status.NOT_CONNECTED) && !camera.getStatus().equals(Camera.Status.CONNECTED)){
+                temp.setEnabled(false);
+                return temp;
+            }
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
-                    if(service.testConnection((Camera) entity)){
+                    if(service.testConnection(camera)){
                         camerasTable.getSingleSelected().setStatus(Camera.Status.CONNECTED);
                     }
                     else{
                         camerasTable.getSingleSelected().setStatus(Camera.Status.NOT_CONNECTED);
 
                     }
+                    dataManager.commit(camera);
                     fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
                 }
             });
@@ -207,7 +211,6 @@ public class CameraBrowse extends StandardLookup<Camera> {
         service.init();
         addGeneratedColumns();
     }
-
     public void checkConnection() {
         Camera item = camerasTable.getSingleSelected();
         if(Objects.isNull(item)){

@@ -142,18 +142,6 @@ public class CameraServiceBean implements CameraService {
                     cameras.forEach(camera -> ffMpegMap.put(camera, new FFMpegFrameWrapper(camera)));
                     ffMpegs.put(userSession, ffMpegMap);
                 });
-
-        ffMpegs.forEach(new BiConsumer<UserSession, Map<Camera, FFMpegFrameWrapper>>() {
-            @Override
-            public void accept(UserSession userSession, Map<Camera, FFMpegFrameWrapper> cameraFFMpegFrameWrapperMap) {
-                cameraFFMpegFrameWrapperMap.forEach(new BiConsumer<Camera, FFMpegFrameWrapper>() {
-                    @Override
-                    public void accept(Camera camera, FFMpegFrameWrapper ffMpegFrameWrapper) {
-                        System.out.println("asdasdasd");
-                    }
-                });
-            }
-        });
     }
 
     public void write(Camera camera) throws FrameGrabber.Exception {
@@ -200,8 +188,6 @@ public class CameraServiceBean implements CameraService {
                 e.printStackTrace();
             }
 
-
-            System.out.println(124124124);
         });
 
     }
