@@ -242,6 +242,7 @@ public class CameraServiceBean implements CameraService {
         try {
             FFmpegFrameGrabber grabber = wrapper.getGrabber();
             grabber.start();
+            grabber.stop();
             return true;
         } catch (FrameGrabber.Exception e) {
             return false;
