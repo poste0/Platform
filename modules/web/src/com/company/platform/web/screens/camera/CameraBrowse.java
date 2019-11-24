@@ -8,39 +8,33 @@ import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
 import com.haulmont.cuba.gui.components.*;
-import com.haulmont.cuba.gui.components.data.DataGridItems;
-import com.haulmont.cuba.gui.components.data.TableItems;
+import com.haulmont.cuba.gui.executors.BackgroundTask;
+import com.haulmont.cuba.gui.executors.BackgroundTaskHandler;
+import com.haulmont.cuba.gui.executors.BackgroundWorker;
+import com.haulmont.cuba.gui.executors.TaskLifeCycle;
 import com.haulmont.cuba.gui.model.CollectionContainer;
 import com.haulmont.cuba.gui.model.DataLoader;
 import com.haulmont.cuba.gui.screen.*;
-import com.company.platform.entity.Camera;
 import com.haulmont.cuba.gui.screen.LookupComponent;
-import com.haulmont.cuba.security.global.UserSession;
-import com.haulmont.cuba.web.gui.components.CompositeComponent;
+import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.gui.components.WebButton;
-import com.haulmont.cuba.web.gui.components.WebLabel;
 import com.haulmont.cuba.web.gui.components.WebTextField;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
-import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @UiController("platform_Camera.browse")
@@ -95,50 +89,89 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 } else {
                     temp.setValue("Waiting");
                 }
-                temp.setEditable(false);
-                temp.setSizeFull();
+            if(!service.testConnection((Camera) entity)){
+                temp.setValue("Not connected");
+            }
+            temp.setEditable(false);
+            temp.setSizeFull();
                 return temp;
         }
     };
 
+    private final Table.ColumnGenerator recordButton = new Table.ColumnGenerator(){
+
+        @Override
+        public Component generateCell(Entity entity) {
+            if(Objects.isNull(entity)) {
+                throw new IllegalArgumentException();
+            }
+
+            Button temp = new WebButton();
+            temp.setCaption("Record");
+            if(service.isRecording((Camera) entity)){
+                temp.setEnabled(false);
+                addGeneratedColumns();
+                return temp;
+            }
+            temp.addClickListener(new Consumer<Button.ClickEvent>() {
+                @Override
+                public void accept(Button.ClickEvent clickEvent) {
+                    try {
+                        if(!service.testConnection((Camera) entity)){
+                            ((Camera) entity).setStatus("No connect");
+                        }
+                        else{
+                            service.write((Camera) entity);
+                            ((Camera) entity).setStatus("Recording");
+                            temp.setEnabled(false);
+                            camerasTable.addGeneratedColumn("stoppButton", stoppButton);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            return temp;
+        }
+    };
+
+    private final Table.ColumnGenerator stoppButton = new Table.ColumnGenerator() {
+        @Override
+        public Component generateCell(Entity entity) {
+            if(Objects.isNull(entity)){
+                throw new IllegalArgumentException();
+            }
+
+            Button temp = new WebButton();
+            temp.setCaption("Stop");
+            if(!service.isRecording((Camera) entity)){
+                temp.setEnabled(false);
+                return temp;
+            }
+            temp.addClickListener(new Consumer<Button.ClickEvent>() {
+                @Override
+                public void accept(Button.ClickEvent clickEvent) {
+                    if(!service.testConnection((Camera) entity)){
+                        ((Camera) entity).setStatus("Not connected");
+                    }
+                    else{
+                        service.stop((Camera) entity);
+                    }
+                }
+            });
+            return temp;
+        }
+    };
+
+    private void addGeneratedColumns(){
+        camerasTable.addGeneratedColumn("recordButton", recordButton);
+        camerasTable.addGeneratedColumn("stoppButton", stoppButton);
+    }
     @Subscribe
     public void onInit(InitEvent event){
         camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
         service.init();
-        camerasTable.addGeneratedColumn("recordStatus", recordStatus);
-        writeButton.addClickListener(new Consumer<Button.ClickEvent>() {
-            @Override
-            public void accept(Button.ClickEvent clickEvent) {
-                camerasTable.addGeneratedColumn("recordStatus", recordStatus);
-            }
-        });
-        stopButton.addClickListener(new Consumer<Button.ClickEvent>() {
-            @Override
-            public void accept(Button.ClickEvent clickEvent) {
-                camerasTable.addGeneratedColumn("recordStatus", recordStatus);
-            }
-        });
-        /*camerasTable.addSelectionListener(new Consumer<Table.SelectionEvent<Camera>>() {
-            @Override
-            public void accept(Table.SelectionEvent<Camera> event) {
-                Camera item = event.getSelected().iterator().next();
-                CameraService cameraService = null;
-                services.forEach(cameraService1 -> {
-                    System.out.println(cameraService1.getCamera().getAddress());
-                });
-                for(CameraService service: services){
-                    if(service.getCamera().getId().equals(item.getId())){
-                        cameraService = service;
-                    }
-                }
-                boolean isStopActive = false;
-                if(cameraService.isRecording()){
-                    isStopActive = true;
-                }
-                stopButton.setEnabled(isStopActive);
-                writeButton.setEnabled(!isStopActive);
-            }
-        });*/
+        addGeneratedColumns();
     }
 
     public void checkConnection() {

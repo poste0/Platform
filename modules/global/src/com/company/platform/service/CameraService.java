@@ -9,6 +9,8 @@ import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.UnknownHostException;
 
 public interface CameraService {
     String NAME = "platform_CameraService";
@@ -26,4 +28,6 @@ public interface CameraService {
     boolean isRecording(Camera camera);
 
     void update(User user, Camera camera);
+
+    boolean testConnection(Camera camera);
 }

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -233,6 +235,17 @@ public class CameraServiceBean implements CameraService {
 
 
         ffMpegs.put(userSession, cameraMap);
+    }
+
+    public boolean testConnection(Camera camera){
+       FFMpegFrameWrapper wrapper = getWrapper(camera);
+        try {
+            FFmpegFrameGrabber grabber = wrapper.getGrabber();
+            grabber.start();
+            return true;
+        } catch (FrameGrabber.Exception e) {
+            return false;
+        }
     }
 
 

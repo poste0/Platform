@@ -21,6 +21,16 @@ public class Camera extends StandardEntity {
     @JoinColumn(name = "USER_ID")
     private User user;
 
+    @Column(name = "STATUS")
+    private String status = "None";
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getStatus() {
+        return status;
+    }
 
 
     public void setUser(User user) {
