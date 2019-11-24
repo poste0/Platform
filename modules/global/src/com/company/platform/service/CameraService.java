@@ -1,6 +1,7 @@
 package com.company.platform.service;
 
 import com.company.platform.entity.Camera;
+import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.UserSession;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
@@ -24,4 +25,5 @@ public interface CameraService {
 
     boolean isRecording(Camera camera);
 
+    void update(User user, Camera camera);
 }

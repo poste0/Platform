@@ -15,11 +15,24 @@
     <layout expand="editActions" spacing="true">
         <form id="form" dataContainer="cameraDc">
             <column width="250px">
-                <textField id="addressField" property="address"/>
+                <label id="nameLabel" value="Name"/>
+                <textField id="nameField" />
+            </column>
+            <column width="250px">
+                <label id="passwordLabel" value="Password"/>
+                <passwordField id="passwordField" />
+            </column>
+            <column width="250px">
+                <label id="addressLabel" value="Address"/>
+                <textField id="addressField" />
+            </column>
+            <column width="250px">
+                <label id="portLabel" value="Port"/>
+                <textField id="portField"/>
             </column>
         </form>
         <hbox id="editActions" spacing="true">
-            <button action="windowCommitAndClose"/>
+            <button invoke="onOkButton" caption="Ok"/>
             <button action="windowClose"/>
         </hbox>
     </layout>

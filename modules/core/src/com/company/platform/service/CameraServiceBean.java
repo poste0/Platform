@@ -7,6 +7,7 @@ import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
 import com.haulmont.cuba.security.app.UserSessions;
+import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.UserSession;
 import org.bytedeco.javacv.*;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
@@ -224,6 +225,15 @@ public class CameraServiceBean implements CameraService {
         return wrapper.isRecording;
     }
 
+    public void update(User user, Camera camera){
+        FFMpegFrameWrapper wrapper = new FFMpegFrameWrapper(camera);
+        UserSession userSession = AppBeans.get(UserSessionSource.class).getUserSession();
+        Map<Camera, FFMpegFrameWrapper> cameraMap = ffMpegs.get(userSession);
+        cameraMap.put(camera, wrapper);
+
+
+        ffMpegs.put(userSession, cameraMap);
+    }
 
 
 }

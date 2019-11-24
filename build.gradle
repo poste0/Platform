@@ -32,7 +32,8 @@ cuba {
         isSnapshot = true
     }
     tomcat {
-        dir = "$project.rootDir/deploy/tomcat"
+        dir = "$project.rootDir/deploy/tomcat" 
+        port = '8081'
     }
 }
 
