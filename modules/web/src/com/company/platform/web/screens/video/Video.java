@@ -114,7 +114,9 @@ public class Video extends Screen {
                         video.setSource(new FileResource(new File(path.toString())));
                         video.setStyleName("video/mp4");
                         Layout videoLayout = playerBox.unwrap(Layout.class);
+                        videoLayout.removeAllComponents();
                         videoLayout.addComponent(video);
+
                     }));
                     deleteButton = components.create(Button.NAME);
                     deleteButton.setCaption("Delete");

@@ -17,6 +17,8 @@ import com.haulmont.cuba.web.gui.components.WebButton;
 import com.haulmont.cuba.web.gui.components.WebTextField;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -85,6 +87,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
             Camera camera = (Camera) entity;
             TextField temp = new WebTextField();
             temp.setEditable(false);
+            System.out.println(service.getStatus(camera).toString());
             temp.setValue(service.getStatus(camera).toString());
             return temp;
         }
@@ -102,6 +105,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
             Button temp = new WebButton();
             temp.setCaption("Record");
+
             if(service.getStatus(camera).equals(CameraService.Status.RECORDING)){
                 temp.setEnabled(false);
                 return temp;
@@ -110,7 +114,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
                     write();
-                    fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
+                    onInit(null);
 
                 }
             });
@@ -137,7 +141,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
                     stop();
-                    fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
+                   onInit(null);
 
                 }
             });
@@ -164,7 +168,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
-                    fireEvent(InitEvent.class, new InitEvent(screen, new MapScreenOptions(new HashMap<>())));
+                   onInit(null);
                 }
             });
             return temp;
@@ -179,12 +183,14 @@ public class CameraBrowse extends StandardLookup<Camera> {
         camerasTable.addGeneratedColumn("testButton", testButton);
         camerasTable.addGeneratedColumn("recordStatus", recordStatus);
     }
+
     @Subscribe
     public void onInit(InitEvent event){
         camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
         service.init();
         addGeneratedColumns();
     }
+
 
     public void checkConnection() {
         Camera item = camerasTable.getSingleSelected();

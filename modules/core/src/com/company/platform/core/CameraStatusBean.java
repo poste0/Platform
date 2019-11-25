@@ -10,7 +10,7 @@ public class CameraStatusBean {
     public static final String NAME = "platform_CameraStatusBean";
 
 
-    public CameraService.Status getCameraStatus(Camera camera, boolean isConnected, boolean isRecording) {
+    public CameraService.Status getCameraStatus(boolean isConnected, boolean isRecording) {
 
 
         if(!isConnected){
