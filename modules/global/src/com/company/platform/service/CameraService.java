@@ -9,9 +9,15 @@ import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.UnknownHostException;
 
 public interface CameraService {
     String NAME = "platform_CameraService";
+
+    public enum Status{
+        NOT_CONNECTED, CONNECTED, RECORDING;
+    }
 
     //FFmpegFrameGrabber getGrabber(String address) throws FrameGrabber.Exception;
 
@@ -26,4 +32,8 @@ public interface CameraService {
     boolean isRecording(Camera camera);
 
     void update(User user, Camera camera);
+
+    boolean testConnection(Camera camera);
+
+    Status getStatus(Camera camera);
 }

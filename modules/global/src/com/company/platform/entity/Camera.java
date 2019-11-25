@@ -21,8 +21,6 @@ public class Camera extends StandardEntity {
     @JoinColumn(name = "USER_ID")
     private User user;
 
-
-
     public void setUser(User user) {
         this.user = user;
     }

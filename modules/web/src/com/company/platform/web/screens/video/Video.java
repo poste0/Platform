@@ -74,14 +74,14 @@ public class Video extends Screen {
             this.cameras = cameras;
         }
 
-        private List<Path> getPaths(Camera camera) throws IOException {
+        private List<Path> getPaths(Camera camera, String format) throws IOException {
             if(Objects.isNull(camera)){
                 throw new IllegalArgumentException();
             }
             File path = new File(camera.getId().toString());
             Stream<Path> stream = Files.walk(Paths.get(path.toString()), FileVisitOption.FOLLOW_LINKS);
             List<Path> result = stream.filter((value)->{
-                return value.toFile().getName().contains(".mp4") ? true : false;
+                return value.toFile().getName().contains(format) ? true : false;
             }).collect(Collectors.toList());
             return result;
         }
@@ -97,7 +97,8 @@ public class Video extends Screen {
 
         public void render() throws IOException {
             for(Camera camera: cameras){
-                List<Path> paths = getPaths(camera);
+                List<Path> paths = getPaths(camera, ".mp4");
+                List<Path> tempPaths = getPaths(camera, ".avi");
                 if(paths.size() == 0){
                     continue;
                 }
@@ -113,14 +114,16 @@ public class Video extends Screen {
                         video.setSource(new FileResource(new File(path.toString())));
                         video.setStyleName("video/mp4");
                         Layout videoLayout = playerBox.unwrap(Layout.class);
+                        videoLayout.removeAllComponents();
                         videoLayout.addComponent(video);
+
                     }));
                     deleteButton = components.create(Button.NAME);
                     deleteButton.setCaption("Delete");
                     deleteButton.addClickListener((clickEvent -> {
                         try {
                             Files.delete(path);
-                            video.removeTab(camera.getAddress());
+                            Files.delete(tempPaths.get(paths.indexOf(path)));
                             layout.remove(layout.getComponent(0, paths.indexOf(path)));
                             layout.remove(layout.getComponent(1, paths.indexOf(path)));
                             layout.remove(layout.getComponent(2, paths.indexOf(path)));
