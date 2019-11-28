@@ -131,7 +131,7 @@ public class CameraServiceBean implements CameraService {
 
     }
 
-    private Map<UserSession, List<FFMpegFrameWrapper>> ffMpegs;
+    private Map<User, List<FFMpegFrameWrapper>> ffMpegs;
 
     private Executor executor;
 
@@ -148,10 +148,10 @@ public class CameraServiceBean implements CameraService {
         //context = AppBeans.get(SecurityContext.class);
         List<UserSession> userSessions = getSessions();
         processSessions(userSessions);
-        ffMpegs.forEach(new BiConsumer<UserSession, List<FFMpegFrameWrapper>>() {
+        ffMpegs.forEach(new BiConsumer<User, List<FFMpegFrameWrapper>>() {
             @Override
-            public void accept(UserSession userSession, List<FFMpegFrameWrapper> ffMpegFrameWrappers) {
-                System.out.println(userSession.getUser().getName());
+            public void accept(User user, List<FFMpegFrameWrapper> ffMpegFrameWrappers) {
+                System.out.println(user.getName());
                 ffMpegFrameWrappers.forEach(new Consumer<FFMpegFrameWrapper>() {
                     @Override
                     public void accept(FFMpegFrameWrapper ffMpegFrameWrapper) {
@@ -171,7 +171,7 @@ public class CameraServiceBean implements CameraService {
     private void processSessions(List<UserSession> userSessions){
         DataManager dataManager = AppBeans.get(DataManager.NAME);
         userSessions.stream()
-                .filter(userSession -> !ffMpegs.containsKey(userSession))
+                .filter(userSession -> !ffMpegs.containsKey(userSession.getUser()))
                 .forEach(userSession -> {
                     List<Camera> cameras = dataManager.loadValue("SELECT c FROM platform_Camera c " +
                             "WHERE c.user.id = :user", Camera.class).setParameters(Collections.singletonMap("user", userSession.getUser().getId())).list();
@@ -179,7 +179,7 @@ public class CameraServiceBean implements CameraService {
                     cameras.forEach(camera -> {
                         wrappers.add(new FFMpegFrameWrapper(camera));
                     });
-                    ffMpegs.put(userSession, wrappers);
+                    ffMpegs.put(userSession.getUser(), wrappers);
                 });
     }
 
@@ -244,7 +244,7 @@ public class CameraServiceBean implements CameraService {
 
     private FFMpegFrameWrapper getWrapper(Camera camera){
         UserSession session = AppBeans.get(UserSessionSource.class).getUserSession();
-        List<FFMpegFrameWrapper> wrappers = ffMpegs.get(session);
+        List<FFMpegFrameWrapper> wrappers = ffMpegs.get(session.getUser());
         FFMpegFrameWrapper wrapper = null;
         for(FFMpegFrameWrapper w: wrappers){
             if(w.camera.getId().equals(camera.getId())){
@@ -271,11 +271,11 @@ public class CameraServiceBean implements CameraService {
     public void update(User user, Camera camera){
         FFMpegFrameWrapper wrapper = new FFMpegFrameWrapper(camera);
         UserSession userSession = AppBeans.get(UserSessionSource.class).getUserSession();
-        List<FFMpegFrameWrapper> wrappers = ffMpegs.get(userSession);
+        List<FFMpegFrameWrapper> wrappers = ffMpegs.get(userSession.getUser());
         wrappers.add(new FFMpegFrameWrapper(camera));
 
 
-        ffMpegs.put(userSession, wrappers);
+        ffMpegs.put(userSession.getUser(), wrappers);
     }
 
     public boolean testConnection(Camera camera){
