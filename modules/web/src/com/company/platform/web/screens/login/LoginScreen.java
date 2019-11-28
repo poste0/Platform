@@ -20,6 +20,7 @@ public class LoginScreen extends com.haulmont.cuba.web.app.login.LoginScreen {
 
     @Inject
     private CameraService service;
+
     public void onRegisterButtonClick(){
         TextField loginField = this.loginField;
         RegisterScreen screen = screens.create(RegisterScreen.class, OpenMode.DIALOG);
@@ -35,6 +36,11 @@ public class LoginScreen extends com.haulmont.cuba.web.app.login.LoginScreen {
             }
         });
         screen.show();
+    }
+
+    @Override
+    protected void initDefaultCredentials(){
+
     }
 
 }

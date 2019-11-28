@@ -106,6 +106,9 @@ public class CameraServiceBean implements CameraService {
             if(grabber == null) {
                 grabber = FFmpegFrameGrabber.createDefault(camera.getAddress());
                 grabber.setOption("rtsp_transport", "tcp");
+                grabber.setFrameRate(camera.getFrameRate());
+                grabber.setImageHeight(camera.getHeight());
+                grabber.setImageWidth(camera.getWeight());
             }
             return grabber;
         }
@@ -122,6 +125,8 @@ public class CameraServiceBean implements CameraService {
             recorder.setVideoCodec(grabber.getVideoCodec());
             recorder.setVideoBitrate(grabber.getVideoBitrate());
             recorder.setFrameRate(grabber.getFrameRate());
+            recorder.setImageHeight(grabber.getImageHeight() / 4);
+            recorder.setImageWidth(grabber.getImageWidth() / 4);
         }
 
     }
@@ -211,11 +216,15 @@ public class CameraServiceBean implements CameraService {
         executor.execute(() -> {
             //AppContext.setSecurityContext(context);
             try {
+                int q = 0;
                 while (wrapper.isRecording) {
-
+                    q++;
+                    if(q == 25){
+                        System.out.println("w");
+                        q = 0;
+                    }
                     Frame frame = grabber.grab();
                     recorder.record(frame);
-
                 }
 
 
@@ -272,7 +281,7 @@ public class CameraServiceBean implements CameraService {
     public boolean testConnection(Camera camera){
         try {
             final String[] address = camera.getAddress().split("@")[1].split(":");
-            final int port = Integer.parseInt(address[1]);
+            final int port = address.length == 2 ? Integer.parseInt(address[1]) : 0;
             Socket socket = new Socket(address[0], port);
             boolean result = socket.isConnected();
             socket.close();

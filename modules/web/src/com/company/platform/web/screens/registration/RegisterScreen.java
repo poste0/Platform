@@ -27,6 +27,9 @@ public class RegisterScreen extends Screen {
     @Inject
     private Label errorLabel;
 
+    @Inject
+    private TextField nameTextField;
+
     public void onOkButton(){
         try {
             if(loginTextField.isEmpty() || passwordTextField.isEmpty()){
@@ -34,7 +37,7 @@ public class RegisterScreen extends Screen {
                 return;
             }
 
-            User user = service.register(loginTextField.getRawValue(), passwordTextField.getRawValue());
+            User user = service.register(loginTextField.getRawValue(), passwordTextField.getRawValue(), nameTextField.getRawValue());
 
             close(WINDOW_COMMIT_AND_CLOSE_ACTION);
         }

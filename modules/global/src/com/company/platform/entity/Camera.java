@@ -21,6 +21,18 @@ public class Camera extends StandardEntity {
     @JoinColumn(name = "USER_ID")
     private User user;
 
+    @Column(name = "height", nullable = false)
+    @NotNull
+    private Integer height;
+
+    @Column(name = "weight", nullable = false)
+    @NotNull
+    private Integer weight;
+
+    @Column(name = "frameRate", nullable = false)
+    @NotNull
+    private Integer frameRate;
+
     public void setUser(User user) {
         this.user = user;
     }
@@ -36,5 +48,29 @@ public class Camera extends StandardEntity {
 
     public String getAddress(){
         return this.address;
+    }
+
+    public Integer getHeight() {
+        return height;
+    }
+
+    public void setHeight(Integer height) {
+        this.height = height;
+    }
+
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
+    }
+
+    public Integer getFrameRate() {
+        return frameRate;
+    }
+
+    public void setFrameRate(Integer frameRate) {
+        this.frameRate = frameRate;
     }
 }

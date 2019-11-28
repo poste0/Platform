@@ -28,7 +28,7 @@ public class RegistrationServiceBean implements RegistrationService{
 
     private static final String QUERY = "SELECT u from sec$User u WHERE u.loginLowerCase = :login";
     @Override
-    public User register(String login, String password) throws IllegalArgumentException {
+    public User register(String login, String password, String name) throws IllegalArgumentException {
         if(dataManager.getCount(LoadContext.create(User.class)
                 .setQuery(LoadContext.createQuery(QUERY)
                         .setParameter("login", login.toLowerCase()))) >= 1) {
@@ -36,6 +36,7 @@ public class RegistrationServiceBean implements RegistrationService{
         }
 
         User user = createUser(login, password);
+        user.setName(name);
 
         Group group = dataManager.load(LoadContext.create(Group.class).setId(UUID.fromString(GROUP_ID)));
         Role role = dataManager.load(LoadContext.create(Role.class).setId(UUID.fromString(ROLE_ID)));

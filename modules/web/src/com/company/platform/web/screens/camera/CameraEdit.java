@@ -34,6 +34,15 @@ public class CameraEdit extends StandardEditor<Camera> {
     @Inject
     private TextField<Integer> portField;
 
+    @Inject
+    private TextField<Integer> frameRateField;
+
+    @Inject
+    private TextField<Integer> heightField;
+
+    @Inject
+    private TextField<Integer> widthField;
+
     private static final Consumer<String> FIELD_VALIDATOR = s -> {
         if(Objects.isNull(s)){
             throw new ValidationException("Enter all fields");
@@ -67,6 +76,9 @@ public class CameraEdit extends StandardEditor<Camera> {
 
         Camera camera = getEditedEntity();
         camera.setAddress(address.toString());
+        camera.setFrameRate(Integer.valueOf(frameRateField.getRawValue()));
+        camera.setHeight(Integer.valueOf(heightField.getRawValue()));
+        camera.setWeight(Integer.valueOf(widthField.getRawValue()));
         cameraService.update(AppBeans.get(UserSessionSource.class).getUserSession().getUser(), camera);
 
         close(WINDOW_COMMIT_AND_CLOSE_ACTION);

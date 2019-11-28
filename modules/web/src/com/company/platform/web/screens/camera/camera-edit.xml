@@ -30,6 +30,18 @@
                 <label id="portLabel" value="Port"/>
                 <textField id="portField"/>
             </column>
+            <column width="250px">
+                <label id="heightLabel" value="Height"/>
+                <textField id="heightField"/>
+            </column>
+            <column width="250px">
+                <label id="widthLabel" value="Width"/>
+                <textField id="widthField"/>
+            </column>
+            <column width="250px">
+                <label id="frameRateLabel" value="FrameRate"/>
+                <textField id="frameRateField"/>
+            </column>
         </form>
         <hbox id="editActions" spacing="true">
             <button invoke="onOkButton" caption="Ok"/>
