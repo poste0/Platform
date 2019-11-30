@@ -70,6 +70,7 @@ public class CameraServiceBean implements CameraService {
         }
 
         private void createFile(){
+            this.name = prepareFile(this.camera);
             file = new File(name);
             try {
                 file.createNewFile();
@@ -281,7 +282,7 @@ public class CameraServiceBean implements CameraService {
     public boolean testConnection(Camera camera){
         try {
             final String[] address = camera.getAddress().split("@")[1].split(":");
-            final int port = address.length == 2 ? Integer.parseInt(address[1]) : 0;
+            final int port = address.length == 2 ? Integer.parseInt(address[1]) : 5000;
             Socket socket = new Socket(address[0], port);
             boolean result = socket.isConnected();
             socket.close();
