@@ -1,0 +1,15 @@
+@import "hover-defaults";
+@import "com.company.platform/hover-ext-defaults";
+@import "app-components";
+@import "com.company.platform/hover-ext";
+
+.hover {
+  // include auto-generated app components SCSS
+  @include app_components;
+
+  @include com_company_platform-hover-ext;
+}
+
+.c-camera-record-status-field{
+    border-top-color: red;
+}

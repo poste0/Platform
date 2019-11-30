@@ -1,0 +1,9 @@
+@import "hover-ext";
+
+@mixin com_company_platform {
+  @include com_company_platform-hover-ext;
+}
+
+.c-camera-record-status-field{
+    border-top-color: red;
+}

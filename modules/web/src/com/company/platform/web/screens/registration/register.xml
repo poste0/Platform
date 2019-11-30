@@ -11,6 +11,10 @@
                 <label id="passwordLabel" value="Enter password"/>
                 <textField id="passwordTextField"/>
             </hbox>
+            <hbox id="nameBox">
+                <label id="nameLabel" value="Enter password"/>
+                <textField id="nameTextField"/>
+            </hbox>
             <label id="errorLabel" css="color:red"/>
             <hbox id="buttonBox">
                 <button id="okButton" caption="Ok" invoke="onOkButton"/>

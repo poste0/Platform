@@ -86,9 +86,10 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
             Camera camera = (Camera) entity;
             TextField temp = new WebTextField();
-            temp.setEditable(false);
+            temp.setEnabled(false);
             System.out.println(service.getStatus(camera).toString());
             temp.setValue(service.getStatus(camera).toString());
+            temp.setStyleName("c-camera-record-status-field");
             return temp;
         }
     };
@@ -106,7 +107,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
             Button temp = new WebButton();
             temp.setCaption("Record");
 
-            if(service.getStatus(camera).equals(CameraService.Status.RECORDING)){
+            if(service.getStatus(camera).equals(CameraService.Status.RECORDING) || service.getStatus(camera).equals(CameraService.Status.NOT_CONNECTED)){
                 temp.setEnabled(false);
                 return temp;
             }

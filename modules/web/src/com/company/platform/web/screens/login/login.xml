@@ -15,5 +15,10 @@
             </vbox>
 
         </vbox>
+        <label id="poweredByLink"
+               align="MIDDLE_CENTER"
+               htmlEnabled="true"
+               stylename="c-powered-by"
+               value="" visible="false"/>
     </layout>
 </window>
