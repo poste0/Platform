@@ -190,8 +190,15 @@ public class CameraBrowse extends StandardLookup<Camera> {
         camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
         service.init();
         addGeneratedColumns();
+
     }
 
+    @Subscribe
+    public void onAfterShow(AfterShowEvent event){
+        camerasTable.getItems().getItems().forEach(camera -> {
+            System.out.println(camera.getId());
+        });
+    }
 
     public void checkConnection() {
         Camera item = camerasTable.getSingleSelected();
@@ -252,11 +259,14 @@ public class CameraBrowse extends StandardLookup<Camera> {
       File path = new File(item.getId().toString());
         try {
             service.stop(item);
+            String post = String.valueOf(Files.walk(Paths.get(path.toString()))
+                    .filter(path1 -> path1.toFile().getName().contains(".avi"))
+                    .count());
             Files.walk(Paths.get(path.toString()))
                     .filter(path1 -> path1.toFile().getName().contains(".avi"))
                     .collect(Collectors.toList()).forEach(path12 -> {
                         try {
-                            Runtime.getRuntime().exec("ffmpeg -i " + path12.toString() + " " + path12.toString().substring(0, path12.toString().length() - 5) + ".mp4");
+                            Runtime.getRuntime().exec("ffmpeg -i " + path12.toString() + " " + path12.toString().substring(0, path12.toString().length() - 5) + post + ".mp4");
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

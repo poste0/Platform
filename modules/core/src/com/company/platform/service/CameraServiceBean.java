@@ -1,6 +1,8 @@
 package com.company.platform.service;
 
 import com.company.platform.core.CameraStatusBean;
+import com.company.platform.core.Capture;
+import com.company.platform.core.FFMpegCapture;
 import com.company.platform.entity.Camera;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.DataManager;
@@ -11,6 +13,7 @@ import com.haulmont.cuba.security.app.UserSessions;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.UserSession;
 import org.bytedeco.javacv.*;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Service;
 import sun.net.util.IPAddressUtil;
@@ -132,7 +135,7 @@ public class CameraServiceBean implements CameraService {
 
     }
 
-    private Map<User, List<FFMpegFrameWrapper>> ffMpegs;
+    private Map<User, List<Capture>> ffMpegs;
 
     private Executor executor;
 
@@ -149,14 +152,14 @@ public class CameraServiceBean implements CameraService {
         //context = AppBeans.get(SecurityContext.class);
         List<UserSession> userSessions = getSessions();
         processSessions(userSessions);
-        ffMpegs.forEach(new BiConsumer<User, List<FFMpegFrameWrapper>>() {
+        ffMpegs.forEach(new BiConsumer<User, List<Capture>>() {
             @Override
-            public void accept(User user, List<FFMpegFrameWrapper> ffMpegFrameWrappers) {
+            public void accept(User user, List<Capture> ffMpegFrameWrappers) {
                 System.out.println(user.getName());
-                ffMpegFrameWrappers.forEach(new Consumer<FFMpegFrameWrapper>() {
+                ffMpegFrameWrappers.forEach(new Consumer<Capture>() {
                     @Override
-                    public void accept(FFMpegFrameWrapper ffMpegFrameWrapper) {
-                        System.out.println("    " + ffMpegFrameWrapper.camera.getAddress());
+                    public void accept(Capture capture) {
+                        System.out.println("    " + capture.isRecording());
                     }
                 });
             }
@@ -176,16 +179,16 @@ public class CameraServiceBean implements CameraService {
                 .forEach(userSession -> {
                     List<Camera> cameras = dataManager.loadValue("SELECT c FROM platform_Camera c " +
                             "WHERE c.user.id = :user", Camera.class).setParameters(Collections.singletonMap("user", userSession.getUser().getId())).list();
-                    List<FFMpegFrameWrapper> wrappers = new ArrayList<>();
+                    List<Capture> wrappers = new ArrayList<>();
                     cameras.forEach(camera -> {
-                        wrappers.add(new FFMpegFrameWrapper(camera));
+                        wrappers.add(AppBeans.getPrototype(FFMpegCapture.NAME, camera));
                     });
                     ffMpegs.put(userSession.getUser(), wrappers);
                 });
     }
 
     public void write(Camera camera) throws FrameGrabber.Exception {
-        if(Objects.isNull(camera)){
+        /*if(Objects.isNull(camera)){
             throw new IllegalArgumentException();
         }
         FFMpegFrameWrapper wrapper = getWrapper(camera);
@@ -241,39 +244,54 @@ public class CameraServiceBean implements CameraService {
 
         });
 
+         */
+
+        Capture capture = getWrapper(camera);
+        try {
+            capture.process();
+        } catch (FrameRecorder.Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private FFMpegFrameWrapper getWrapper(Camera camera){
+    private Capture getWrapper(Camera camera){
         UserSession session = AppBeans.get(UserSessionSource.class).getUserSession();
-        List<FFMpegFrameWrapper> wrappers = ffMpegs.get(session.getUser());
-        FFMpegFrameWrapper wrapper = null;
-        for(FFMpegFrameWrapper w: wrappers){
-            if(w.camera.getId().equals(camera.getId())){
-                wrapper = w;
+        List<Capture> wrappers = ffMpegs.get(session.getUser());
+        Capture capture = null;
+        for(Capture w: wrappers){
+            if(w.getCamera().getId().equals(camera.getId())){
+                capture = w;
             }
         }
-        return wrapper;
+        return capture;
     }
 
     public void stop(Camera camera) {
-        if(Objects.isNull(camera)){
+        /*if(Objects.isNull(camera)){
             throw new IllegalArgumentException();
         }
         FFMpegFrameWrapper wrapper = getWrapper(camera);
         wrapper.isRecording = false;
 
+         */
+        Capture capture = getWrapper(camera);
+        capture.stop();
+
     }
 
     public boolean isRecording(Camera camera){
-        FFMpegFrameWrapper wrapper = getWrapper(camera);
+        /*FFMpegFrameWrapper wrapper = getWrapper(camera);
         return wrapper.isRecording;
+         */
+        Capture capture = getWrapper(camera);
+        return capture.isRecording();
     }
 
     public void update(User user, Camera camera){
         FFMpegFrameWrapper wrapper = new FFMpegFrameWrapper(camera);
         UserSession userSession = AppBeans.get(UserSessionSource.class).getUserSession();
-        List<FFMpegFrameWrapper> wrappers = ffMpegs.get(userSession.getUser());
-        wrappers.add(new FFMpegFrameWrapper(camera));
+        List<Capture> wrappers = ffMpegs.get(userSession.getUser());
+        wrappers.add(AppBeans.getPrototype(FFMpegCapture.NAME, camera));
 
 
         ffMpegs.put(userSession.getUser(), wrappers);

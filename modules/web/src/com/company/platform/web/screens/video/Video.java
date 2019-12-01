@@ -15,20 +15,33 @@ import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.screen.Subscribe;
 import com.haulmont.cuba.gui.screen.UiController;
 import com.haulmont.cuba.gui.screen.UiDescriptor;
+import com.vaadin.annotations.JavaScript;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
 import com.vaadin.ui.Layout;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -65,6 +78,8 @@ public class Video extends Screen {
 
         private Button deleteButton;
 
+        private Button perform;
+
         private GridLayout layout;
 
         private List<Path> paths;
@@ -78,7 +93,11 @@ public class Video extends Screen {
             if(Objects.isNull(camera)){
                 throw new IllegalArgumentException();
             }
+            System.out.println(camera.getId());
             File path = new File(camera.getId().toString());
+            if(!path.exists()){
+                path.createNewFile();
+            }
             Stream<Path> stream = Files.walk(Paths.get(path.toString()), FileVisitOption.FOLLOW_LINKS);
             List<Path> result = stream.filter((value)->{
                 return value.toFile().getName().contains(format) ? true : false;
@@ -102,8 +121,8 @@ public class Video extends Screen {
                 if(paths.size() == 0){
                     continue;
                 }
-                setUpLayout(3, paths.size());
 
+                setUpLayout(4, paths.size());
                 for(Path path: paths){
                     videoname = components.create(Label.NAME);
                     watchButton = components.create(Button.NAME);
@@ -132,9 +151,28 @@ public class Video extends Screen {
                             e.printStackTrace();
                         }
                     }));
+                    perform = components.create(Button.NAME);
+                    perform.setCaption("Go darkflow");
+                    perform.addClickListener((clickEvent -> {
+                        Executor executor = new ConcurrentTaskExecutor();
+                        executor.execute(() -> {
+                            LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+                            FileSystemResource value = new FileSystemResource(new File(path.toString()));
+                            System.out.println(value.getFile().length());
+                            map.add("file", value);
+                            HttpHeaders headers = new HttpHeaders();
+                            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+                            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+                            RestTemplate restTemplate = new RestTemplate();
+                            restTemplate.exchange("http://localhost:8080/file?cameraId=" + camera.getId(), HttpMethod.POST, requestEntity, String.class);
+                        });
+
+
+                    }));
                     layout.add(videoname, 0, paths.indexOf(path));
                     layout.add(watchButton, 1, paths.indexOf(path));
                     layout.add(deleteButton, 2,  paths.indexOf(path));
+                    layout.add(perform, 3, paths.indexOf(path));
                 }
                 video.addTab(camera.getAddress(), layout);
             }
