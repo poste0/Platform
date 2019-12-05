@@ -32,7 +32,7 @@
                 <action id="remove" type="remove"/>
             </actions>
             <columns>
-                <column id="address" caption="Address"/>
+                <column id="name" caption="Name"/>
                 <column id="recordButton" caption="Record"/>
                 <column id="stoppButton" caption="Stop"/>
                 <column id="testButton" caption="Test"/>

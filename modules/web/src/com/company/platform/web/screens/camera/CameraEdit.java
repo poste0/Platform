@@ -42,6 +42,8 @@ public class CameraEdit extends StandardEditor<Camera> {
 
     @Inject
     private TextField<Integer> widthField;
+    @Inject
+    private TextField<String> cameraNameField;
 
     private static final Consumer<String> FIELD_VALIDATOR = s -> {
         if(Objects.isNull(s)){
@@ -79,6 +81,7 @@ public class CameraEdit extends StandardEditor<Camera> {
         camera.setFrameRate(Integer.valueOf(frameRateField.getRawValue()));
         camera.setHeight(Integer.valueOf(heightField.getRawValue()));
         camera.setWeight(Integer.valueOf(widthField.getRawValue()));
+        camera.setName(cameraNameField.getRawValue());
         cameraService.update(AppBeans.get(UserSessionSource.class).getUserSession().getUser(), camera);
 
         close(WINDOW_COMMIT_AND_CLOSE_ACTION);

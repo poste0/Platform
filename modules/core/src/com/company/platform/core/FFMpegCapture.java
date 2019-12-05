@@ -50,8 +50,8 @@ public class FFMpegCapture implements Capture {
                 int q = 0;
                 while (isRecording) {
                     q++;
-                    if(q == 25){
-                        System.out.println("w");
+                    if(q == grabber.getFrameRate()){
+                        System.out.println("1 second");
                         q = 0;
                     }
                     Frame frame = grabber.grab();
@@ -75,8 +75,8 @@ public class FFMpegCapture implements Capture {
         recorder.setVideoCodec(grabber.getVideoCodec());
         recorder.setVideoBitrate(grabber.getVideoBitrate());
         recorder.setFrameRate(grabber.getFrameRate());
-        recorder.setImageHeight(grabber.getImageHeight() / 4);
-        recorder.setImageWidth(grabber.getImageWidth() / 4);
+        recorder.setImageHeight(grabber.getImageWidth() / 4);
+        recorder.setImageWidth(grabber.getImageHeight() / 4);
     }
 
     private void setUpGrabber() throws FrameGrabber.Exception {
@@ -102,18 +102,7 @@ public class FFMpegCapture implements Capture {
                 throw new IllegalArgumentException();
             }
 
-            /*File file;
-            File path = new File(item.getId().toString());
-            if(!path.exists()) {
-                path.mkdir();
-            }
-            file = new File(path.getAbsolutePath() + "/" + LocalDateTime.now() + ".avi");
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
-            File path = new File(camera.getId().toString());
+            File path = new File(camera.getName().toString());
             if(!path.exists()) {
                 path.mkdir();
             }

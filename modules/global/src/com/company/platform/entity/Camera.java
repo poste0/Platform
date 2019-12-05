@@ -16,6 +16,10 @@ public class Camera extends StandardEntity {
     @NotNull
     private String address;
 
+    @Column(name = "NAME", nullable = false)
+    @NotNull
+    private String name;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @NotNull
     @JoinColumn(name = "USER_ID")
@@ -72,5 +76,13 @@ public class Camera extends StandardEntity {
 
     public void setFrameRate(Integer frameRate) {
         this.frameRate = frameRate;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

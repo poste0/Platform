@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -276,6 +278,29 @@ public class CameraServiceBean implements CameraService {
          */
         Capture capture = getWrapper(camera);
         capture.stop();
+        File path = new File(camera.getName().toString());
+        Executor executor = new ConcurrentTaskExecutor();
+        executor.execute(()->{
+            try {
+                String post = String.valueOf(Files.walk(Paths.get(path.toString()))
+                        .filter(path1 -> path1.toFile().getName().contains(".avi"))
+                        .count());
+
+                Files.walk(Paths.get(path.toString()))
+                        .filter(path1 -> path1.toFile().getName().contains(".avi"))
+                        .collect(Collectors.toList()).forEach(path12 -> {
+                            try {
+                                Runtime.getRuntime().exec("ffmpeg -i " + path12.toString() + " " + path12.toString().substring(0, path12.toString().length() - 5) + post + ".mp4");
+                            } catch (IOException e) {
+                            e.printStackTrace();
+                            }
+
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            });
+
 
     }
 

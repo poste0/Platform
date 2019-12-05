@@ -94,7 +94,7 @@ public class Video extends Screen {
                 throw new IllegalArgumentException();
             }
             System.out.println(camera.getId());
-            File path = new File(camera.getId().toString());
+            File path = new File(camera.getName().toString());
             if(!path.exists()){
                 path.createNewFile();
             }
@@ -146,6 +146,7 @@ public class Video extends Screen {
                             layout.remove(layout.getComponent(0, paths.indexOf(path)));
                             layout.remove(layout.getComponent(1, paths.indexOf(path)));
                             layout.remove(layout.getComponent(2, paths.indexOf(path)));
+                            layout.remove(layout.getComponent(3, paths.indexOf(path)));
                             video.addTab(camera.getAddress(), layout);
                         } catch (IOException e) {
                             e.printStackTrace();

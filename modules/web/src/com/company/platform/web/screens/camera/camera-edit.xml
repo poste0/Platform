@@ -14,6 +14,10 @@
                 width="800"/>
     <layout expand="editActions" spacing="true">
         <form id="form" dataContainer="cameraDc">
+            <column>
+                <label id="cameraNameLabel" value="Camera name"/>
+                <textField id="cameraNameField"/>
+            </column>
             <column width="250px">
                 <label id="nameLabel" value="Name"/>
                 <textField id="nameField" />
