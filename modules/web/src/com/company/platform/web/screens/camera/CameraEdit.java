@@ -8,8 +8,12 @@ import com.haulmont.cuba.gui.components.TextField;
 import com.haulmont.cuba.gui.components.ValidationException;
 import com.haulmont.cuba.gui.screen.*;
 import com.company.platform.entity.Camera;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -32,18 +36,21 @@ public class CameraEdit extends StandardEditor<Camera> {
     private TextField<String> addressField;
 
     @Inject
-    private TextField<Integer> portField;
+    private TextField<String> portField;
 
     @Inject
-    private TextField<Integer> frameRateField;
+    private TextField<String> frameRateField;
 
     @Inject
-    private TextField<Integer> heightField;
+    private TextField<String> heightField;
 
     @Inject
-    private TextField<Integer> widthField;
+    private TextField<String> widthField;
+
     @Inject
     private TextField<String> cameraNameField;
+
+    private Logger logger = LoggerFactory.getLogger(CameraEdit.class);
 
     private static final Consumer<String> FIELD_VALIDATOR = s -> {
         if(Objects.isNull(s)){
@@ -54,15 +61,54 @@ public class CameraEdit extends StandardEditor<Camera> {
     private static final String PROTOCOL = "rtsp://";
 
     @Subscribe
-    public void onInit(InitEvent event){
+    public void onAfterShow(AfterShowEvent event){
+        logger.info("After show event start");
         nameField.addValidator(FIELD_VALIDATOR);
         passwordField.addValidator(FIELD_VALIDATOR);
-
         addressField.addValidator(FIELD_VALIDATOR);
+        //setFields();
+        logger.info("After show event end");
+    }
+
+    private void setFields(){
+        logger.info("setFields start");
+        final Camera camera = getEditedEntity();
+        final String address = getAddress(camera);
+        final String name = getName(camera);
+        final String password = getPassword(camera);
+        final String port = getPort(camera);
+
+        this.cameraNameField.setValue(camera.getName());
+        this.addressField.setValue(address);
+        this.nameField.setValue(name);
+        this.passwordField.setValue(password);
+        this.portField.setValue(port);
+        this.frameRateField.setValue(camera.getFrameRate().toString());
+        this.heightField.setValue(camera.getHeight().toString());
+        this.widthField.setValue(camera.getWeight().toString());
+        logger.info("setFields end");
+    }
+
+    private String getAddress(Camera camera){
+        return camera.getAddress().split("@")[1];
+    }
+
+    private String getName(Camera camera){
+        return camera.getAddress().substring(PROTOCOL.length()).split(":")[0];
+    }
+
+    private String getPassword(Camera camera){
+        return camera.getAddress().substring(PROTOCOL.length()).split(":")[1].split("@")[0];
+    }
+
+    private String getPort(Camera camera){
+        System.out.println(camera.getAddress());
+        Arrays.stream(camera.getAddress().split(":")).forEach(System.out::println);
+        return camera.getAddress().split(":").length == 4 ? camera.getAddress().split(":")[3] : "";
     }
 
     public void onOkButton(){
-
+        logger.info("on ok button start");
         StringBuilder address = new StringBuilder();
         address.append(PROTOCOL)
                 .append(nameField.getRawValue())
@@ -85,5 +131,6 @@ public class CameraEdit extends StandardEditor<Camera> {
         cameraService.update(AppBeans.get(UserSessionSource.class).getUserSession().getUser(), camera);
 
         close(WINDOW_COMMIT_AND_CLOSE_ACTION);
+        logger.info("on ok button end");
     }
 }

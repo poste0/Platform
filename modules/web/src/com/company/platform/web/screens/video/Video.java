@@ -4,9 +4,12 @@ import com.company.platform.entity.Camera;
 import com.haulmont.chile.core.model.MetaPropertyPath;
 import com.haulmont.chile.core.model.impl.MetaClassImpl;
 import com.haulmont.chile.core.model.impl.MetaModelImpl;
+import com.haulmont.cuba.core.app.FileStorageService;
 import com.haulmont.cuba.core.entity.Entity;
-import com.haulmont.cuba.core.global.AppBeans;
-import com.haulmont.cuba.core.global.UserSessionSource;
+import com.haulmont.cuba.core.entity.FileDescriptor;
+import com.haulmont.cuba.core.entity.KeyValueEntity;
+import com.haulmont.cuba.core.global.*;
+import com.haulmont.cuba.core.sys.SecurityContext;
 import com.haulmont.cuba.gui.UiComponents;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.model.CollectionContainer;
@@ -19,19 +22,23 @@ import com.vaadin.annotations.JavaScript;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
 import com.vaadin.ui.Layout;
+import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,6 +46,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -67,6 +75,9 @@ public class Video extends Screen {
 
     @Inject
     private BoxLayout playerBox;
+
+    @Inject
+    private DataManager dataManager;
     private class Renderer{
 
 
@@ -85,6 +96,8 @@ public class Video extends Screen {
         private List<Path> paths;
 
         private List<Camera> cameras;
+
+
         public Renderer(List<Camera> cameras){
             this.cameras = cameras;
         }
@@ -117,7 +130,7 @@ public class Video extends Screen {
         public void render() throws IOException {
             for(Camera camera: cameras){
                 List<Path> paths = getPaths(camera, ".mp4");
-                List<Path> tempPaths = getPaths(camera, ".avi");
+                List<Path> tempPaths = getPaths(camera, ".mp4");
                 if(paths.size() == 0){
                     continue;
                 }
@@ -165,7 +178,7 @@ public class Video extends Screen {
                             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
                             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
                             RestTemplate restTemplate = new RestTemplate();
-                            restTemplate.exchange("http://localhost:8080/file?cameraId=" + camera.getId(), HttpMethod.POST, requestEntity, String.class);
+                            restTemplate.exchange("http://localhost:8080/file", HttpMethod.POST, requestEntity, String.class);
                         });
 
 
