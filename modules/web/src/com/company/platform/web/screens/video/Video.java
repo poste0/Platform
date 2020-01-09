@@ -21,8 +21,10 @@ import com.haulmont.cuba.gui.screen.UiDescriptor;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
+import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Layout;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -46,7 +48,9 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -102,8 +106,8 @@ public class Video extends Screen {
             this.cameras = cameras;
         }
 
-        private List<Path> getPaths(Camera camera, String format) throws IOException {
-            if(Objects.isNull(camera)){
+        private List<FileDescriptor> getPaths(Camera camera, String format) throws IOException {
+            /*if(Objects.isNull(camera)){
                 throw new IllegalArgumentException();
             }
             System.out.println(camera.getId());
@@ -115,6 +119,32 @@ public class Video extends Screen {
             List<Path> result = stream.filter((value)->{
                 return value.toFile().getName().contains(format) ? true : false;
             }).collect(Collectors.toList());
+            return result;
+
+             */
+            List<FileDescriptor> result = new ArrayList<>();
+            LoadContext<FileDescriptor> context = LoadContext.create(FileDescriptor.class).setQuery(LoadContext.createQuery("SELECT f FROM sys$FileDescriptor f"));
+            DataManager manager = AppBeans.get(DataManager.class);
+            FileLoader loader = AppBeans.get(FileLoader.class);
+            manager.loadValue("SELECT f FROM sys$FileDescriptor f", FileDescriptor.class).list().stream().filter(new Predicate<FileDescriptor>() {
+                @Override
+                public boolean test(FileDescriptor descriptor) {
+                    return descriptor.getCreatedBy().equals(AppBeans.get(UserSessionSource.class).getUserSession().getUser().getLogin()) && !descriptor.isDeleted();
+                }
+            }).forEach(new Consumer<FileDescriptor>() {
+                @Override
+                public void accept(FileDescriptor descriptor) {
+                    File file = new File(descriptor.getName() + ".mp4");
+                    try {
+                        FileUtils.copyInputStreamToFile(loader.openStream(descriptor), file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (FileStorageException e) {
+                        e.printStackTrace();
+                    }
+                    result.add(descriptor);
+                }
+            });
             return result;
         }
 
@@ -129,21 +159,32 @@ public class Video extends Screen {
 
         public void render() throws IOException {
             for(Camera camera: cameras){
-                List<Path> paths = getPaths(camera, ".mp4");
-                List<Path> tempPaths = getPaths(camera, ".mp4");
+                List<FileDescriptor> paths = getPaths(camera, ".mp4");
+                List<FileDescriptor> tempPaths = getPaths(camera, ".mp4");
                 if(paths.size() == 0){
                     continue;
                 }
-
+                FileLoader loader = AppBeans.get(FileLoader.class);
                 setUpLayout(4, paths.size());
-                for(Path path: paths){
+                for(FileDescriptor path: paths){
                     videoname = components.create(Label.NAME);
                     watchButton = components.create(Button.NAME);
-                    videoname.setValue(path.toString().split("/")[1]);
+                    videoname.setValue(path.getName());
                     watchButton.setCaption("Watch");
+                    System.out.println(path.getName());
                     watchButton.addClickListener((clickEvent->{
                         com.vaadin.ui.Video video = new com.vaadin.ui.Video();
-                        video.setSource(new FileResource(new File(path.toString())));
+                        video.setSource(new StreamResource(new StreamResource.StreamSource() {
+                            @Override
+                            public InputStream getStream() {
+                                try {
+                                    return loader.openStream(path);
+                                } catch (FileStorageException e) {
+                                    e.printStackTrace();
+                                }
+                                return null;
+                            }
+                        }, path.getName() + ".mp4"));
                         video.setStyleName("video/mp4");
                         Layout videoLayout = playerBox.unwrap(Layout.class);
                         videoLayout.removeAllComponents();
@@ -153,17 +194,23 @@ public class Video extends Screen {
                     deleteButton = components.create(Button.NAME);
                     deleteButton.setCaption("Delete");
                     deleteButton.addClickListener((clickEvent -> {
+                        //Files.delete(path);
+                        //Files.delete(tempPaths.get(paths.indexOf(path)));
                         try {
-                            Files.delete(path);
-                            Files.delete(tempPaths.get(paths.indexOf(path)));
-                            layout.remove(layout.getComponent(0, paths.indexOf(path)));
-                            layout.remove(layout.getComponent(1, paths.indexOf(path)));
-                            layout.remove(layout.getComponent(2, paths.indexOf(path)));
-                            layout.remove(layout.getComponent(3, paths.indexOf(path)));
-                            video.addTab(camera.getAddress(), layout);
+                            loader.removeFile(path);
+                            path.setDeleteTs(new Date());
+                            dataManager.commit(path);
+                            Files.delete(new File(path.getName() + ".mp4").toPath());
+                        } catch (FileStorageException e) {
+                            e.printStackTrace();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                        layout.remove(layout.getComponent(0, paths.indexOf(path)));
+                        layout.remove(layout.getComponent(1, paths.indexOf(path)));
+                        layout.remove(layout.getComponent(2, paths.indexOf(path)));
+                        layout.remove(layout.getComponent(3, paths.indexOf(path)));
+                        video.addTab(camera.getAddress(), layout);
                     }));
                     perform = components.create(Button.NAME);
                     perform.setCaption("Go darkflow");
@@ -171,7 +218,7 @@ public class Video extends Screen {
                         Executor executor = new ConcurrentTaskExecutor();
                         executor.execute(() -> {
                             LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-                            FileSystemResource value = new FileSystemResource(new File(path.toString()));
+                            FileSystemResource value = new FileSystemResource(new File(path.getName() + ".mp4"));
                             System.out.println(value.getFile().length());
                             map.add("file", value);
                             HttpHeaders headers = new HttpHeaders();

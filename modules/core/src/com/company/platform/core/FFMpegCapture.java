@@ -2,10 +2,7 @@ package com.company.platform.core;
 
 import com.company.platform.entity.Camera;
 import com.haulmont.cuba.core.entity.FileDescriptor;
-import com.haulmont.cuba.core.global.DataManager;
-import com.haulmont.cuba.core.global.FileLoader;
-import com.haulmont.cuba.core.global.FileStorageException;
-import com.haulmont.cuba.core.global.Metadata;
+import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
 import org.bytedeco.javacv.*;
@@ -17,11 +14,9 @@ import javax.inject.Inject;
 import java.io.*;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.Executor;
-import java.util.function.Supplier;
 
 @Component(FFMpegCapture.NAME)
 @Scope("prototype")
@@ -106,7 +101,13 @@ public class FFMpegCapture implements Capture {
 
     private void after(){
         FileDescriptor descriptor = metadata.create(FileDescriptor.class);
-        descriptor.setName(camera.getName());
+        DataManager manager = AppBeans.get(DataManager.class);
+        long count = manager.loadValue("SELECT f FROM sys$FileDescriptor f", FileDescriptor.class).list().stream().count();
+        String name = camera.getName();
+        if(count > 0){
+            name += count;
+        }
+        descriptor.setName(name);
         descriptor.setExtension("mp4");
         descriptor.setCreateDate(new Date());
         descriptor.setSize(this.file.getTotalSpace());
@@ -124,6 +125,11 @@ public class FFMpegCapture implements Capture {
         }
 
         dataManager.commit(descriptor);
+        deleteFile();
+    }
+
+    private void deleteFile(){
+        this.file.delete();
     }
 
     private void setUpRecorder(){
