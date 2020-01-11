@@ -30,6 +30,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.util.LinkedMultiValueMap;
@@ -221,10 +222,12 @@ public class Video extends Screen {
                             FileSystemResource value = new FileSystemResource(new File(path.getName() + ".mp4"));
                             System.out.println(value.getFile().length());
                             map.add("file", value);
+                            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+                            factory.setBufferRequestBody(false);
                             HttpHeaders headers = new HttpHeaders();
                             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
                             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
-                            RestTemplate restTemplate = new RestTemplate();
+                            RestTemplate restTemplate = new RestTemplate(factory);
                             restTemplate.exchange("http://localhost:8080/file", HttpMethod.POST, requestEntity, String.class);
                         });
 
