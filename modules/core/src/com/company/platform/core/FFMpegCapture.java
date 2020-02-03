@@ -1,18 +1,24 @@
 package com.company.platform.core;
 
 import com.company.platform.entity.Camera;
+import com.haulmont.cuba.core.entity.FileDescriptor;
+import com.haulmont.cuba.core.global.*;
+import com.haulmont.cuba.core.sys.AppContext;
+import com.haulmont.cuba.core.sys.SecurityContext;
 import org.bytedeco.javacv.*;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.IOException;
+import javax.inject.Inject;
+import java.io.*;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 
 @Component(FFMpegCapture.NAME)
 @Scope("prototype")
@@ -27,7 +33,20 @@ public class FFMpegCapture implements Capture {
 
     private boolean isRecording;
 
+    private boolean isStopped = false;
+
     private Executor executor;
+
+    @Inject
+    private Metadata metadata;
+
+    @Inject
+    private DataManager dataManager;
+
+    @Inject
+    private FileLoader fileLoader;
+
+    private File file;
 
     public FFMpegCapture(Camera camera) throws FrameGrabber.Exception {
         this.grabber = FFmpegFrameGrabber.createDefault(camera.getAddress());
@@ -36,16 +55,28 @@ public class FFMpegCapture implements Capture {
         this.executor = new ConcurrentTaskExecutor();
     }
 
+    private void startGrabber(){
+        try {
+            grabber.start();
+        } catch (FrameGrabber.Exception e) {
+            e.printStackTrace();
+        }
+        if (grabber.getFrameRate() != camera.getFrameRate()){
+            System.out.println("Change frame rate");
+        }
+    }
     @Override
     public void process() throws FrameGrabber.Exception, FrameRecorder.Exception {
         isRecording = true;
         setUpGrabber();
-        grabber.start();
+        startGrabber();
         File file = createFile();
         recorder = FFmpegFrameRecorder.createDefault(file, grabber.getImageWidth(), grabber.getImageHeight());
         setUpRecorder();
         recorder.start();
+        final SecurityContext context = AppContext.getSecurityContext();
         executor.execute(() -> {
+            AppContext.setSecurityContext(context);
             try {
                 int q = 0;
                 while (isRecording) {
@@ -57,30 +88,65 @@ public class FFMpegCapture implements Capture {
                     Frame frame = grabber.grab();
                     recorder.record(frame);
                 }
-
-
-                recorder.stop();
-                grabber.stop();
             } catch (FrameRecorder.Exception e) {
                 e.printStackTrace();
             } catch (FrameGrabber.Exception e) {
                 e.printStackTrace();
+            }
+            finally {
+                isStopped = true;
             }
 
         });
 
     }
 
+    private void after(){
+        FileDescriptor descriptor = metadata.create(FileDescriptor.class);
+        DataManager manager = AppBeans.get(DataManager.class);
+        long count = manager.loadValue("SELECT f FROM sys$FileDescriptor f", FileDescriptor.class).list().stream().count();
+        String name = camera.getName();
+        if(count > 0){
+            name += count;
+        }
+        descriptor.setName(name);
+        descriptor.setExtension("mp4");
+        descriptor.setCreateDate(new Date());
+        descriptor.setSize(this.file.getTotalSpace());
+        try {
+            fileLoader.saveStream(descriptor, () -> {
+                try {
+                    return new FileInputStream(this.file);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            });
+        } catch (FileStorageException e) {
+            e.printStackTrace();
+        }
+
+        dataManager.commit(descriptor);
+        deleteFile();
+    }
+
+    private void deleteFile(){
+        this.file.delete();
+    }
+
     private void setUpRecorder(){
         recorder.setVideoCodec(grabber.getVideoCodec());
         recorder.setVideoBitrate(grabber.getVideoBitrate());
         recorder.setFrameRate(grabber.getFrameRate());
-        recorder.setImageHeight(grabber.getImageWidth() / 4);
-        recorder.setImageWidth(grabber.getImageHeight() / 4);
+        recorder.setImageHeight(camera.getHeight());
+        recorder.setImageWidth(camera.getWeight());
     }
 
     private void setUpGrabber() throws FrameGrabber.Exception {
             grabber.setOption("rtsp_transport", "tcp");
+            grabber.setOption("vcodec", "copy");
+            grabber.setOption("acodec", "copy");
+            grabber.setOption("crf", "20");
             grabber.setFrameRate(camera.getFrameRate());
             grabber.setImageHeight(camera.getHeight());
             grabber.setImageWidth(camera.getWeight());
@@ -90,6 +156,7 @@ public class FFMpegCapture implements Capture {
         File file = new File(name);
         try {
             file.createNewFile();
+            this.file = file;
             return file;
         } catch (IOException e) {
             e.printStackTrace();
@@ -109,17 +176,29 @@ public class FFMpegCapture implements Capture {
         String post = "";
         try {
             post = String.valueOf(Files.walk(path.toPath(), FileVisitOption.FOLLOW_LINKS).filter(path1 -> {
-                return path1.toFile().getName().contains(".avi");
+                return path1.toFile().getName().contains(".mp4");
             }).count());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String name = path.getAbsolutePath() + "/" + camera.getCreatedBy() + post  + ".avi";
+        String name = path.getAbsolutePath() + "/" + camera.getCreatedBy() + post  + ".mp4";
             return name;
     }
     @Override
     public void stop() {
         isRecording = false;
+        while(!isStopped){
+            System.out.println("not");
+            continue;
+        }
+        isStopped = false;
+        try {
+            recorder.stop();
+            grabber.stop();
+        } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
+            e.printStackTrace();
+        }
+        after();
     }
 
     public boolean isRecording(){

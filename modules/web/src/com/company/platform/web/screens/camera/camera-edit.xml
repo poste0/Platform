@@ -17,32 +17,25 @@
             <column>
                 <label id="cameraNameLabel" value="Camera name"/>
                 <textField id="cameraNameField"/>
-            </column>
-            <column width="250px">
+
                 <label id="nameLabel" value="Name"/>
                 <textField id="nameField" />
-            </column>
-            <column width="250px">
+
                 <label id="passwordLabel" value="Password"/>
                 <passwordField id="passwordField" />
-            </column>
-            <column width="250px">
+
                 <label id="addressLabel" value="Address"/>
                 <textField id="addressField" />
-            </column>
-            <column width="250px">
+
                 <label id="portLabel" value="Port"/>
                 <textField id="portField"/>
-            </column>
-            <column width="250px">
+
                 <label id="heightLabel" value="Height"/>
                 <textField id="heightField"/>
-            </column>
-            <column width="250px">
+
                 <label id="widthLabel" value="Width"/>
                 <textField id="widthField"/>
-            </column>
-            <column width="250px">
+
                 <label id="frameRateLabel" value="FrameRate"/>
                 <textField id="frameRateField"/>
             </column>
