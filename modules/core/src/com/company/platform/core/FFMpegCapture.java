@@ -14,9 +14,11 @@ import javax.inject.Inject;
 import java.io.*;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 
 @Component(FFMpegCapture.NAME)
 @Scope("prototype")
@@ -30,6 +32,8 @@ public class FFMpegCapture implements Capture {
     private Camera camera;
 
     private boolean isRecording;
+
+    private boolean isStopped = false;
 
     private Executor executor;
 
@@ -84,15 +88,13 @@ public class FFMpegCapture implements Capture {
                     Frame frame = grabber.grab();
                     recorder.record(frame);
                 }
-
-
-                recorder.stop();
-                grabber.stop();
-                after();
             } catch (FrameRecorder.Exception e) {
                 e.printStackTrace();
             } catch (FrameGrabber.Exception e) {
                 e.printStackTrace();
+            }
+            finally {
+                isStopped = true;
             }
 
         });
@@ -185,6 +187,18 @@ public class FFMpegCapture implements Capture {
     @Override
     public void stop() {
         isRecording = false;
+        while(!isStopped){
+            System.out.println("not");
+            continue;
+        }
+        isStopped = false;
+        try {
+            recorder.stop();
+            grabber.stop();
+        } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
+            e.printStackTrace();
+        }
+        after();
     }
 
     public boolean isRecording(){
