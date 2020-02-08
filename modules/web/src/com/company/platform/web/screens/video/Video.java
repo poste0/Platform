@@ -136,13 +136,6 @@ public class Video extends Screen {
                 @Override
                 public void accept(FileDescriptor descriptor) {
                     File file = new File(descriptor.getName() + ".mp4");
-                    try {
-                        FileUtils.copyInputStreamToFile(loader.openStream(descriptor), file);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (FileStorageException e) {
-                        e.printStackTrace();
-                    }
                     result.add(descriptor);
                 }
             });
