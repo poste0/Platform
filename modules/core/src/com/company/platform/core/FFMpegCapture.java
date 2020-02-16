@@ -140,6 +140,7 @@ public class FFMpegCapture implements Capture {
         recorder.setFrameRate(grabber.getFrameRate());
         recorder.setImageHeight(camera.getHeight());
         recorder.setImageWidth(camera.getWeight());
+        recorder.setOption("movflags", "faststart");
     }
 
     private void setUpGrabber() throws FrameGrabber.Exception {
@@ -147,6 +148,7 @@ public class FFMpegCapture implements Capture {
             grabber.setOption("vcodec", "copy");
             grabber.setOption("acodec", "copy");
             grabber.setOption("crf", "20");
+            grabber.setOption("movflags", "faststart");
             grabber.setFrameRate(camera.getFrameRate());
             grabber.setImageHeight(camera.getHeight());
             grabber.setImageWidth(camera.getWeight());

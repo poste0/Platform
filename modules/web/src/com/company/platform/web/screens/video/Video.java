@@ -9,6 +9,7 @@ import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.entity.FileDescriptor;
 import com.haulmont.cuba.core.entity.KeyValueEntity;
 import com.haulmont.cuba.core.global.*;
+import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
 import com.haulmont.cuba.gui.UiComponents;
 import com.haulmont.cuba.gui.components.*;
@@ -209,10 +210,20 @@ public class Video extends Screen {
                     perform = components.create(Button.NAME);
                     perform.setCaption("Go darkflow");
                     perform.addClickListener((clickEvent -> {
+                        final SecurityContext context = AppContext.getSecurityContext();
                         Executor executor = new ConcurrentTaskExecutor();
                         executor.execute(() -> {
+                            AppContext.setSecurityContext(context);
                             LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-                            FileSystemResource value = new FileSystemResource(new File(path.getName() + ".mp4"));
+                            File file = new File(path.getName());
+                            try {
+                                FileUtils.copyInputStreamToFile(loader.openStream(path), file);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (FileStorageException e) {
+                                e.printStackTrace();
+                            }
+                            FileSystemResource value = new FileSystemResource(file);
                             System.out.println(value.getFile().length());
                             map.add("file", value);
                             SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
