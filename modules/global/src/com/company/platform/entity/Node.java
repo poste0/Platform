@@ -2,12 +2,12 @@ package com.company.platform.entity;
 
 import com.esotericsoftware.kryo.NotNull;
 import com.haulmont.cuba.core.entity.StandardEntity;
+import com.haulmont.cuba.core.global.AppBeans;
+import com.haulmont.cuba.core.global.UserSessionSource;
+import com.haulmont.cuba.security.entity.User;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.PrePersist;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Table(name = "PLATFORM_NODE")
@@ -30,6 +30,11 @@ public class Node extends StandardEntity {
     @Column(name = "CPU", nullable = false)
     @NotNull
     private String cpu;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @NotNull
+    @JoinColumn(name = "USER_ID")
+    private User user;
 
     public String getName() {
         return name;
@@ -72,5 +77,13 @@ public class Node extends StandardEntity {
         if(Objects.isNull(this.gpu)){
             this.gpu = "";
         }
+    }
+
+    public User getUser() {
+        return AppBeans.get(UserSessionSource.class).getUserSession().getUser();
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

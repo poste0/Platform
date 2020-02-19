@@ -3,9 +3,8 @@ package com.company.platform.web.screens.camera;
 import com.company.platform.entity.Camera;
 import com.company.platform.service.CameraService;
 import com.haulmont.cuba.core.entity.Entity;
-import com.haulmont.cuba.core.global.AppBeans;
-import com.haulmont.cuba.core.global.DataManager;
-import com.haulmont.cuba.core.global.UserSessionSource;
+import com.haulmont.cuba.core.entity.FileDescriptor;
+import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
 import com.haulmont.cuba.gui.components.*;
@@ -22,9 +21,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -175,6 +177,36 @@ public class CameraBrowse extends StandardLookup<Camera> {
             return temp;
         }
     };
+
+    public void createVideo(){
+        File file = new File(String.valueOf(System.currentTimeMillis()));
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        FileDescriptor fileDescriptor = AppBeans.get(Metadata.class).create(FileDescriptor.class);
+
+        fileDescriptor.setName(file.getName());
+        fileDescriptor.setExtension("mp4");
+        fileDescriptor.setCreateDate(new Date());
+        fileDescriptor.setSize(file.getTotalSpace());
+
+        FileLoader fileLoader = AppBeans.get(FileLoader.class);
+        try {
+            fileLoader.saveStream(fileDescriptor, ()->{
+                try {
+                    return new FileInputStream(file);
+                } catch (FileNotFoundException e) {
+                    return null;
+                }
+            });
+        } catch (FileStorageException e) {
+            e.printStackTrace();
+        }
+
+        dataManager.commit(fileDescriptor);
+    }
 
 
 

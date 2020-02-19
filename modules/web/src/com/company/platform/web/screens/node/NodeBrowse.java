@@ -4,10 +4,12 @@ import com.company.platform.service.NodeService;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.DataManager;
+import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.gui.components.Button;
 import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.GroupTable;
 import com.haulmont.cuba.gui.components.Table;
+import com.haulmont.cuba.gui.model.DataLoader;
 import com.haulmont.cuba.gui.screen.*;
 import com.company.platform.entity.Node;
 import com.haulmont.cuba.web.gui.components.WebButton;
@@ -26,6 +28,9 @@ public class NodeBrowse extends StandardLookup<Node> {
 
     @Inject
     private GroupTable nodesTable;
+
+    @Inject
+    private DataLoader nodesDl;
 
     private final Table.ColumnGenerator HARDWARE = new Table.ColumnGenerator() {
         @Override
@@ -59,5 +64,6 @@ public class NodeBrowse extends StandardLookup<Node> {
     @Subscribe
     public void onInit(InitEvent event){
         nodesTable.addGeneratedColumn("hardwareButton", HARDWARE);
+        nodesDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
     }
 }

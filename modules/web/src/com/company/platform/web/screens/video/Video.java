@@ -1,6 +1,7 @@
 package com.company.platform.web.screens.video;
 
 import com.company.platform.entity.Camera;
+import com.company.platform.entity.Node;
 import com.haulmont.chile.core.model.MetaPropertyPath;
 import com.haulmont.chile.core.model.impl.MetaClassImpl;
 import com.haulmont.chile.core.model.impl.MetaModelImpl;
@@ -19,11 +20,14 @@ import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.screen.Subscribe;
 import com.haulmont.cuba.gui.screen.UiController;
 import com.haulmont.cuba.gui.screen.UiDescriptor;
+import com.haulmont.cuba.web.gui.components.WebOptionsList;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
 import com.vaadin.server.StreamResource;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.Layout;
+import com.vaadin.ui.NativeSelect;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.FileSystemResource;
@@ -51,10 +55,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -96,6 +97,8 @@ public class Video extends Screen {
         private Button deleteButton;
 
         private Button perform;
+
+        private List<Node> nodes;
 
         private GridLayout layout;
 
@@ -153,6 +156,9 @@ public class Video extends Screen {
         }
 
         public void render() throws IOException {
+            UUID userId = AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId();
+            //nodes = dataManager.loadValue("SELECT n FROM Node n WHERE n.user.id = :user", Node.class).setParameters(Collections.singletonMap("user", userId)).list();
+            nodes = dataManager.loadList(LoadContext.create(Node.class).setQuery(LoadContext.createQuery("SELECT n FROM platform_Node n WHERE n.user.id = :user").setParameter("user", userId)));
             for(Camera camera: cameras){
                 List<FileDescriptor> paths = getPaths(camera, ".mp4");
                 List<FileDescriptor> tempPaths = getPaths(camera, ".mp4");
@@ -160,7 +166,7 @@ public class Video extends Screen {
                     continue;
                 }
                 FileLoader loader = AppBeans.get(FileLoader.class);
-                setUpLayout(4, paths.size());
+                setUpLayout(5, paths.size());
                 for(FileDescriptor path: paths){
                     videoname = components.create(Label.NAME);
                     watchButton = components.create(Button.NAME);
@@ -237,10 +243,17 @@ public class Video extends Screen {
 
 
                     }));
+
+                    OptionsList nodeList = components.create(OptionsList.NAME);
+                    nodeList.setOptionsList(nodes.stream().map(node -> {
+                       return node.getAddress();
+                    }).collect(Collectors.toList()));
+                    nodeList.setHeight("40");
                     layout.add(videoname, 0, paths.indexOf(path));
                     layout.add(watchButton, 1, paths.indexOf(path));
                     layout.add(deleteButton, 2,  paths.indexOf(path));
                     layout.add(perform, 3, paths.indexOf(path));
+                    layout.add(nodeList);
                 }
                 video.addTab(camera.getAddress(), layout);
             }

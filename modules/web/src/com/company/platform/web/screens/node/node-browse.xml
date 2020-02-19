@@ -9,7 +9,7 @@
                     view="_local">
             <loader id="nodesDl">
                 <query>
-                    <![CDATA[select e from platform_Node e]]>
+                    <![CDATA[select e from platform_Node e WHERE e.user.id = :user]]>
                 </query>
             </loader>
         </collection>

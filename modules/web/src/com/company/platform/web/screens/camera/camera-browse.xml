@@ -47,6 +47,7 @@
                 <button id="writeButton" invoke="write" caption="Start"/>
                 <button id="stopButton" invoke="stop" caption="Stop"/>
                 <textField id="isVideo"/>
+                <button id="generateVideoButton" caption="Create a video" invoke="createVideo"/>
             </buttonsPanel>
         </groupTable>
         <hbox id="lookupActions" spacing="true" visible="false">
