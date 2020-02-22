@@ -35,7 +35,7 @@
                 <column id="name" caption="Name"/>
                 <column id="recordButton" caption="Record"/>
                 <column id="stoppButton" caption="Stop"/>
-                <column id="testButton" caption="Test"/>
+                <column id="liveStreamButton" caption="Live"/>
             </columns>
             <rowsCount/>
             <buttonsPanel id="buttonsPanel"
@@ -53,5 +53,11 @@
             <button action="lookupSelectAction"/>
             <button action="lookupCancelAction"/>
         </hbox>
+            <popupView id="livePopup">
+                <hbox id="liveBox" visible="false">
+
+                </hbox>
+            </popupView>
+
     </layout>
 </window>

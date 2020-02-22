@@ -2,11 +2,14 @@ package com.company.platform.web.screens.camera;
 
 import com.company.platform.entity.Camera;
 import com.company.platform.service.CameraService;
+import com.company.platform.service.StreamService;
+import com.haulmont.cuba.core.config.Property;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.DataManager;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.core.sys.AppContext;
+import com.haulmont.cuba.core.sys.CubaXmlWebApplicationContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.model.CollectionContainer;
@@ -15,6 +18,9 @@ import com.haulmont.cuba.gui.screen.*;
 import com.haulmont.cuba.gui.screen.LookupComponent;
 import com.haulmont.cuba.web.gui.components.WebButton;
 import com.haulmont.cuba.web.gui.components.WebTextField;
+import com.vaadin.ui.Dependency;
+import com.vaadin.ui.Layout;
+import com.vaadin.ui.Video;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -73,6 +79,15 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     @Inject
     private DataManager dataManager;
+
+    @Inject
+    private StreamService streamService;
+
+    @Inject
+    private PopupView livePopup;
+
+    @Inject
+    private BoxLayout liveBox;
 
 
 
@@ -169,9 +184,56 @@ public class CameraBrowse extends StandardLookup<Camera> {
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
-                   onInit(null);
+
                 }
             });
+            return temp;
+        }
+    };
+
+    private final Table.ColumnGenerator liveButton = new Table.ColumnGenerator() {
+        @Override
+        public Component generateCell(Entity entity) {
+            if(Objects.isNull(entity)){
+                throw new IllegalArgumentException();
+            }
+
+            Camera camera = (Camera) entity;
+            System.out.println("    hls.loadSource('http://127.0.0.1:80" + "/" + camera.getName() + ".m3u8" + "');\n");
+            Button temp = new WebButton();
+            temp.setCaption("Live");
+            temp.addClickListener(event ->{
+                live();
+                Layout layout = liveBox.unwrap(Layout.class);
+                Video video = new Video();
+                video.setId("streamVideo");
+                layout.addComponent(video);
+                liveBox.setVisible(true);
+                livePopup.setPopupVisible(true);
+                livePopup.setHideOnMouseOut(false);
+                layout.getUI().getPage().addDependency(new Dependency(Dependency.Type.JAVASCRIPT, "https://cdn.jsdelivr.net/npm/hls.js@latest"));
+                layout.getUI().getPage().getJavaScript().execute(" var video = document.getElementById('streamVideo');" +
+                        "  if(Hls.isSupported()) {\n" +
+                        "    var hls = new Hls();\n" +
+                        "    hls.loadSource('http://127.0.0.1:80" + "/" + camera.getName() + ".m3u8" + "');\n" +
+                        "    hls.attachMedia(video);\n" +
+                        "    hls.on(Hls.Events.MANIFEST_PARSED,function() {\n" +
+                        "      video.play();\n" +
+                        "  });\n" +
+                        " }\n" +
+                        " // hls.js is not supported on platforms that do not have Media Source Extensions (MSE) enabled.\n" +
+                        " // When the browser has built-in HLS support (check using `canPlayType`), we can provide an HLS manifest (i.e. .m3u8 URL) directly to the video element through the `src` property.\n" +
+                        " // This is using the built-in support of the plain video element, without using hls.js.\n" +
+                        " // Note: it would be more normal to wait on the 'canplay' event below however on Safari (where you are most likely to find built-in HLS support) the video.src URL must be on the user-driven\n" +
+                        " // white-list before a 'canplay' event will be emitted; the last video event that can be reliably listened-for when the URL is not on the white-list is 'loadedmetadata'.\n" +
+                        "  else if (video.canPlayType('application/vnd.apple.mpegurl')) {\n" +
+                        "    video.src = 'https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8';\n" +
+                        "    video.addEventListener('loadedmetadata',function() {\n" +
+                        "      video.play();\n" +
+                        "    });\n" +
+                        "  }");
+            });
+
             return temp;
         }
     };
@@ -183,13 +245,23 @@ public class CameraBrowse extends StandardLookup<Camera> {
         camerasTable.addGeneratedColumn("stoppButton", stoppButton);
         camerasTable.addGeneratedColumn("testButton", testButton);
         camerasTable.addGeneratedColumn("recordStatus", recordStatus);
+        camerasTable.addGeneratedColumn("liveStreamButton", liveButton);
     }
 
     @Subscribe
     public void onInit(InitEvent event){
         camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
         service.init();
+        streamService.init();
         addGeneratedColumns();
+        camerasTable.getItems().getItems().forEach(camera ->{
+            streamService.stopStream(camera);
+        });
+
+    }
+
+    @Subscribe
+    public void onClose(AfterCloseEvent event){
 
     }
 
@@ -257,6 +329,24 @@ public class CameraBrowse extends StandardLookup<Camera> {
             throw new IllegalArgumentException();
         }
         service.stop(item);
+    }
+
+    public void live(){
+        Camera item = camerasTable.getSingleSelected();
+        if(Objects.isNull(item)){
+            throw new IllegalArgumentException();
+        }
+
+        streamService.startStream(item);
+    }
+
+    public void stopLive(){
+        Camera item = camerasTable.getSingleSelected();
+        if(Objects.isNull(item)){
+            throw new IllegalArgumentException();
+        }
+
+        streamService.stopStream(item);
     }
 
 

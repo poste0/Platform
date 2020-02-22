@@ -22,7 +22,9 @@ import com.vaadin.annotations.JavaScript;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
 import com.vaadin.server.StreamResource;
+import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Layout;
+import com.vaadin.ui.UI;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.FileSystemResource;
@@ -168,21 +170,43 @@ public class Video extends Screen {
                     System.out.println(path.getName());
                     watchButton.addClickListener((clickEvent->{
                         com.vaadin.ui.Video video = new com.vaadin.ui.Video();
-                        video.setSource(new StreamResource(new StreamResource.StreamSource() {
-                            @Override
-                            public InputStream getStream() {
-                                try {
-                                    return loader.openStream(path);
-                                } catch (FileStorageException e) {
-                                    e.printStackTrace();
-                                }
-                                return null;
-                            }
-                        }, path.getName() + ".mp4"));
-                        video.setStyleName("video/mp4");
+                        //video.setSource(new StreamResource(new StreamResource.StreamSource() {
+                          //  @Override
+                            //public InputStream getStream() {
+                              //  try {
+                                //    return loader.openStream(path);
+                                //} catch (FileStorageException e) {
+                                  //  e.printStackTrace();
+                               // }
+                               // return null;
+                            //}
+                        //}, path.getName() + ".mp4"));
+                        //video.setStyleName("video/mp4");
+                        video.setId("streamVideo");
                         Layout videoLayout = playerBox.unwrap(Layout.class);
                         videoLayout.removeAllComponents();
                         videoLayout.addComponent(video);
+                        UI.getCurrent().getPage().addDependency(new Dependency(Dependency.Type.JAVASCRIPT, "https://cdn.jsdelivr.net/npm/hls.js@latest"));
+                        UI.getCurrent().getPage().getJavaScript().execute(" var video = document.getElementById('streamVideo');" +
+                                "  if(Hls.isSupported()) {\n" +
+                                "    var hls = new Hls();\n" +
+                                "    hls.loadSource('http://127.0.0.1:80" + "/" + camera.getName() + ".m3u8" + "');\n" +
+                                "    hls.attachMedia(video);\n" +
+                                "    hls.on(Hls.Events.MANIFEST_PARSED,function() {\n" +
+                                "      video.play();\n" +
+                                "  });\n" +
+                                " }\n" +
+                                " // hls.js is not supported on platforms that do not have Media Source Extensions (MSE) enabled.\n" +
+                                " // When the browser has built-in HLS support (check using `canPlayType`), we can provide an HLS manifest (i.e. .m3u8 URL) directly to the video element through the `src` property.\n" +
+                                " // This is using the built-in support of the plain video element, without using hls.js.\n" +
+                                " // Note: it would be more normal to wait on the 'canplay' event below however on Safari (where you are most likely to find built-in HLS support) the video.src URL must be on the user-driven\n" +
+                                " // white-list before a 'canplay' event will be emitted; the last video event that can be reliably listened-for when the URL is not on the white-list is 'loadedmetadata'.\n" +
+                                "  else if (video.canPlayType('application/vnd.apple.mpegurl')) {\n" +
+                                "    video.src = 'http://127.0.0.1:80\" + \"/\" + camera.getName() + \".m3u8\" + \"';\n" +
+                                "    video.addEventListener('loadedmetadata',function() {\n" +
+                                "      video.play();\n" +
+                                "    });\n" +
+                                "  }");
 
                     }));
                     deleteButton = components.create(Button.NAME);
