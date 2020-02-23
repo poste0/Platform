@@ -254,9 +254,6 @@ public class CameraBrowse extends StandardLookup<Camera> {
         service.init();
         streamService.init();
         addGeneratedColumns();
-        camerasTable.getItems().getItems().forEach(camera ->{
-            streamService.stopStream(camera);
-        });
 
     }
 
