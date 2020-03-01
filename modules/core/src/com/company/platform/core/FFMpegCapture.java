@@ -87,10 +87,6 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
     }
 
 
-    protected void setUpGrabber() throws FrameGrabber.Exception {
-
-    }
-
     @Override
     protected File createFile(){
         String name = prepareFile();

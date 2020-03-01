@@ -53,11 +53,5 @@
             <button action="lookupSelectAction"/>
             <button action="lookupCancelAction"/>
         </hbox>
-            <popupView id="livePopup">
-                <hbox id="liveBox" visible="false">
-
-                </hbox>
-            </popupView>
-
     </layout>
 </window>

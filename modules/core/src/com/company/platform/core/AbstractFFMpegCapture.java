@@ -43,6 +43,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
         recorder.setFrameRate(grabber.getFrameRate());
         recorder.setImageHeight(camera.getHeight());
         recorder.setImageWidth(camera.getWeight());
+        recorder.setOption("g", "25");
     }
 
     protected void setUpGrabber() throws FrameGrabber.Exception{
