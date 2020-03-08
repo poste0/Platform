@@ -64,7 +64,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
         setUpGrabber();
         grabber.start();
         File file = createFile();
-        recorder = FFmpegFrameRecorder.createDefault(file, grabber.getImageWidth(), grabber.getImageHeight());
+        recorder = new HlsRecorder(file, grabber.getImageWidth(), grabber.getImageHeight());
         setUpRecorder();
         recorder.start();
         final SecurityContext context = AppContext.getSecurityContext();
@@ -103,6 +103,21 @@ public abstract class AbstractFFMpegCapture implements Capture {
 
     public Camera getCamera(){
         return this.camera;
+    }
+
+    public void stop(){
+        isRecording = false;
+        while(!isStopped){
+            System.out.println("not");
+            continue;
+        }
+        isStopped = false;
+        try {
+            recorder.stop();
+            grabber.stop();
+        } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

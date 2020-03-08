@@ -2,13 +2,18 @@ package com.company.platform.core;
 
 import com.company.platform.entity.Camera;
 import com.haulmont.cuba.core.sys.AppContext;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Component(FFMpegCaptureStream.NAME)
 @Scope("prototype")
@@ -42,18 +47,25 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
         recorder.setImageWidth(camera.getWeight() / hw);
 
     }
+
     @Override
-    public void stop() {
-        isRecording = false;
-        while(!isStopped){
-            System.out.println("not");
-            continue;
+    public void stop(){
+        super.stop();
+        File file = new File(".");
+        FileFilter filter = new WildcardFileFilter(camera.getName() + "*.ts");
+        File[] files = file.listFiles(filter);
+        for(File f: files){
+            try {
+                Files.delete(f.toPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        isStopped = false;
+
+        file = new File(camera.getName() + ".m3u8");
         try {
-            recorder.stop();
-            grabber.stop();
-        } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
+            Files.delete(file.toPath());
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

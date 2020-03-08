@@ -1,6 +1,7 @@
 package com.company.platform.web.screens.live;
 
 import com.company.platform.entity.Camera;
+import com.company.platform.service.StreamService;
 import com.haulmont.cuba.gui.components.BoxLayout;
 import com.haulmont.cuba.gui.components.PopupView;
 import com.haulmont.cuba.gui.screen.*;
@@ -18,6 +19,9 @@ public class LiveScreen extends Screen {
 
     private ScreenOptions options;
 
+    @Inject
+    private StreamService service;
+
     @Subscribe
     public void onInit(InitEvent event){
         this.options = event.getOptions();
@@ -33,19 +37,24 @@ public class LiveScreen extends Screen {
             throw new IllegalArgumentException();
         }
 
+        service.startStream(camera);
+
         Layout layout = liveBox.unwrap(Layout.class);
         Video video = new Video();
         video.setId("streamVideo");
         layout.addComponent(video);
         liveBox.setVisible(true);
         layout.getUI().getPage().addDependency(new Dependency(Dependency.Type.JAVASCRIPT, "https://cdn.jsdelivr.net/npm/hls.js@latest"));
-        layout.getUI().getPage().getJavaScript().execute(" var video = document.getElementById('streamVideo');" +
+        layout.getUI().getPage().getJavaScript().execute(" function stream(){ var video = document.getElementById('streamVideo');" +
                 "  if(Hls.isSupported()) {\n" +
                 "    var hls = new Hls();\n" +
                 "    hls.loadSource('http://127.0.0.1:80" + "/" + camera.getName() + ".m3u8" + "');\n" +
                 "    hls.attachMedia(video);\n" +
                 "    hls.on(Hls.Events.MANIFEST_PARSED,function() {\n" +
                 "      video.play();\n" +
+                "  });\n" +
+                "    hls.on(Hls.Events.ERROR,function() {\n" +
+                "      setTimeout(stream, 5000);\n" +
                 "  });\n" +
                 " }\n" +
                 " // hls.js is not supported on platforms that do not have Media Source Extensions (MSE) enabled.\n" +
@@ -58,6 +67,19 @@ public class LiveScreen extends Screen {
                 "    video.addEventListener('loadedmetadata',function() {\n" +
                 "      video.play();\n" +
                 "    });\n" +
-                "  }");
+                "  }} stream();");
+    }
+
+    @Subscribe
+    public void afterClose(AfterCloseEvent event){
+        Camera camera = null;
+        if(options instanceof MapScreenOptions){
+            camera = (Camera) ((MapScreenOptions) options).getParams().get("camera");
+        }
+        else{
+            throw new IllegalArgumentException();
+        }
+
+        service.stopStream(camera);
     }
 }

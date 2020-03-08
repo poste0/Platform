@@ -45,7 +45,7 @@ public class LoginScreen extends com.haulmont.cuba.web.app.login.LoginScreen {
         screen.show();
     }
 
-    public void login(){
+    public void logins(){
         super.login();
         StreamService streamService = AppBeans.get(StreamService.NAME);
         streamService.init();

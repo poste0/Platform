@@ -123,18 +123,7 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
     }
     @Override
     public void stop() {
-        isRecording = false;
-        while(!isStopped){
-            System.out.println("not");
-            continue;
-        }
-        isStopped = false;
-        try {
-            recorder.stop();
-            grabber.stop();
-        } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
-            e.printStackTrace();
-        }
+        super.stop();
         after();
     }
 
