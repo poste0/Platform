@@ -22,7 +22,9 @@ import com.vaadin.annotations.JavaScript;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
 import com.vaadin.server.StreamResource;
+import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Layout;
+import com.vaadin.ui.UI;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.FileSystemResource;
@@ -180,6 +182,7 @@ public class Video extends Screen {
                             }
                         }, path.getName() + ".mp4"));
                         video.setStyleName("video/mp4");
+                        video.setId("streamVideo");
                         Layout videoLayout = playerBox.unwrap(Layout.class);
                         videoLayout.removeAllComponents();
                         videoLayout.addComponent(video);
