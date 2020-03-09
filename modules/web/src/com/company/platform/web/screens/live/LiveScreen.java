@@ -49,7 +49,7 @@ public class LiveScreen extends Screen {
                 "  if(Hls.isSupported()) {\n" +
                 "    var hls = new Hls();\n" +
                 "    var url = document.location.href.split('/');\n" +
-                "    url = url[0].concat('//').concat(url[2].split(':')[0]).concat(':80').concat('/" + camera.getName() + ".m3u8');\n" +
+                "    url = url[0].concat('//').concat(url[2]).concat('/" + camera.getName() + ".m3u8');\n" +
                 "    hls.loadSource(url);\n" +
                 "    hls.attachMedia(video);\n" +
                 "    hls.on(Hls.Events.MANIFEST_PARSED,function() {\n" +
