@@ -1,0 +1,1 @@
+drop table if exists PLATFORM_NODE__U98365 cascade ;
