@@ -48,7 +48,9 @@ public class LiveScreen extends Screen {
         layout.getUI().getPage().getJavaScript().execute(" function stream(){ var video = document.getElementById('streamVideo');" +
                 "  if(Hls.isSupported()) {\n" +
                 "    var hls = new Hls();\n" +
-                "    hls.loadSource('http://127.0.0.1:80" + "/" + camera.getName() + ".m3u8" + "');\n" +
+                "    var url = document.location.href;\n" +
+                "    url = url[0].concat('//').concat(url[1]);\n" +
+                "    hls.loadSource(url" + "/" + camera.getName() + ".m3u8" + ");\n" +
                 "    hls.attachMedia(video);\n" +
                 "    hls.on(Hls.Events.MANIFEST_PARSED,function() {\n" +
                 "      video.play();\n" +
