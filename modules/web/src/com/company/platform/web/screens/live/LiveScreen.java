@@ -56,7 +56,8 @@ public class LiveScreen extends Screen {
                 "      video.play();\n" +
                 "  });\n" +
                 "    hls.on(Hls.Events.ERROR,function() {\n" +
-                "      setTimeout(stream, 5000);\n" +
+                "      setTimeout(()=>{hls.loadSource(url);\n" +
+                "      hls.attachMedia(video);}, 5000)\n" +
                 "  });\n" +
                 " }\n" +
                 " // hls.js is not supported on platforms that do not have Media Source Extensions (MSE) enabled.\n" +
