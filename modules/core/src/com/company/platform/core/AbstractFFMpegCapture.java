@@ -44,6 +44,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
         recorder.setImageHeight(camera.getHeight());
         recorder.setImageWidth(camera.getWeight());
         recorder.setOption("g", "25");
+        recorder.setOption("movflags", "faststart");
     }
 
     protected void setUpGrabber() throws FrameGrabber.Exception{
@@ -51,6 +52,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
         grabber.setOption("vcodec", "copy");
         grabber.setOption("acodec", "copy");
         grabber.setOption("crf", "20");
+        grabber.setOption("movflags", "faststart");
         grabber.setFrameRate(camera.getFrameRate());
         grabber.setImageHeight(camera.getHeight());
         grabber.setImageWidth(camera.getWeight());
