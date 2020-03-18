@@ -20,6 +20,7 @@ import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.screen.Subscribe;
 import com.haulmont.cuba.gui.screen.UiController;
 import com.haulmont.cuba.gui.screen.UiDescriptor;
+import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.web.gui.components.WebOptionsList;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.server.ExternalResource;
@@ -30,6 +31,8 @@ import com.vaadin.ui.Layout;
 import com.vaadin.ui.NativeSelect;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.poi.poifs.crypt.Decryptor;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -58,6 +61,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -213,6 +217,21 @@ public class Video extends Screen {
                         layout.remove(layout.getComponent(3, paths.indexOf(path)));
                         video.addTab(camera.getAddress(), layout);
                     }));
+
+                    WebOptionsList<String, String> nodeList = components.create(OptionsList.NAME);
+                    nodeList.setOptionsMap(nodes.stream().collect(Collectors.toMap(new Function<Node, String>() {
+                        @Override
+                        public String apply(Node node) {
+                            return node.getName();
+                        }
+                    }, new Function<Node, String>() {
+                        @Override
+                        public String apply(Node node) {
+                            return node.getAddress();
+                        }
+                    })));
+                    nodeList.setHeight("40");
+
                     perform = components.create(Button.NAME);
                     perform.setCaption("Go darkflow");
                     perform.addClickListener((clickEvent -> {
@@ -237,23 +256,19 @@ public class Video extends Screen {
                             HttpHeaders headers = new HttpHeaders();
                             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
                             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+                            User user = AppBeans.get(UserSessionSource.class).getUserSession().getUser();
                             RestTemplate restTemplate = new RestTemplate(factory);
-                            restTemplate.exchange("http://localhost:8080/file", HttpMethod.POST, requestEntity, String.class);
+                            restTemplate.exchange(nodeList.getValue() + "/file?login=" + user.getLogin() + "&password=admin", HttpMethod.POST, requestEntity, String.class);
                         });
 
 
                     }));
 
-                    OptionsList nodeList = components.create(OptionsList.NAME);
-                    nodeList.setOptionsList(nodes.stream().map(node -> {
-                       return node.getAddress();
-                    }).collect(Collectors.toList()));
-                    nodeList.setHeight("40");
                     layout.add(videoname, 0, paths.indexOf(path));
                     layout.add(watchButton, 1, paths.indexOf(path));
                     layout.add(deleteButton, 2,  paths.indexOf(path));
                     layout.add(perform, 3, paths.indexOf(path));
-                    layout.add(nodeList);
+                    layout.add(nodeList, 4, paths.indexOf(path));
                 }
                 video.addTab(camera.getAddress(), layout);
             }
