@@ -2,11 +2,16 @@ package com.company.platform.web.screens.camera;
 
 import com.company.platform.entity.Camera;
 import com.company.platform.service.CameraService;
+import com.company.platform.service.StreamService;
+import com.company.platform.web.screens.live.LiveScreen;
+import com.haulmont.cuba.core.config.Property;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.entity.FileDescriptor;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.core.sys.AppContext;
+import com.haulmont.cuba.core.sys.CubaXmlWebApplicationContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
+import com.haulmont.cuba.gui.Screens;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.model.CollectionContainer;
 import com.haulmont.cuba.gui.model.DataLoader;
@@ -14,6 +19,9 @@ import com.haulmont.cuba.gui.screen.*;
 import com.haulmont.cuba.gui.screen.LookupComponent;
 import com.haulmont.cuba.web.gui.components.WebButton;
 import com.haulmont.cuba.web.gui.components.WebTextField;
+import com.vaadin.ui.Dependency;
+import com.vaadin.ui.Layout;
+import com.vaadin.ui.Video;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -24,6 +32,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -75,6 +84,13 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     @Inject
     private DataManager dataManager;
+
+    @Inject
+    private StreamService streamService;
+
+
+    @Inject
+    private Screens screens;
 
 
 
@@ -171,7 +187,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
-                   onInit(null);
+
                 }
             });
             return temp;
@@ -207,6 +223,27 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
         dataManager.commit(fileDescriptor);
     }
+  
+    private final Table.ColumnGenerator liveButton = new Table.ColumnGenerator() {
+        @Override
+        public Component generateCell(Entity entity) {
+            if(Objects.isNull(entity)){
+                throw new IllegalArgumentException();
+            }
+
+            Camera camera = (Camera) entity;
+            System.out.println("    hls.loadSource('http://127.0.0.1:80" + "/" + camera.getName() + ".m3u8" + "');\n");
+            Button temp = new WebButton();
+            temp.setCaption("Live");
+            temp.addClickListener(event ->{
+                //live();
+                LiveScreen screen = screens.create(LiveScreen.class, OpenMode.DIALOG, new MapScreenOptions(Collections.singletonMap("camera", camera)));
+                screen.show();
+            });
+
+            return temp;
+        }
+    };
 
 
 
@@ -215,13 +252,20 @@ public class CameraBrowse extends StandardLookup<Camera> {
         camerasTable.addGeneratedColumn("stoppButton", stoppButton);
         camerasTable.addGeneratedColumn("testButton", testButton);
         camerasTable.addGeneratedColumn("recordStatus", recordStatus);
+        camerasTable.addGeneratedColumn("liveStreamButton", liveButton);
     }
 
     @Subscribe
     public void onInit(InitEvent event){
         camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
         service.init();
+        streamService.init();
         addGeneratedColumns();
+
+    }
+
+    @Subscribe
+    public void onClose(AfterCloseEvent event){
 
     }
 
@@ -289,6 +333,24 @@ public class CameraBrowse extends StandardLookup<Camera> {
             throw new IllegalArgumentException();
         }
         service.stop(item);
+    }
+
+    public void live(){
+        Camera item = camerasTable.getSingleSelected();
+        if(Objects.isNull(item)){
+            throw new IllegalArgumentException();
+        }
+
+        streamService.startStream(item);
+    }
+
+    public void stopLive(){
+        Camera item = camerasTable.getSingleSelected();
+        if(Objects.isNull(item)){
+            throw new IllegalArgumentException();
+        }
+
+        streamService.stopStream(item);
     }
 
 
