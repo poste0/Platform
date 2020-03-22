@@ -3,5 +3,6 @@
     <persistence-unit name="Platform" transaction-type="RESOURCE_LOCAL">
 
         <class>com.company.platform.entity.Camera</class>
+        <class>com.company.platform.entity.Node</class>
     </persistence-unit>
 </persistence>

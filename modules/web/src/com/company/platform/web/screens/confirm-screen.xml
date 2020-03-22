@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
+        caption="msg://caption"
+        messagesPack="com.company.platform.web.screens">
+    <layout>
+        <label value="Login" id="loginLabel"/>
+        <textField id="loginTextField"/>
+
+        <label value="Password" id="passwordLabel"/>
+        <passwordField id="passwordTextField"/>
+
+        <button id="confirmButton" caption="confirm" invoke="onConfirmButtonClicked"/>
+    </layout>
+</window>

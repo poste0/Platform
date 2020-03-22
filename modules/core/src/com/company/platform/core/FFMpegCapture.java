@@ -86,7 +86,6 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
         this.file.delete();
     }
 
-
     @Override
     protected File createFile(){
         String name = prepareFile();

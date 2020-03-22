@@ -3,6 +3,7 @@
     <menu id="application-platform" insertBefore="administration">
         <item screen="platform_Camera.browse"/>
         <item screen="platform_Video"/>
+        <item screen="platform_Node.browse"/>
         <item screen="platform_LiveScreen"/>
     </menu>
 </menu-config>

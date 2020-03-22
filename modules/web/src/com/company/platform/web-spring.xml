@@ -13,6 +13,8 @@
             <map>
                 <entry key="platform_CameraService" value="com.company.platform.service.CameraService"/>
                 <entry key="platform_RegistrationService" value="com.company.platform.service.RegistrationService"/>
+
+                <entry key="platform_NodeService" value="com.company.platform.service.NodeService"/>
                 <entry key="platform_StreamService" value="com.company.platform.service.StreamService"/>
             </map>
         </property>

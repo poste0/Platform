@@ -6,9 +6,8 @@ import com.company.platform.service.StreamService;
 import com.company.platform.web.screens.live.LiveScreen;
 import com.haulmont.cuba.core.config.Property;
 import com.haulmont.cuba.core.entity.Entity;
-import com.haulmont.cuba.core.global.AppBeans;
-import com.haulmont.cuba.core.global.DataManager;
-import com.haulmont.cuba.core.global.UserSessionSource;
+import com.haulmont.cuba.core.entity.FileDescriptor;
+import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.CubaXmlWebApplicationContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
@@ -30,10 +29,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -192,6 +194,36 @@ public class CameraBrowse extends StandardLookup<Camera> {
         }
     };
 
+    public void createVideo(){
+        File file = new File(String.valueOf(System.currentTimeMillis()));
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        FileDescriptor fileDescriptor = AppBeans.get(Metadata.class).create(FileDescriptor.class);
+
+        fileDescriptor.setName(file.getName());
+        fileDescriptor.setExtension("mp4");
+        fileDescriptor.setCreateDate(new Date());
+        fileDescriptor.setSize(file.getTotalSpace());
+
+        FileLoader fileLoader = AppBeans.get(FileLoader.class);
+        try {
+            fileLoader.saveStream(fileDescriptor, ()->{
+                try {
+                    return new FileInputStream(file);
+                } catch (FileNotFoundException e) {
+                    return null;
+                }
+            });
+        } catch (FileStorageException e) {
+            e.printStackTrace();
+        }
+
+        dataManager.commit(fileDescriptor);
+    }
+  
     private final Table.ColumnGenerator liveButton = new Table.ColumnGenerator() {
         @Override
         public Component generateCell(Entity entity) {

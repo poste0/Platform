@@ -1,32 +1,25 @@
 package com.company.platform.web.screens.video;
 
 import com.company.platform.entity.Camera;
-import com.haulmont.chile.core.model.MetaPropertyPath;
-import com.haulmont.chile.core.model.impl.MetaClassImpl;
-import com.haulmont.chile.core.model.impl.MetaModelImpl;
-import com.haulmont.cuba.core.app.FileStorageService;
-import com.haulmont.cuba.core.entity.Entity;
+import com.company.platform.entity.Node;
+import com.company.platform.web.screens.ConfirmScreen;
 import com.haulmont.cuba.core.entity.FileDescriptor;
-import com.haulmont.cuba.core.entity.KeyValueEntity;
 import com.haulmont.cuba.core.global.*;
+import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
+import com.haulmont.cuba.gui.Screens;
 import com.haulmont.cuba.gui.UiComponents;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.model.CollectionContainer;
 import com.haulmont.cuba.gui.model.DataLoader;
-import com.haulmont.cuba.gui.screen.Screen;
-import com.haulmont.cuba.gui.screen.Subscribe;
-import com.haulmont.cuba.gui.screen.UiController;
-import com.haulmont.cuba.gui.screen.UiDescriptor;
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.server.ExternalResource;
-import com.vaadin.server.FileResource;
+import com.haulmont.cuba.gui.screen.*;
+import com.haulmont.cuba.security.entity.User;
+import com.haulmont.cuba.web.gui.components.WebOptionsList;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.UI;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -34,33 +27,25 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @UiController("platform_Video")
 @UiDescriptor("video.xml")
@@ -85,6 +70,10 @@ public class Video extends Screen {
 
     @Inject
     private DataManager dataManager;
+
+    @Inject
+    private Screens screens;
+
     private class Renderer{
 
 
@@ -97,6 +86,8 @@ public class Video extends Screen {
         private Button deleteButton;
 
         private Button perform;
+
+        private List<Node> nodes;
 
         private GridLayout layout;
 
@@ -154,6 +145,10 @@ public class Video extends Screen {
         }
 
         public void render() throws IOException {
+            User user = AppBeans.get(UserSessionSource.class).getUserSession().getUser();
+            UUID userId = user.getId();
+            //nodes = dataManager.loadValue("SELECT n FROM Node n WHERE n.user.id = :user", Node.class).setParameters(Collections.singletonMap("user", userId)).list();
+            nodes = dataManager.loadList(LoadContext.create(Node.class).setQuery(LoadContext.createQuery("SELECT n FROM platform_Node n WHERE n.user.id = :user").setParameter("user", userId)));
             for(Camera camera: cameras){
                 List<FileDescriptor> paths = getPaths(camera, ".mp4");
                 List<FileDescriptor> tempPaths = getPaths(camera, ".mp4");
@@ -161,7 +156,7 @@ public class Video extends Screen {
                     continue;
                 }
                 FileLoader loader = AppBeans.get(FileLoader.class);
-                setUpLayout(4, paths.size());
+                setUpLayout(5, paths.size());
                 for(FileDescriptor path: paths){
                     videoname = components.create(Label.NAME);
                     watchButton = components.create(Button.NAME);
@@ -209,30 +204,88 @@ public class Video extends Screen {
                         layout.remove(layout.getComponent(3, paths.indexOf(path)));
                         video.addTab(camera.getAddress(), layout);
                     }));
+
+                    WebOptionsList<String, String> nodeList = components.create(OptionsList.NAME);
+                    nodeList.setOptionsMap(nodes.stream().collect(Collectors.toMap(new Function<Node, String>() {
+                        @Override
+                        public String apply(Node node) {
+                            return node.getName();
+                        }
+                    }, new Function<Node, String>() {
+                        @Override
+                        public String apply(Node node) {
+                            return node.getAddress();
+                        }
+                    })));
+                    nodeList.setHeight("40");
+
                     perform = components.create(Button.NAME);
                     perform.setCaption("Go darkflow");
                     perform.addClickListener((clickEvent -> {
-                        Executor executor = new ConcurrentTaskExecutor();
-                        executor.execute(() -> {
-                            LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-                            FileSystemResource value = new FileSystemResource(new File(path.getName() + ".mp4"));
-                            System.out.println(value.getFile().length());
-                            map.add("file", value);
-                            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-                            factory.setBufferRequestBody(false);
-                            HttpHeaders headers = new HttpHeaders();
-                            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-                            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
-                            RestTemplate restTemplate = new RestTemplate(factory);
-                            restTemplate.exchange("http://localhost:8080/file", HttpMethod.POST, requestEntity, String.class);
+                        AtomicReference<String> login = new AtomicReference<>("");
+                        AtomicReference<String> password = new AtomicReference<>("");
+
+                        Map<String, Object> confirmScreenOptionsMap = new HashMap<>();
+                        confirmScreenOptionsMap.put("user", user);
+                        confirmScreenOptionsMap.put("login", login);
+                        confirmScreenOptionsMap.put("password", password);
+
+                        AtomicBoolean isConfirmed = new AtomicBoolean(false);
+
+                        MapScreenOptions confirmScreenOptions = new MapScreenOptions(confirmScreenOptionsMap);
+
+                        ConfirmScreen confirmScreen = screens.create(ConfirmScreen.class, OpenMode.DIALOG, confirmScreenOptions);
+                        confirmScreen.show();
+                        confirmScreen.addAfterCloseListener(event -> {
+                            login.set((String) confirmScreenOptions.getParams().get("login"));
+                            password.set((String) confirmScreenOptions.getParams().get("password"));
+                            if(StringUtils.isEmpty(login) || StringUtils.isEmpty(password)){
+                                throw new AuthenticationCredentialsNotFoundException("login and password are not confirmed");
+                            }
+
+                            PasswordEncryption encryption = AppBeans.get(PasswordEncryption.NAME);
+
+                            if(encryption.checkPassword(user, password.get()) && login.get().equals(user.getLogin())){
+                                isConfirmed.set(true);
+                            }
+
+                            final SecurityContext context = AppContext.getSecurityContext();
+                            if(isConfirmed.get()) {
+                                Executor executor = new ConcurrentTaskExecutor();
+                                executor.execute(() -> {
+                                    AppContext.setSecurityContext(context);
+                                    LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+                                    File file = new File(path.getName());
+                                    try {
+                                        FileUtils.copyInputStreamToFile(loader.openStream(path), file);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    } catch (FileStorageException e) {
+                                        e.printStackTrace();
+                                    }
+                                    FileSystemResource value = new FileSystemResource(file);
+                                    System.out.println(value.getFile().length());
+                                    map.add("file", value);
+                                    SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+                                    factory.setBufferRequestBody(false);
+                                    HttpHeaders headers = new HttpHeaders();
+                                    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+                                    HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+                                    RestTemplate restTemplate = new RestTemplate(factory);
+                                    restTemplate.exchange(nodeList.getValue() + "/file?login=" + user.getLogin() + "&password=" + password.get() , HttpMethod.POST, requestEntity, String.class);
+                                });
+                            }
                         });
 
 
+
                     }));
+
                     layout.add(videoname, 0, paths.indexOf(path));
                     layout.add(watchButton, 1, paths.indexOf(path));
                     layout.add(deleteButton, 2,  paths.indexOf(path));
                     layout.add(perform, 3, paths.indexOf(path));
+                    layout.add(nodeList, 4, paths.indexOf(path));
                 }
                 video.addTab(camera.getAddress(), layout);
             }

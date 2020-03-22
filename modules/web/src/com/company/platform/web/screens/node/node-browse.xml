@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
+        caption="msg://browseCaption"
+        focusComponent="nodesTable"
+        messagesPack="com.company.platform.web.screens.node">
+    <data readOnly="true">
+        <collection id="nodesDc"
+                    class="com.company.platform.entity.Node"
+                    view="_local">
+            <loader id="nodesDl">
+                <query>
+                    <![CDATA[select e from platform_Node e WHERE e.user.id = :user]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="nodesTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="nodesTable"
+                dataLoader="nodesDl">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="nodesTable"
+                    width="100%"
+                    dataContainer="nodesDc">
+            <actions>
+                <action id="create" type="create"/>
+                <action id="edit" type="edit"/>
+                <action id="remove" type="remove"/>
+            </actions>
+            <columns>
+                <column id="name"/>
+                <column id="address"/>
+                <column id="gpu"/>
+                <column id="cpu"/>
+                <column id="hardwareButton"/>
+            </columns>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="createBtn" action="nodesTable.create"/>
+                <button id="editBtn" action="nodesTable.edit"/>
+                <button id="removeBtn" action="nodesTable.remove"/>
+            </buttonsPanel>
+        </groupTable>
+        <hbox id="lookupActions" spacing="true" visible="false">
+            <button action="lookupSelectAction"/>
+            <button action="lookupCancelAction"/>
+        </hbox>
+    </layout>
+</window>
