@@ -38,6 +38,15 @@
 
                 <label id="frameRateLabel" value="FrameRate"/>
                 <textField id="frameRateField"/>
+
+                <label id="pathLabel" value="Path"/>
+                <textField id="pathField"/>
+
+                <label id="optionLabel" value="Options"/>
+                <textArea id="optionArea"/>
+
+                <label id="urlLabel" value="Full url"/>
+                <label id="urlLabelValue"/>
             </column>
         </form>
         <hbox id="editActions" spacing="true">
