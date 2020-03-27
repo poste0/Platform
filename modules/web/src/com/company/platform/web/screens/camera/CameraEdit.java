@@ -1,6 +1,7 @@
 package com.company.platform.web.screens.camera;
 
 import com.company.platform.service.CameraService;
+import com.company.platform.service.StreamService;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.gui.components.PasswordField;
@@ -8,6 +9,7 @@ import com.haulmont.cuba.gui.components.TextField;
 import com.haulmont.cuba.gui.components.ValidationException;
 import com.haulmont.cuba.gui.screen.*;
 import com.company.platform.entity.Camera;
+import com.haulmont.cuba.security.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +27,9 @@ public class CameraEdit extends StandardEditor<Camera> {
 
     @Inject
     private CameraService cameraService;
+
+    @Inject
+    private StreamService streamService;
 
     @Inject
     private TextField<String> nameField;
@@ -128,7 +133,10 @@ public class CameraEdit extends StandardEditor<Camera> {
         camera.setHeight(Integer.valueOf(heightField.getRawValue()));
         camera.setWeight(Integer.valueOf(widthField.getRawValue()));
         camera.setName(cameraNameField.getRawValue());
-        cameraService.update(AppBeans.get(UserSessionSource.class).getUserSession().getUser(), camera);
+
+        User user = AppBeans.get(UserSessionSource.class).getUserSession().getUser();
+        cameraService.update(user, camera);
+        streamService.update(user, camera);
 
         close(WINDOW_COMMIT_AND_CLOSE_ACTION);
         logger.info("on ok button end");
