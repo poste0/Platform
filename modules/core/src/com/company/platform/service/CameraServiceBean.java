@@ -31,6 +31,8 @@ import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service(CameraService.NAME)
@@ -293,16 +295,37 @@ public class CameraServiceBean implements CameraService {
     }
 
     public boolean testConnection(Camera camera){
-        try {
-            final String[] address = camera.getAddress().split("@")[1].split(":");
-            final int port = address.length == 2 ? Integer.parseInt(address[1]) : 5000;
-            Socket socket = new Socket(address[0], port);
+        try(Socket socket = new Socket()) {
+            Pattern pattern = Pattern.compile("([0-9]{1,3}[\\.]){3}[0-9]{1,3}");
+            Matcher matcher = pattern.matcher(camera.getAddress());
+            matcher.find();
+            final String address = matcher.group(0);
+
+            int port = 5000;
+            final String[] splitAddress = camera.getAddress().split("([0-9]{1,3}[\\.]){3}[0-9]{1,3}");
+            if(splitAddress.length == 2){
+                if(splitAddress[1].charAt(0) == ':'){
+                    if(splitAddress[1].contains("/")){
+                        port = Integer.valueOf(splitAddress[1].substring(1).split("/")[0]);
+                    }
+                    else {
+                        port = Integer.valueOf(splitAddress[1].substring(1));
+                    }
+                }
+
+            }
+            System.out.println(address);
+            System.out.println(port);
+
+            socket.connect(new InetSocketAddress(address, port), 500);
             boolean result = socket.isConnected();
             socket.close();
+            System.out.println(result);
             return result;
         } catch (IOException e) {
             return false;
         }
+
     }
 
     public Status getStatus(Camera camera){

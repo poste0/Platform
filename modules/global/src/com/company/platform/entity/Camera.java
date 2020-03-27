@@ -37,6 +37,9 @@ public class Camera extends StandardEntity {
     @NotNull
     private Integer frameRate;
 
+    @Column(name = "path")
+    private String path;
+
     public void setUser(User user) {
         this.user = user;
     }
@@ -84,5 +87,13 @@ public class Camera extends StandardEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPath(){
+        return path;
+    }
+
+    public void setPath(String path){
+        this.path = path;
     }
 }
