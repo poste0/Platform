@@ -169,7 +169,7 @@ public class CameraEdit extends StandardEditor<Camera> {
 
     private void appendIfNotEmpty(String value, String addedValue){
         if(!StringUtils.isEmpty(value)){
-            this.address.append(value);
+            this.address.append(addedValue);
         }
     }
 

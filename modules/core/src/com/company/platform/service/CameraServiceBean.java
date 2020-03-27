@@ -295,7 +295,7 @@ public class CameraServiceBean implements CameraService {
     }
 
     public boolean testConnection(Camera camera){
-        try(Socket socket = new Socket();) {
+        try(Socket socket = new Socket()) {
             Pattern pattern = Pattern.compile("([0-9]{1,3}[\\.]){3}[0-9]{1,3}");
             Matcher matcher = pattern.matcher(camera.getAddress());
             matcher.find();
