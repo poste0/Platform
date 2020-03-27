@@ -52,7 +52,7 @@ public class StreamServiceBean implements StreamService {
     public void update(User user, Camera camera) {
         UserSession userSession = AppBeans.get(UserSessionSource.class).getUserSession();
         List<Capture> wrappers = ffMpegs.get(userSession.getUser());
-        wrappers.add(AppBeans.getPrototype(FFMpegCapture.NAME, camera));
+        wrappers.add(AppBeans.getPrototype(FFMpegCaptureStream.NAME, camera));
 
 
         ffMpegs.put(userSession.getUser(), wrappers);
