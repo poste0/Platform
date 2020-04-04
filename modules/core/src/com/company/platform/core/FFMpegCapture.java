@@ -1,6 +1,7 @@
 package com.company.platform.core;
 
 import com.company.platform.entity.Camera;
+import com.company.platform.entity.Video;
 import com.haulmont.cuba.core.entity.FileDescriptor;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.core.sys.AppContext;
@@ -17,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
@@ -57,10 +59,7 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
         FileDescriptor descriptor = metadata.create(FileDescriptor.class);
         DataManager manager = AppBeans.get(DataManager.class);
         long count = manager.loadValue("SELECT f FROM sys$FileDescriptor f", FileDescriptor.class).list().stream().count();
-        String name = camera.getName();
-        if(count > 0){
-            name += count;
-        }
+        String name = file.getName();
         descriptor.setName(name);
         descriptor.setExtension("mp4");
         descriptor.setCreateDate(new Date());
@@ -80,6 +79,15 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
 
         dataManager.commit(descriptor);
         deleteFile();
+
+        Video video = new Video();
+        video.setName(file.getName());
+        video.setFileDescriptor(descriptor);
+        video.setCamera(camera);
+        video.setStatus("ready");
+        video.setParentVideo(video);
+
+        dataManager.commit(video);
     }
 
     private void deleteFile(){
@@ -110,14 +118,9 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
                 path.mkdir();
             }
         String post = "";
-        try {
-            post = String.valueOf(Files.walk(path.toPath(), FileVisitOption.FOLLOW_LINKS).filter(path1 -> {
-                return path1.toFile().getName().contains(".mp4");
-            }).count());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        String name = path.getAbsolutePath() + "/" + camera.getCreatedBy() + post  + ".mp4";
+        List<Video> videos = dataManager.loadList(LoadContext.create(Video.class).setQuery(LoadContext.createQuery("SELECT v FROM platform_Video v WHERE v.createdBy= :user").setParameter("user", camera.getCreatedBy())));
+        post = String.valueOf(videos.size() + 1);
+        String name = path.getAbsolutePath() + "/" + camera.getCreatedBy() + "_" + post  + ".mp4";
             return name;
     }
     @Override

@@ -4,5 +4,6 @@
 
         <class>com.company.platform.entity.Camera</class>
         <class>com.company.platform.entity.Node</class>
+        <class>com.company.platform.entity.Video</class>
     </persistence-unit>
 </persistence>

@@ -1,15 +1,19 @@
 package com.company.platform.core;
 
 import com.company.platform.entity.Camera;
+import com.company.platform.entity.Video;
+import com.haulmont.cuba.core.global.DataManager;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
 import org.bytedeco.javacv.*;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.concurrent.Executor;
+import java.util.function.BiConsumer;
 
 //@Component(AbstractFFMpegCapture.NAME)
 public abstract class AbstractFFMpegCapture implements Capture {
@@ -45,6 +49,8 @@ public abstract class AbstractFFMpegCapture implements Capture {
         recorder.setImageWidth(camera.getWeight());
         recorder.setOption("g", "25");
         recorder.setOption("movflags", "faststart");
+        recorder.setAudioCodec(grabber.getAudioCodec());
+        recorder.setAudioChannels(grabber.getAudioChannels());
     }
 
     protected void setUpGrabber() throws FrameGrabber.Exception{

@@ -26,6 +26,11 @@ public class NodeServiceBean implements NodeService {
         return getFromNode(node, "gpu");
     }
 
+    @Override
+    public String getStatus(Node node) {
+        return getFromNode(node, "status");
+    }
+
     private boolean isConnected(Node node){
         try {
             final String[] address = node.getAddress().split(":");

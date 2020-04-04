@@ -8,4 +8,6 @@ public interface NodeService {
     String getCpu(Node node);
 
     String getGpu(Node node);
+
+    String getStatus(Node node);
 }
