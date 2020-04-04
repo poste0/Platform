@@ -5,14 +5,14 @@ import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.DataManager;
 import com.haulmont.cuba.core.global.UserSessionSource;
-import com.haulmont.cuba.gui.components.Button;
-import com.haulmont.cuba.gui.components.Component;
-import com.haulmont.cuba.gui.components.GroupTable;
-import com.haulmont.cuba.gui.components.Table;
+import com.haulmont.cuba.gui.UiComponents;
+import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.model.DataLoader;
 import com.haulmont.cuba.gui.screen.*;
 import com.company.platform.entity.Node;
+import com.haulmont.cuba.gui.screen.LookupComponent;
 import com.haulmont.cuba.web.gui.components.WebButton;
+import com.haulmont.cuba.web.gui.components.WebLabel;
 
 import javax.inject.Inject;
 import java.util.Objects;
@@ -31,6 +31,9 @@ public class NodeBrowse extends StandardLookup<Node> {
 
     @Inject
     private DataLoader nodesDl;
+
+    @Inject
+    private UiComponents components;
 
     private final Table.ColumnGenerator HARDWARE = new Table.ColumnGenerator() {
         @Override
@@ -61,9 +64,31 @@ public class NodeBrowse extends StandardLookup<Node> {
         }
     };
 
+    private final Table.ColumnGenerator STATUS = new Table.ColumnGenerator() {
+        @Override
+        public Component generateCell(Entity entity) {
+            if(Objects.isNull(entity)){
+                throw new IllegalArgumentException();
+            }
+
+            Node node = (Node) entity;
+            String status = nodeService.getStatus(node);
+
+            Label<String> label = components.create(Label.class);
+            label.setValue(status);
+
+            return label;
+        }
+    };
+
     @Subscribe
     public void onInit(InitEvent event){
         nodesTable.addGeneratedColumn("hardwareButton", HARDWARE);
         nodesDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
+    }
+
+    @Subscribe
+    public void onAfterShow(AfterShowEvent event){
+        nodesTable.addGeneratedColumn("statusLabel", STATUS);
     }
 }

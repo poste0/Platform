@@ -5,5 +5,6 @@
         <item screen="platform_Video"/>
         <item screen="platform_Node.browse"/>
         <item screen="platform_LiveScreen"/>
+        <item screen="platform_Video.browse"/>
     </menu>
 </menu-config>

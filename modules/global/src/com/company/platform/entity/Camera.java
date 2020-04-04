@@ -7,6 +7,7 @@ import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.security.entity.User;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Table(name = "PLATFORM_CAMERA")
 @Entity(name = "platform_Camera")
@@ -39,6 +40,9 @@ public class Camera extends StandardEntity {
 
     @Column(name = "path")
     private String path;
+
+    @OneToMany(mappedBy = "camera")
+    private List<Video> videos;
 
     public void setUser(User user) {
         this.user = user;
@@ -95,5 +99,13 @@ public class Camera extends StandardEntity {
 
     public void setPath(String path){
         this.path = path;
+    }
+
+    public List<Video> getVideos() {
+        return videos;
+    }
+
+    public void setVideos(List<Video> videos) {
+        this.videos = videos;
     }
 }

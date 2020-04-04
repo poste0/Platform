@@ -2,6 +2,7 @@ package com.company.platform.web.screens.video;
 
 import com.company.platform.entity.Camera;
 import com.company.platform.entity.Node;
+import com.company.platform.service.NodeService;
 import com.company.platform.web.screens.ConfirmScreen;
 import com.haulmont.cuba.core.entity.FileDescriptor;
 import com.haulmont.cuba.core.global.*;
@@ -73,6 +74,9 @@ public class Video extends Screen {
 
     @Inject
     private Screens screens;
+
+    @Inject
+    private NodeService nodeService;
 
     private class Renderer{
 
@@ -157,6 +161,10 @@ public class Video extends Screen {
                 }
                 FileLoader loader = AppBeans.get(FileLoader.class);
                 setUpLayout(5, paths.size());
+                List<com.company.platform.entity.Video> videos = dataManager.loadList(LoadContext.create(com.company.platform.entity.Video.class).setQuery(LoadContext.createQuery("SELECT v FROm platform_Video v WHERE v.camera.id = :camera").setParameter("camera", camera.getId())));
+                videos.forEach(video1 -> {
+                    System.out.println(video1.getName() + "video");
+                });
                 for(FileDescriptor path: paths){
                     videoname = components.create(Label.NAME);
                     watchButton = components.create(Button.NAME);
@@ -206,7 +214,11 @@ public class Video extends Screen {
                     }));
 
                     WebOptionsList<String, String> nodeList = components.create(OptionsList.NAME);
-                    nodeList.setOptionsMap(nodes.stream().collect(Collectors.toMap(new Function<Node, String>() {
+                    nodeList.setOptionsMap(nodes.stream()
+                                                    .filter(node -> {
+                                                        return nodeService.getStatus(node).equals("false");
+                                                    })
+                                                    .collect(Collectors.toMap(new Function<Node, String>() {
                         @Override
                         public String apply(Node node) {
                             return node.getName();

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <views xmlns="http://schemas.haulmont.com/cuba/view.xsd">
 
+    <view entity="platform_Video" name="video-view" extends="_local">
+        <property name="camera" view="_local"/>
+        <property name="fileDescriptor" view="_local"/>
+        <property name="parentVideo" view="_local"/>
+    </view>
 </views>
