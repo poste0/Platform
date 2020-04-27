@@ -235,6 +235,9 @@ public class CameraBrowse extends StandardLookup<Camera> {
             System.out.println("    hls.loadSource('http://127.0.0.1:80" + "/" + camera.getName() + ".m3u8" + "');\n");
             Button temp = new WebButton();
             temp.setCaption("Live");
+            if(!service.testConnection(camera)){
+                temp.setEnabled(false);
+            }
             temp.addClickListener(event ->{
                 //live();
                 LiveScreen screen = screens.create(LiveScreen.class, OpenMode.DIALOG, new MapScreenOptions(Collections.singletonMap("camera", camera)));

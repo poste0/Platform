@@ -91,60 +91,53 @@ public class CameraEdit extends StandardEditor<Camera> {
         pathField.addValueChangeListener(VALUEEVENT);
         optionArea.addValueChangeListener(VALUEEVENT);
 
-        //setFields();
+        if(!Objects.isNull(getEditedEntity().getAddress())) {
+            setFields();
+        }
         logger.info("After show event end");
     }
 
     private void setFields(){
         logger.info("setFields start");
         final Camera camera = getEditedEntity();
-        final String address = getAddress(camera);
-        final String name = getName(camera);
         final String password = getPassword(camera);
-        final String port = getPort(camera);
 
         this.cameraNameField.setValue(camera.getName());
-        this.addressField.setValue(address);
-        this.nameField.setValue(name);
+        this.addressField.setValue(camera.getUrlAddress());
+        this.nameField.setValue(camera.getName());
         this.passwordField.setValue(password);
-        this.portField.setValue(port);
+        this.portField.setValue(String.valueOf(camera.getPort()));
         this.frameRateField.setValue(camera.getFrameRate().toString());
         this.heightField.setValue(camera.getHeight().toString());
         this.widthField.setValue(camera.getWeight().toString());
         logger.info("setFields end");
     }
 
-    private String getAddress(Camera camera){
-        return camera.getAddress().split("@")[1];
-    }
-
-    private String getName(Camera camera){
-        return camera.getAddress().substring(PROTOCOL.length()).split(":")[0];
-    }
-
     private String getPassword(Camera camera){
         return camera.getAddress().substring(PROTOCOL.length()).split(":")[1].split("@")[0];
-    }
-
-    private String getPort(Camera camera){
-        System.out.println(camera.getAddress());
-        Arrays.stream(camera.getAddress().split(":")).forEach(System.out::println);
-        return camera.getAddress().split(":").length == 4 ? camera.getAddress().split(":")[3] : "";
     }
 
     public void onOkButton(){
         logger.info("on ok button start");
 
         Camera camera = getEditedEntity();
+        boolean isStreamStarted = camera.getAddress() != null;
         camera.setAddress(address.toString());
+        camera.setPort(Integer.valueOf(portField.getRawValue()));
+        camera.setUrlAddress(addressField.getRawValue());
         camera.setFrameRate(Integer.valueOf(frameRateField.getRawValue()));
         camera.setHeight(Integer.valueOf(heightField.getRawValue()));
         camera.setWeight(Integer.valueOf(widthField.getRawValue()));
         camera.setName(cameraNameField.getRawValue());
 
         User user = AppBeans.get(UserSessionSource.class).getUserSession().getUser();
+        camera.setUser(user);
         cameraService.update(user, camera);
         streamService.update(user, camera);
+
+        if(!isStreamStarted){
+            streamService.startStream(camera);
+        }
 
         close(WINDOW_COMMIT_AND_CLOSE_ACTION);
         logger.info("on ok button end");
