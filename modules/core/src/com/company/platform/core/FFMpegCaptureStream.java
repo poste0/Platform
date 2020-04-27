@@ -33,6 +33,7 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
         String path = pathBuilder.toString();
 
         File file = new File(path);
+        this.file = file;
         return file;
     }
 
@@ -40,7 +41,9 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
     protected void setUpRecorder(){
         super.setUpRecorder();
         recorder.setOption("f", "hls");
-        recorder.setOption("hls_time", "2");
+        recorder.setOption("hls_time", "4");
+        recorder.setOption("hls_flags", "round_durations");
+        recorder.setOption("hls_flags", "delete_segments");
         int hw = Math.max(camera.getHeight(), camera.getWeight());
         hw = hw / 500;
         recorder.setImageHeight(camera.getHeight() / hw);
@@ -50,8 +53,8 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
 
     @Override
     public void stop(){
-        super.stop();
-        File file = new File(".");
+
+        /*File file = new File(".");
         FileFilter filter = new WildcardFileFilter(camera.getName() + "*.ts");
         File[] files = file.listFiles(filter);
         for(File f: files){
@@ -68,5 +71,7 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+         */
     }
 }

@@ -1,21 +1,16 @@
 package com.company.platform.service;
 
 import com.company.platform.core.Capture;
-import com.company.platform.core.FFMpegCapture;
 import com.company.platform.core.FFMpegCaptureStream;
 import com.company.platform.entity.Camera;
-import com.google.common.eventbus.Subscribe;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.DataManager;
-import com.haulmont.cuba.core.global.LoadContext;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.security.app.UserSessions;
-import com.haulmont.cuba.security.auth.events.UserLoggedInEvent;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.UserSession;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

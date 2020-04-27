@@ -37,11 +37,12 @@ public class LiveScreen extends Screen {
             throw new IllegalArgumentException();
         }
 
-        service.startStream(camera);
+        //service.startStream(camera);
 
         Layout layout = liveBox.unwrap(Layout.class);
         Video video = new Video();
         video.setId("streamVideo");
+        video.setShowControls(false);
         layout.addComponent(video);
         liveBox.setVisible(true);
         layout.getUI().getPage().addDependency(new Dependency(Dependency.Type.JAVASCRIPT, "https://cdn.jsdelivr.net/npm/hls.js@latest"));
