@@ -74,7 +74,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
     public void process() throws FrameRecorder.Exception, FrameGrabber.Exception{
         isRecording = true;
         setUpGrabber();
-        grabber.start();
+        startGrabber();
         File file = createFile();
         recorder = new HlsRecorder(file, grabber.getImageWidth(), grabber.getImageHeight());
         setUpRecorder();
@@ -103,6 +103,27 @@ public abstract class AbstractFFMpegCapture implements Capture {
             }
 
         });
+    }
+
+    private void startGrabber(){
+        int failCounter = 0;
+        try {
+            while(grabber.getFrameRate() != camera.getFrameRate()){
+                failCounter ++;
+                if(failCounter > 10){
+                    throw new IllegalStateException("Frame rate of the camera is not equal to the rate of the grabber. May be the frame rate of the camera is wrong.");
+                }
+                grabber = FFmpegFrameGrabber.createDefault(camera.getAddress());
+                setUpGrabber();
+            }
+
+            grabber.start();
+        } catch (FrameGrabber.Exception e) {
+            e.printStackTrace();
+        }
+
+
+
     }
 
     public boolean isRecording(){

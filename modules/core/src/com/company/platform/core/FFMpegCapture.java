@@ -44,17 +44,6 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
         super(camera);
     }
 
-    private void startGrabber(){
-        try {
-            grabber.start();
-        } catch (FrameGrabber.Exception e) {
-            e.printStackTrace();
-        }
-        if (grabber.getFrameRate() != camera.getFrameRate()){
-            System.out.println("Change frame rate");
-        }
-    }
-
     private void after(){
         FileDescriptor descriptor = metadata.create(FileDescriptor.class);
         DataManager manager = AppBeans.get(DataManager.class);
@@ -120,7 +109,7 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
         String post = "";
         List<Video> videos = dataManager.loadList(LoadContext.create(Video.class).setQuery(LoadContext.createQuery("SELECT v FROM platform_Video v WHERE v.createdBy= :user").setParameter("user", camera.getCreatedBy())));
         post = String.valueOf(videos.size() + 1);
-        String name = path.getAbsolutePath() + "/" + camera.getCreatedBy() + "_" + post  + ".mp4";
+        String name = path.getAbsolutePath() + "/" + camera.getUser().getLogin() + "_" + post  + ".mp4";
             return name;
     }
     @Override

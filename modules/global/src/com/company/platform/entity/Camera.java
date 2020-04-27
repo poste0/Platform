@@ -17,6 +17,14 @@ public class Camera extends StandardEntity {
     @NotNull
     private String address;
 
+    @Column(name = "URL_ADDRESS", nullable = false)
+    @NotNull
+    private String urlAddress;
+
+    @Column(name = "PORT")
+    private Integer port;
+
+
     @Column(name = "NAME", nullable = false)
     @NotNull
     private String name;
@@ -107,5 +115,21 @@ public class Camera extends StandardEntity {
 
     public void setVideos(List<Video> videos) {
         this.videos = videos;
+    }
+
+    public String getUrlAddress() {
+        return urlAddress;
+    }
+
+    public void setUrlAddress(String urlAddress) {
+        this.urlAddress = urlAddress;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 }
