@@ -101,10 +101,11 @@ public class CameraEdit extends StandardEditor<Camera> {
         logger.info("setFields start");
         final Camera camera = getEditedEntity();
         final String password = getPassword(camera);
+        final String name = getName(camera);
 
         this.cameraNameField.setValue(camera.getName());
         this.addressField.setValue(camera.getUrlAddress());
-        this.nameField.setValue(camera.getName());
+        this.nameField.setValue(name);
         this.passwordField.setValue(password);
         this.portField.setValue(String.valueOf(camera.getPort()));
         this.frameRateField.setValue(camera.getFrameRate().toString());
@@ -115,6 +116,10 @@ public class CameraEdit extends StandardEditor<Camera> {
 
     private String getPassword(Camera camera){
         return camera.getAddress().substring(PROTOCOL.length()).split(":")[1].split("@")[0];
+    }
+
+    private String getName(Camera camera){
+        return camera.getAddress().substring(PROTOCOL.length()).split(":")[0];
     }
 
     public void onOkButton(){
