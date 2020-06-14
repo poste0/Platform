@@ -140,9 +140,9 @@ public class CameraEdit extends StandardEditor<Camera> {
         cameraService.update(user, camera);
         streamService.update(user, camera);
 
-        if(!isStreamStarted){
-            streamService.startStream(camera);
-        }
+        //if(!isStreamStarted){
+        //    streamService.startStream(camera);
+        //}
 
         close(WINDOW_COMMIT_AND_CLOSE_ACTION);
         logger.info("on ok button end");

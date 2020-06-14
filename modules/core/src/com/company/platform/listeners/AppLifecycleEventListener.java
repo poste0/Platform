@@ -19,8 +19,8 @@ public class AppLifecycleEventListener {
     @Inject
     private DataManager dataManager;
 
-    @EventListener
-    @Authenticated
+    //@EventListener
+    //@Authenticated
     public void applicationContextStarted(AppContextStartedEvent event) {
         StreamService streamService = AppBeans.get(StreamService.NAME);
         List<User> users = dataManager.loadList(LoadContext.create(User.class).setQuery(LoadContext.createQuery("SELECT u FROM sec$User u")));

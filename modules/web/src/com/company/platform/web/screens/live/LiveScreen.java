@@ -37,7 +37,7 @@ public class LiveScreen extends Screen {
             throw new IllegalArgumentException();
         }
 
-        //service.startStream(camera);
+        service.startStream(camera);
 
         Layout layout = liveBox.unwrap(Layout.class);
         Video video = new Video();
@@ -52,13 +52,13 @@ public class LiveScreen extends Screen {
                 "    var url = document.location.href.split('/');\n" +
                 "    url = url[0].concat('//').concat(url[2]).concat('/" + camera.getName() + ".m3u8');\n" +
                 "    hls.loadSource(url);\n" +
-                "    hls.attachMedia(video);\n" +
+                "    hls.attachMedia(video); var isLoaded = false;\n" +
                 "    hls.on(Hls.Events.MANIFEST_PARSED,function() {\n" +
-                "      video.play();\n" +
+                "     video.play(); isLoaded = true;\n" +
                 "  });\n" +
                 "    hls.on(Hls.Events.ERROR,function() {\n" +
-                "      setTimeout(()=>{hls.loadSource(url);\n" +
-                "      hls.attachMedia(video);}, 5000)\n" +
+                "      setTimeout(()=>{if(!isLoaded){hls.loadSource(url);}\n" +
+                "      }, 5000)\n" +
                 "  });\n" +
                 " }\n" +
                 " // hls.js is not supported on platforms that do not have Media Source Extensions (MSE) enabled.\n" +
