@@ -48,28 +48,17 @@ public abstract class AbstractFFMpegCapture implements Capture {
         recorder.setImageHeight(camera.getHeight());
         recorder.setImageWidth(camera.getWeight());
         recorder.setGopSize((int) grabber.getFrameRate());
-        //recorder.setOption("g", String.valueOf(grabber.getFrameRate()));
-        //recorder.setOption("movflags", "faststart");
-        //recorder.setOption("sc_threshold", "0");
-        /*recorder.setOption("crf", "20");
-        recorder.setOption("movflags", "faststart");
-        recorder.setOption("sc_threshold", "0");
-        recorder.setOption("g", String.valueOf(grabber.getFrameRate()));
-
-         */
         recorder.setAudioCodec(grabber.getAudioCodec());
         recorder.setAudioChannels(grabber.getAudioChannels());
+        recorder.setOption("movflags", "faststart");
+        recorder.setOption("crf", "20");
+        recorder.setOption("sc_threshold", "0");
+
 
     }
 
     protected void setUpGrabber() throws FrameGrabber.Exception{
         grabber.setOption("rtsp_transport", "tcp");
-        grabber.setOption("crf", "20");
-        grabber.setOption("movflags", "faststart");
-        grabber.setOption("sc_threshold", "0");
-        //grabber.setOption("vcodec", "copy");
-        //grabber.setOption("acodec", "copy");
-        grabber.setFrameRate(camera.getFrameRate());
         grabber.setImageHeight(camera.getHeight());
         grabber.setImageWidth(camera.getWeight());
     }
@@ -111,19 +100,23 @@ public abstract class AbstractFFMpegCapture implements Capture {
         });
     }
 
-    private void startGrabber(){
+    private void startGrabber() throws FrameGrabber.Exception {
+        grabber.start();
+
         int failCounter = 0;
         try {
             while(grabber.getFrameRate() != camera.getFrameRate()){
+                grabber.stop();
+
                 failCounter ++;
                 if(failCounter > 10){
                     throw new IllegalStateException("Frame rate of the camera is not equal to the rate of the grabber. May be the frame rate of the camera is wrong.");
                 }
+
                 grabber = FFmpegFrameGrabber.createDefault(camera.getAddress());
                 setUpGrabber();
+                grabber.start();
             }
-
-            grabber.start();
         } catch (FrameGrabber.Exception e) {
             e.printStackTrace();
         }
