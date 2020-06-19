@@ -18,6 +18,7 @@ import com.haulmont.cuba.gui.screen.LookupComponent;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.web.AppUI;
 import com.vaadin.server.StreamResource;
+import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Layout;
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
@@ -87,6 +88,7 @@ public class VideoBrowse extends StandardLookup<Video> {
             Button button = components.create(Button.NAME);
             button.setCaption("Watch");
             button.addClickListener(event -> {
+                layout = playerBox.unwrap(Layout.class);
                 com.vaadin.ui.Video videoPlayer = new com.vaadin.ui.Video();
                 videoPlayer.setSource(new StreamResource(new StreamResource.StreamSource() {
                     @Override
@@ -101,6 +103,11 @@ public class VideoBrowse extends StandardLookup<Video> {
                 }, video.getName() + ".mp4"));
                 videoPlayer.setStyleName("video/mp4");
                 videoPlayer.setId("streamVideo");
+                videoPlayer.addStyleName("video-js");
+                final String attributeJs = "var player = document.getElementById('streamVideo'); player.setAttribute('data-setup', '{}')";
+                layout.getUI().getPage().addDependency(new Dependency(Dependency.Type.JAVASCRIPT, "https://vjs.zencdn.net/7.8.2/video.js"));
+                layout.getUI().getPage().addDependency(new Dependency(Dependency.Type.STYLESHEET, "https://vjs.zencdn.net/7.8.2/video-js.css"));
+                layout.getUI().getPage().getJavaScript().execute(attributeJs);
 
                 com.vaadin.ui.Button stopButton = new com.vaadin.ui.Button();
                 stopButton.setCaption("Stop");
@@ -108,7 +115,6 @@ public class VideoBrowse extends StandardLookup<Video> {
                     layout.removeAllComponents();
                 });
 
-                layout = playerBox.unwrap(Layout.class);
                 layout.removeAllComponents();
                 layout.addComponent(videoPlayer);
                 layout.addComponent(stopButton);
