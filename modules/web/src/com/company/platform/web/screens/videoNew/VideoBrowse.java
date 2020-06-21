@@ -17,7 +17,9 @@ import com.company.platform.entity.Video;
 import com.haulmont.cuba.gui.screen.LookupComponent;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.web.AppUI;
+import com.vaadin.server.*;
 import com.vaadin.server.StreamResource;
+import com.vaadin.shared.communication.URLReference;
 import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Layout;
 import org.apache.commons.io.FileUtils;
@@ -32,6 +34,9 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
+import org.vaadin.gwtav.ContentLengthConnectorResource;
+import org.vaadin.gwtav.GwtVideo;
+import org.vaadin.gwtav.IOUtil;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -43,6 +48,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @UiController("platform_Video.browse")
@@ -89,8 +96,8 @@ public class VideoBrowse extends StandardLookup<Video> {
             button.setCaption("Watch");
             button.addClickListener(event -> {
                 layout = playerBox.unwrap(Layout.class);
-                com.vaadin.ui.Video videoPlayer = new com.vaadin.ui.Video();
-                videoPlayer.setSource(new StreamResource(new StreamResource.StreamSource() {
+                GwtVideo videoPlayer = new GwtVideo();
+                StreamResource videoStreamResource = new StreamResource(new StreamResource.StreamSource() {
                     @Override
                     public InputStream getStream() {
                         try {
@@ -100,10 +107,12 @@ public class VideoBrowse extends StandardLookup<Video> {
                         }
                         return null;
                     }
-                }, video.getName() + ".mp4"));
+                }, video.getName() + ".mp4");
+                videoPlayer.setSource(new ContentLengthConnectorResource(videoStreamResource, video.getFileDescriptor().getSize()));
                 videoPlayer.setStyleName("video/mp4");
                 videoPlayer.setId("streamVideo");
                 videoPlayer.addStyleName("video-js");
+                videoPlayer.setAutoplay(false);
                 final String attributeJs = "var player = document.getElementById('streamVideo'); player.setAttribute('data-setup', '{}')";
                 layout.getUI().getPage().addDependency(new Dependency(Dependency.Type.JAVASCRIPT, "https://vjs.zencdn.net/7.8.2/video.js"));
                 layout.getUI().getPage().addDependency(new Dependency(Dependency.Type.STYLESHEET, "https://vjs.zencdn.net/7.8.2/video-js.css"));
@@ -282,4 +291,6 @@ public class VideoBrowse extends StandardLookup<Video> {
         videosTable.addGeneratedColumn("processButton", PROCESS);
         videosTable.addGeneratedColumn("processNode", NODELIST);
     }
+
+
 }

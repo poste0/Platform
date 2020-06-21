@@ -52,7 +52,7 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
         descriptor.setName(name);
         descriptor.setExtension("mp4");
         descriptor.setCreateDate(new Date());
-        descriptor.setSize(this.file.getTotalSpace());
+        descriptor.setSize(this.file.length());
         try {
             fileLoader.saveStream(descriptor, () -> {
                 try {
