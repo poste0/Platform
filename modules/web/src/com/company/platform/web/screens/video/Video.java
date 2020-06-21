@@ -105,21 +105,6 @@ public class Video extends Screen {
         }
 
         private List<FileDescriptor> getPaths(Camera camera, String format) throws IOException {
-            /*if(Objects.isNull(camera)){
-                throw new IllegalArgumentException();
-            }
-            System.out.println(camera.getId());
-            File path = new File(camera.getName().toString());
-            if(!path.exists()){
-                path.createNewFile();
-            }
-            Stream<Path> stream = Files.walk(Paths.get(path.toString()), FileVisitOption.FOLLOW_LINKS);
-            List<Path> result = stream.filter((value)->{
-                return value.toFile().getName().contains(format) ? true : false;
-            }).collect(Collectors.toList());
-            return result;
-
-             */
             List<FileDescriptor> result = new ArrayList<>();
             LoadContext<FileDescriptor> context = LoadContext.create(FileDescriptor.class).setQuery(LoadContext.createQuery("SELECT f FROM sys$FileDescriptor f"));
             DataManager manager = AppBeans.get(DataManager.class);

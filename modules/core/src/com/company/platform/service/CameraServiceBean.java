@@ -13,6 +13,8 @@ import com.haulmont.cuba.security.app.UserSessions;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.UserSession;
 import org.bytedeco.javacv.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -145,29 +147,20 @@ public class CameraServiceBean implements CameraService {
 
     private SecurityContext context;
 
+    private static final Logger log = LoggerFactory.getLogger(CameraServiceBean.class);
+
     public CameraServiceBean(){
 
     }
 
     public void init(){
         if(ffMpegs == null) {
+            log.info("Capture map is null. Creating a map");
             ffMpegs = new HashMap<>();
         }
-        //context = AppBeans.get(SecurityContext.class);
+
         List<UserSession> userSessions = getSessions();
         processSessions(userSessions);
-        ffMpegs.forEach(new BiConsumer<User, List<Capture>>() {
-            @Override
-            public void accept(User user, List<Capture> ffMpegFrameWrappers) {
-                System.out.println(user.getName());
-                ffMpegFrameWrappers.forEach(new Consumer<Capture>() {
-                    @Override
-                    public void accept(Capture capture) {
-                        System.out.println("    " + capture.isRecording());
-                    }
-                });
-            }
-        });
     }
 
     private List<UserSession> getSessions(){
@@ -192,64 +185,6 @@ public class CameraServiceBean implements CameraService {
     }
 
     public void write(Camera camera) throws FrameGrabber.Exception {
-        /*if(Objects.isNull(camera)){
-            throw new IllegalArgumentException();
-        }
-        FFMpegFrameWrapper wrapper = getWrapper(camera);
-        wrapper.createFile();
-        wrapper.isRecording = true;
-        FFmpegFrameGrabber grabber;
-        try {
-            grabber = wrapper.getGrabber();
-            grabber.start();
-        } catch (FrameGrabber.Exception e) {
-            wrapper.isRecording = false;
-            e.printStackTrace();
-            throw new FrameGrabber.Exception("An error while grabbing");
-        }
-
-        FFmpegFrameRecorder recorder;
-        try {
-            recorder = wrapper.getRecorder();
-            recorder.start();
-        }
-        catch(FrameRecorder.Exception e){
-            wrapper.isRecording = false;
-            throw new FrameGrabber.Exception("An error while recording");
-        }
-
-
-
-        executor = new ConcurrentTaskExecutor();
-        executor.execute(() -> {
-            //AppContext.setSecurityContext(context);
-            try {
-                int q = 0;
-                while (wrapper.isRecording) {
-                    q++;
-                    if(q == 25){
-                        System.out.println("w");
-                        q = 0;
-                    }
-                    Frame frame = grabber.grab();
-                    recorder.record(frame);
-                }
-
-
-                wrapper.recorder.stop();
-                wrapper.grabber.stop();
-                wrapper.grabber = null;
-                wrapper.recorder = null;
-            } catch (FrameRecorder.Exception e) {
-                e.printStackTrace();
-            } catch (FrameGrabber.Exception e) {
-                e.printStackTrace();
-            }
-
-        });
-
-         */
-
         Capture capture = getWrapper(camera);
         try {
             capture.process();
@@ -314,15 +249,17 @@ public class CameraServiceBean implements CameraService {
                 }
 
             }
-            System.out.println(address);
-            System.out.println(port);
+
+            log.info(address);
+            log.info(String.valueOf(port));
 
             socket.connect(new InetSocketAddress(address, port), 500);
             boolean result = socket.isConnected();
             socket.close();
-            System.out.println(result);
+            log.info(String.valueOf(result));
             return result;
         } catch (IOException e) {
+            log.error("Test is failed");
             return false;
         }
 

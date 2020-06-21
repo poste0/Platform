@@ -11,6 +11,8 @@ import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.global.UserSession;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -22,25 +24,18 @@ import java.util.stream.Collectors;
 public class StreamServiceBean implements StreamService {
     private Map<User, List<Capture>> ffMpegs;
 
+    private static final Logger log = LoggerFactory.getLogger(StreamServiceBean.class);
+
     public void init(){
         if(ffMpegs == null) {
+            log.info("Capture map is null");
             ffMpegs = new HashMap<>();
         }
-        //context = AppBeans.get(SecurityContext.class);
+
         List<UserSession> userSessions = getSessions();
         processSessions(userSessions);
-        ffMpegs.forEach(new BiConsumer<User, List<Capture>>() {
-            @Override
-            public void accept(User user, List<Capture> ffMpegFrameWrappers) {
-                System.out.println(user.getName());
-                ffMpegFrameWrappers.forEach(new Consumer<Capture>() {
-                    @Override
-                    public void accept(Capture capture) {
-                        System.out.println("    " + capture.isRecording());
-                    }
-                });
-            }
-        });
+
+        log.info(ffMpegs.toString());
     }
 
     @Override
@@ -51,6 +46,8 @@ public class StreamServiceBean implements StreamService {
 
 
         ffMpegs.put(userSession.getUser(), wrappers);
+
+        log.info("Capture map updating");
     }
 
     private List<UserSession> getSessions(){
@@ -92,9 +89,9 @@ public class StreamServiceBean implements StreamService {
         Capture capture = getCapture(camera);
         try {
             capture.process();
-        } catch (FrameGrabber.Exception e) {
-            e.printStackTrace();
-        } catch (FrameRecorder.Exception e) {
+            log.info("Stream has started");
+        } catch (FrameGrabber.Exception | FrameRecorder.Exception e) {
+            log.error("Stream has not been started");
             e.printStackTrace();
         }
     }
@@ -103,5 +100,6 @@ public class StreamServiceBean implements StreamService {
     public void stopStream(Camera camera) {
         Capture capture = getCapture(camera);
         capture.stop();
+        log.info("Stream has started");
     }
 }

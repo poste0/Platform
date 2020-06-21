@@ -7,6 +7,8 @@ import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
 import org.bytedeco.javacv.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -38,6 +40,8 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
     @Inject
     private FileLoader fileLoader;
 
+    private static final Logger log = LoggerFactory.getLogger(FFMpegCapture.class);
+
 
 
     public FFMpegCapture(Camera camera) throws FrameGrabber.Exception {
@@ -54,20 +58,26 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
         descriptor.setCreateDate(new Date());
         descriptor.setSize(this.file.length());
         try {
+            log.info("File is being saved after recording");
             fileLoader.saveStream(descriptor, () -> {
                 try {
                     return new FileInputStream(this.file);
                 } catch (FileNotFoundException e) {
+                    log.error("File has not been saved");
                     e.printStackTrace();
                 }
                 return null;
             });
         } catch (FileStorageException e) {
+            log.error("File has not been saved");
             e.printStackTrace();
+        }
+        finally {
+            deleteFile();
+            log.info("Temp file has been deleted");
         }
 
         dataManager.commit(descriptor);
-        deleteFile();
 
         Video video = new Video();
         video.setName(file.getName());
@@ -77,6 +87,7 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
         video.setParentVideo(video);
 
         dataManager.commit(video);
+        log.info("Video has been commited");
     }
 
     private void deleteFile(){
@@ -90,30 +101,37 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
         try {
             file.createNewFile();
             this.file = file;
+            log.info("File has been created");
             return file;
         } catch (IOException e) {
+            log.error("Fiel has not been created");
             e.printStackTrace();
         }
         return null;
     }
 
     private String prepareFile(){
-            if(Objects.isNull(camera)){
-                throw new IllegalArgumentException();
-            }
+        if(Objects.isNull(camera)){
+            log.error("Camera is null");
+            throw new IllegalArgumentException();
+        }
 
-            File path = new File(camera.getName().toString());
-            if(!path.exists()) {
-                path.mkdir();
-            }
+        File path = new File(camera.getName().toString());
+        if(!path.exists()) {
+            log.info("Path is not exists");
+            path.mkdir();
+        }
+
         String post = "";
         List<Video> videos = dataManager.loadList(LoadContext.create(Video.class).setQuery(LoadContext.createQuery("SELECT v FROM platform_Video v WHERE v.createdBy= :user").setParameter("user", camera.getCreatedBy())));
         post = String.valueOf(videos.size() + 1);
         String name = path.getAbsolutePath() + "/" + camera.getUser().getLogin() + "_" + post  + ".mp4";
-            return name;
+        log.info("File name {}", name);
+        return name;
     }
     @Override
     public void stop() {
+        log.info("Recording has stopped");
         super.stop();
         after();
     }

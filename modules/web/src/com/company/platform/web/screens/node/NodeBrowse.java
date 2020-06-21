@@ -13,6 +13,8 @@ import com.company.platform.entity.Node;
 import com.haulmont.cuba.gui.screen.LookupComponent;
 import com.haulmont.cuba.web.gui.components.WebButton;
 import com.haulmont.cuba.web.gui.components.WebLabel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.Objects;
@@ -35,10 +37,13 @@ public class NodeBrowse extends StandardLookup<Node> {
     @Inject
     private UiComponents components;
 
+    private static final Logger log = LoggerFactory.getLogger(NodeBrowse.class);
+
     private final Table.ColumnGenerator HARDWARE = new Table.ColumnGenerator() {
         @Override
         public Component generateCell(Entity entity) {
             if(Objects.isNull(entity)){
+                log.error("Node is null. Hardware generator");
                 throw new IllegalArgumentException();
             }
 
@@ -68,6 +73,7 @@ public class NodeBrowse extends StandardLookup<Node> {
         @Override
         public Component generateCell(Entity entity) {
             if(Objects.isNull(entity)){
+                log.error("Node is null. Status generator");
                 throw new IllegalArgumentException();
             }
 
@@ -83,12 +89,20 @@ public class NodeBrowse extends StandardLookup<Node> {
 
     @Subscribe
     public void onInit(InitEvent event){
+        log.info("On init event has started");
+
         nodesTable.addGeneratedColumn("hardwareButton", HARDWARE);
         nodesDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
+
+        log.info("On init event has finished");
     }
 
     @Subscribe
     public void onAfterShow(AfterShowEvent event){
+        log.info("On after show event has started");
+
         nodesTable.addGeneratedColumn("statusLabel", STATUS);
+
+        log.info("On after show event has finished");
     }
 }

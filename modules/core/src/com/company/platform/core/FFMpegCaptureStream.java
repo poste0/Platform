@@ -5,6 +5,8 @@ import com.haulmont.cuba.core.sys.AppContext;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,8 @@ import java.nio.file.Paths;
 public class FFMpegCaptureStream extends AbstractFFMpegCapture {
     public static final String NAME = "platform_FFMpegCaptureStream";
 
+    private static final Logger log = LoggerFactory.getLogger(FFMpegCaptureStream.class);
+
     public FFMpegCaptureStream(Camera camera) throws FrameGrabber.Exception {
         super(camera);
     }
@@ -34,6 +38,7 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
 
         File file = new File(path);
         this.file = file;
+        log.info("File has been created");
         return file;
     }
 
@@ -48,6 +53,8 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
         recorder.setImageHeight(camera.getHeight() / hw);
         recorder.setImageWidth(camera.getWeight() / hw);
 
+        log.info("Recorder has been set up");
+
     }
 
     @Override
@@ -60,7 +67,9 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
         for(File f: files){
             try {
                 Files.delete(f.toPath());
+                log.info("Files ts of live stream have been deleted");
             } catch (IOException e) {
+                log.error("Files ts of live stream have not been deleted");
                 e.printStackTrace();
             }
         }
@@ -68,7 +77,9 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
         file = new File(camera.getName() + ".m3u8");
         try {
             Files.delete(file.toPath());
+            log.info("File m3u8 of live stream has been deleted");
         } catch (IOException e) {
+            log.error("File m3u8 of live stream has not been deleted");
             e.printStackTrace();
         }
 
