@@ -1,6 +1,8 @@
 package com.company.platform.service;
 
 import com.company.platform.entity.Node;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -15,6 +17,7 @@ import java.net.Socket;
 
 @Service(NodeService.NAME)
 public class NodeServiceBean implements NodeService {
+    private static final Logger log = LoggerFactory.getLogger(NodeServiceBean.class);
 
     @Override
     public String getCpu(Node node) {
@@ -38,9 +41,11 @@ public class NodeServiceBean implements NodeService {
             Socket socket = new Socket(address[1].substring(2), port);
             boolean result = socket.isConnected();
             socket.close();
+            log.info(String.valueOf(result));
             return result;
         }
         catch (IOException e){
+            log.error("Node is not connected");
             return false;
         }
     }
@@ -56,11 +61,12 @@ public class NodeServiceBean implements NodeService {
                 HttpEntity entity = new HttpEntity(map, headers);
                 result = template.exchange(node.getAddress() + "/" + path, HttpMethod.GET, entity, String.class).getBody();
             } catch (RestClientException e) {
+                log.error("Rest error");
                 result = "No node";
             }
         }
         else {
-            System.out.println("No connection");
+            log.error("No connection");
             result = "No node";
         }
         return result;

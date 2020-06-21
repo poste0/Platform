@@ -14,6 +14,8 @@ import com.haulmont.cuba.gui.screen.*;
 import com.haulmont.cuba.security.auth.LoginPasswordCredentials;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.web.security.events.AfterLoginEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.awt.*;
@@ -28,16 +30,22 @@ public class LoginScreen extends com.haulmont.cuba.web.app.login.LoginScreen {
     @Inject
     private CameraService service;
 
+    private static final Logger log = LoggerFactory.getLogger(LoginScreen.class);
+
     public void onRegisterButtonClick(){
+        log.info("Register button has been clicked");
+
         TextField loginField = this.loginField;
         RegisterScreen screen = screens.create(RegisterScreen.class, OpenMode.DIALOG);
         screen.addAfterCloseListener(new Consumer<AfterCloseEvent>() {
             @Override
             public void accept(AfterCloseEvent afterCloseEvent) {
                 if(afterCloseEvent.getCloseAction().equals(WINDOW_COMMIT_AND_CLOSE_ACTION)){
+                    log.info("Login has started");
                     doLogin(new LoginPasswordCredentials(screen.getLogin(), screen.getPassword()));
                 }
                 else if(afterCloseEvent.getCloseAction().equals(WINDOW_CLOSE_ACTION)){
+                    log.warn("THis user already exists");
                     loginField.setValue("This user already exists");
                 }
             }

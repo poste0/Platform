@@ -24,6 +24,8 @@ import com.vaadin.ui.Layout;
 import com.vaadin.ui.Video;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -92,6 +94,8 @@ public class CameraBrowse extends StandardLookup<Camera> {
     @Inject
     private Screens screens;
 
+    private static final Logger log = LoggerFactory.getLogger(CameraBrowse.class);
+
 
 
     private final Table.ColumnGenerator recordStatus = new Table.ColumnGenerator() {
@@ -99,13 +103,16 @@ public class CameraBrowse extends StandardLookup<Camera> {
         public Component generateCell(Entity entity) {
 
             if (Objects.isNull(entity)) {
+                log.error("Camera is null. Record status column generator");
                 throw new IllegalArgumentException();
             }
 
             Camera camera = (Camera) entity;
+
+            log.info("Camera recording status {}", service.getStatus(camera).toString());
+
             TextField temp = new WebTextField();
             temp.setEnabled(false);
-            System.out.println(service.getStatus(camera).toString());
             temp.setValue(service.getStatus(camera).toString());
             temp.setStyleName("c-camera-record-status-field");
             return temp;
@@ -117,6 +124,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
         @Override
         public Component generateCell(Entity entity) {
             if(Objects.isNull(entity)) {
+                log.error("Camera is null. Record button column generator");
                 throw new IllegalArgumentException();
             }
 
@@ -126,12 +134,15 @@ public class CameraBrowse extends StandardLookup<Camera> {
             temp.setCaption("Record");
 
             if(service.getStatus(camera).equals(CameraService.Status.RECORDING) || service.getStatus(camera).equals(CameraService.Status.NOT_CONNECTED)){
+                log.info("Camera with id {}, name {} can not be recorded", camera.getId(), camera.getName());
                 temp.setEnabled(false);
                 return temp;
             }
+
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
+                    log.info("Recording of camera with id {}, name {} has started", camera.getId(), camera.getName());
                     write();
                     onInit(null);
 
@@ -145,6 +156,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
         @Override
         public Component generateCell(Entity entity) {
             if(Objects.isNull(entity)){
+                log.error("Camera is null. Stop button column generator");
                 throw new IllegalArgumentException();
             }
 
@@ -152,16 +164,19 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
             Button temp = new WebButton();
             temp.setCaption("Stop");
+
             if(!service.getStatus(camera).equals(CameraService.Status.RECORDING)){
+                log.info("Camera with id {}, name {} is not recorder", camera.getId(), camera.getName());
                 temp.setEnabled(false);
                 return temp;
             }
+
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
+                    log.info("Camera with id {}, name {} has stopped recording", camera.getId(), camera.getName());
                     stop();
-                   onInit(null);
-
+                    onInit(null);
                 }
             });
             return temp;
@@ -172,6 +187,7 @@ public class CameraBrowse extends StandardLookup<Camera> {
         @Override
         public Component generateCell(Entity entity) {
             if(Objects.isNull(entity)){
+                log.error("Camera is null. Connection test button generator");
                 throw new IllegalArgumentException();
             }
 
@@ -181,13 +197,17 @@ public class CameraBrowse extends StandardLookup<Camera> {
             temp.setCaption("Test");
 
             if(!service.getStatus(camera).equals(CameraService.Status.NOT_CONNECTED)){
+                log.info("Camera with id {}, name {} is connected", camera.getId(), camera.getName());
                 temp.setEnabled(false);
                 return temp;
             }
             temp.addClickListener(new Consumer<Button.ClickEvent>() {
                 @Override
                 public void accept(Button.ClickEvent clickEvent) {
-
+                    if(service.testConnection(camera)){
+                        log.info("Camera with id {}, name {} is connected", camera.getId(), camera.getName());
+                        onInit(null);
+                    }
                 }
             });
             return temp;
@@ -228,18 +248,20 @@ public class CameraBrowse extends StandardLookup<Camera> {
         @Override
         public Component generateCell(Entity entity) {
             if(Objects.isNull(entity)){
+                log.error("Camera is null. Live button generator");
                 throw new IllegalArgumentException();
             }
 
             Camera camera = (Camera) entity;
-            System.out.println("    hls.loadSource('http://127.0.0.1:80" + "/" + camera.getName() + ".m3u8" + "');\n");
+
             Button temp = new WebButton();
             temp.setCaption("Live");
             if(!service.testConnection(camera)){
+                log.info("Camera with id {}, name {} is connected", camera.getId(), camera.getName());
                 temp.setEnabled(false);
             }
             temp.addClickListener(event ->{
-                //live();
+                log.info("Show live video has started");
                 LiveScreen screen = screens.create(LiveScreen.class, OpenMode.DIALOG, new MapScreenOptions(Collections.singletonMap("camera", camera)));
                 screen.show();
             });
@@ -251,32 +273,37 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
 
     private void addGeneratedColumns(){
+        log.info("Adding of generated columns has started");
+
         camerasTable.addGeneratedColumn("recordButton", recordButton);
         camerasTable.addGeneratedColumn("stoppButton", stoppButton);
         camerasTable.addGeneratedColumn("testButton", testButton);
         camerasTable.addGeneratedColumn("recordStatus", recordStatus);
         camerasTable.addGeneratedColumn("liveStreamButton", liveButton);
+
+        log.info("Adding of generated columns has finished");
     }
 
     @Subscribe
     public void onInit(InitEvent event){
+        log.info("On init event has started");
         camerasDl.setParameter("user", AppBeans.get(UserSessionSource.class).getUserSession().getUser().getId());
         service.init();
         streamService.init();
         addGeneratedColumns();
 
-    }
-
-    @Subscribe
-    public void onClose(AfterCloseEvent event){
-
+        log.info("On init event has finished");
     }
 
     @Subscribe
     public void onAfterShow(AfterShowEvent event){
+        log.info("On after show event has started");
+
         camerasTable.getItems().getItems().forEach(camera -> {
-            System.out.println(camera.getId());
+            log.info("Camera id {}", camera.getId());
         });
+
+        log.info("On after show event has finished");
     }
 
     public void checkConnection() {
@@ -311,12 +338,17 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     public void write() {
         Camera item = camerasTable.getSingleSelected();
+
         if(Objects.isNull(item)){
+            log.error("Camera is null");
             throw new IllegalArgumentException();
         }
+
         try {
+            log.info("Recording has started");
             service.write(item);
         } catch (FrameGrabber.Exception | FrameRecorder.Exception e) {
+            log.error("Recording error");
             isVideo.setValue(e.getMessage());
         }
     }
@@ -332,9 +364,12 @@ public class CameraBrowse extends StandardLookup<Camera> {
 
     public void stop() {
         Camera item = camerasTable.getSingleSelected();
+
         if(Objects.isNull(item)){
+            log.error("Camera is null");
             throw new IllegalArgumentException();
         }
+        log.info("Recording has stopped");
         service.stop(item);
     }
 

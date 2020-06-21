@@ -6,6 +6,8 @@ import com.haulmont.cuba.security.entity.Group;
 import com.haulmont.cuba.security.entity.Role;
 import com.haulmont.cuba.security.entity.User;
 import com.haulmont.cuba.security.entity.UserRole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -22,6 +24,8 @@ public class RegistrationServiceBean implements RegistrationService{
     @Inject
     private PasswordEncryption passwordEncryption;
 
+    private static final Logger log = LoggerFactory.getLogger(RegistrationServiceBean.class);
+
     private static final String GROUP_ID = "0fa2b1a5-1d68-4d69-9fbd-dff348347f93";
 
     private static final String ROLE_ID = "cd541dd4-eeb7-cd5b-847e-d32236552fa9";
@@ -32,6 +36,7 @@ public class RegistrationServiceBean implements RegistrationService{
         if(dataManager.getCount(LoadContext.create(User.class)
                 .setQuery(LoadContext.createQuery(QUERY)
                         .setParameter("login", login.toLowerCase()))) >= 1) {
+            log.error("This user exists");
             throw new IllegalArgumentException("This user already exists");
         }
 
@@ -45,6 +50,8 @@ public class RegistrationServiceBean implements RegistrationService{
         UserRole userRole = createUserRole(role, user);
 
         dataManager.commit(new CommitContext(userRole, user));
+
+        log.info("User has been regstered");
 
         return user;
 

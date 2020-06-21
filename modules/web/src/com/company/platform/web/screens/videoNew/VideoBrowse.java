@@ -23,6 +23,8 @@ import com.vaadin.shared.communication.URLReference;
 import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Layout;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -87,6 +89,8 @@ public class VideoBrowse extends StandardLookup<Video> {
     @Inject
     private NodeService nodeService;
 
+    private static final Logger log = LoggerFactory.getLogger(VideoBrowse.class);
+
     private final Table.ColumnGenerator WATCH = new Table.ColumnGenerator() {
         @Override
         public Component generateCell(Entity entity) {
@@ -101,8 +105,10 @@ public class VideoBrowse extends StandardLookup<Video> {
                     @Override
                     public InputStream getStream() {
                         try {
+                            log.info("File {} is loaded", video.getFileDescriptor().getName());
                             return loader.openStream(video.getFileDescriptor());
                         } catch (FileStorageException e) {
+                            log.error("File {} is not loaded", video.getFileDescriptor().getName());
                             e.printStackTrace();
                         }
                         return null;
@@ -146,9 +152,9 @@ public class VideoBrowse extends StandardLookup<Video> {
                     video.getFileDescriptor().setDeleteTs(new Date());
                     dataManager.commit(video.getFileDescriptor());
                     Files.delete(new File(video.getFileDescriptor().getName() + ".mp4").toPath());
-                } catch (FileStorageException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
+                    log.info("Video {} has been deleted", video.getName());
+                } catch (FileStorageException | IOException e) {
+                    log.error("Video {} has not been deleted", video.getName());
                     e.printStackTrace();
                 }
 
@@ -188,12 +194,14 @@ public class VideoBrowse extends StandardLookup<Video> {
                     login.set((String) confirmScreenOptions.getParams().get("login"));
                     password.set((String) confirmScreenOptions.getParams().get("password"));
                     if(StringUtils.isEmpty(login) || StringUtils.isEmpty(password)){
+                        log.error("Login or password are empty");
                         throw new AuthenticationCredentialsNotFoundException("login and password are not confirmed");
                     }
 
                     PasswordEncryption encryption = AppBeans.get(PasswordEncryption.NAME);
 
                     if(encryption.checkPassword(user, password.get()) && login.get().equals(user.getLogin())){
+                        log.info("User is confirmed");
                         isConfirmed.set(true);
                     }
 
@@ -207,13 +215,12 @@ public class VideoBrowse extends StandardLookup<Video> {
                             File file = new File(video.getFileDescriptor().getName());
                             try {
                                 FileUtils.copyInputStreamToFile(loader.openStream(video.getFileDescriptor()), file);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (FileStorageException e) {
+                                log.info("File {} has been copied", video.getFileDescriptor().getName());
+                            } catch (IOException | FileStorageException e) {
+                                log.error("File {} has not been copied", video.getFileDescriptor().getName());
                                 e.printStackTrace();
                             }
                             FileSystemResource value = new FileSystemResource(file);
-                            System.out.println(value.getFile().length());
                             map.add("file", value);
                             SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
                             factory.setBufferRequestBody(false);
@@ -227,7 +234,7 @@ public class VideoBrowse extends StandardLookup<Video> {
                             ui.access(() -> {
                                 video.setStatus("processing");
                                 dataManager.commit(video);
-                                System.out.println("done");
+                                log.info("Video {} is processed", video.getName());
 
                             });
 
@@ -238,6 +245,7 @@ public class VideoBrowse extends StandardLookup<Video> {
             });
 
             if(!video.getStatus().equals("ready")){
+                log.info("Video is not ready");
                 button.setEnabled(false);
             }
 
@@ -266,6 +274,10 @@ public class VideoBrowse extends StandardLookup<Video> {
                             return node.getAddress();
                         }
                     }));
+
+            log.info("All nodes {}", nodes);
+            log.info("Free nodes {}", nodeListMap);
+
             nodeList.setOptionsMap(nodeListMap);
 
             nodeMap.put(video, nodeList);
@@ -276,20 +288,27 @@ public class VideoBrowse extends StandardLookup<Video> {
 
     @Subscribe
     public void onInit(InitEvent event){
+        log.info("On init event has started");
+
         User user = AppBeans.get(UserSessionSource.class).getUserSession().getUser();
         this.nodes = dataManager.loadList(LoadContext.create(Node.class)
                                             .setQuery(LoadContext.createQuery("SELECT n FROM platform_Node n WHERE n.user.id = :user").setParameter("user", user.getId())));
         videosDl.setParameter("deleteTime", null);
         this.nodeMap = new HashMap<>();
 
+        log.info("On inti event has stopped");
     }
 
     @Subscribe
     public void onAfterShow(AfterShowEvent event){
+        log.info("On after show event has started");
+
         videosTable.addGeneratedColumn("watchButton", WATCH);
         videosTable.addGeneratedColumn("deleteButton", DELETE);
         videosTable.addGeneratedColumn("processButton", PROCESS);
         videosTable.addGeneratedColumn("processNode", NODELIST);
+
+        log.info("On after show event has finished");
     }
 
 

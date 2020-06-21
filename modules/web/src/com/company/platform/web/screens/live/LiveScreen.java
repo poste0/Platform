@@ -8,6 +8,8 @@ import com.haulmont.cuba.gui.screen.*;
 import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.Video;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
@@ -22,22 +24,33 @@ public class LiveScreen extends Screen {
     @Inject
     private StreamService service;
 
+    private static final Logger log = LoggerFactory.getLogger(LiveScreen.class);
+
     @Subscribe
     public void onInit(InitEvent event){
+        log.info("On init event has started");
+
         this.options = event.getOptions();
+
+        log.info("On init event has finished");
     }
 
     @Subscribe
     public void onAfterShow(AfterShowEvent event){
+        log.info("On after show event has started");
+
         Camera camera = null;
         if(options instanceof MapScreenOptions){
+            log.info("Camera is received");
             camera = (Camera) ((MapScreenOptions) options).getParams().get("camera");
         }
         else{
+            log.error("Camera is not received");
             throw new IllegalArgumentException();
         }
 
         service.startStream(camera);
+        log.info("Stream has started");
 
         Layout layout = liveBox.unwrap(Layout.class);
         Video video = new Video();
@@ -72,18 +85,25 @@ public class LiveScreen extends Screen {
                 "      video.play();\n" +
                 "    });\n" +
                 "  }} stream();");
+
+        log.info("On after show event has finished");
     }
 
     @Subscribe
     public void afterClose(AfterCloseEvent event){
+        log.info("After close event has started");
+
         Camera camera = null;
         if(options instanceof MapScreenOptions){
+            log.info("Camera is received");
             camera = (Camera) ((MapScreenOptions) options).getParams().get("camera");
         }
         else{
+            log.error("Camera is not received");
             throw new IllegalArgumentException();
         }
 
         service.stopStream(camera);
+        log.info("Stream has finished");
     }
 }
