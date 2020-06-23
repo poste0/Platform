@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 public enum Status implements EnumClass<String> {
 
-    READY("ready"), PROCESSING("processing"), PROCESSED("processed");
+    READY("ready"), PROCESSING("processing"), PROCESSED("processed"), ERROR("error");
 
     private String id;
 

@@ -5,5 +5,23 @@
         <property name="camera" view="_local"/>
         <property name="fileDescriptor" view="_local"/>
         <property name="parentVideo" view="_local"/>
+        <property name="videoProcessing" view="_local"/>
+    </view>
+    <view entity="platform_VideoProcessing" name="processing-view" systemProperties="true">
+        <property name="node"/>
+    </view>
+    <view entity="platform_Image" name="image-view">
+        <property name="parentVideo" view="_local"/>
+        <property name="fileDescriptor" view="_local"/>
+        <property name="imageProcessing" view="_local"/>
+    </view>
+    <view entity="platform_ImageProcessing" name="imageProcessing-view" systemProperties="true">
+        <property name="node" view="_local"/>
+        <property name="images" view="_local">
+            <property name="fileDescriptor" view="_local"/>
+            <property name="parentVideo" view="_local">
+                <property name="camera" view="_local"/>
+            </property>
+        </property>
     </view>
 </views>

@@ -35,6 +35,10 @@ public class Video extends StandardEntity {
     @JoinColumn(name = "parentVideo")
     private Video parentVideo;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "videoProcessingId")
+    private VideoProcessing videoProcessing;
+
     public String getName() {
         return name;
     }
@@ -85,5 +89,13 @@ public class Video extends StandardEntity {
         }
 
         this.status = status;
+    }
+
+    public VideoProcessing getVideoProcessing() {
+        return videoProcessing;
+    }
+
+    public void setVideoProcessing(VideoProcessing videoProcessing) {
+        this.videoProcessing = videoProcessing;
     }
 }

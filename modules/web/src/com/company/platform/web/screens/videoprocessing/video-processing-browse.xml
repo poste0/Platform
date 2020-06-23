@@ -1,52 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
         caption="msg://browseCaption"
-        focusComponent="nodesTable"
-        messagesPack="com.company.platform.web.screens.node">
+        focusComponent="videoProcessingsTable"
+        messagesPack="com.company.platform.web.screens.videoprocessing">
     <data readOnly="true">
-        <collection id="nodesDc"
-                    class="com.company.platform.entity.Node"
-                    view="_local">
-            <loader id="nodesDl">
+        <collection id="videoProcessingsDc"
+                    class="com.company.platform.entity.VideoProcessing"
+                    view="processing-view">
+            <loader id="videoProcessingsDl">
                 <query>
-                    <![CDATA[select e from platform_Node e WHERE e.user.id = :user]]>
+                    <![CDATA[select e from platform_VideoProcessing e WHERE e.node.id = :nodeId]]>
                 </query>
             </loader>
         </collection>
     </data>
     <dialogMode height="600"
                 width="800"/>
-    <layout expand="nodesTable"
+    <layout expand="videoProcessingsTable"
             spacing="true">
         <filter id="filter"
-                applyTo="nodesTable"
-                dataLoader="nodesDl">
+                applyTo="videoProcessingsTable"
+                dataLoader="videoProcessingsDl">
             <properties include=".*"/>
         </filter>
-        <groupTable id="nodesTable"
+        <groupTable id="videoProcessingsTable"
                     width="100%"
-                    dataContainer="nodesDc">
+                    dataContainer="videoProcessingsDc">
             <actions>
                 <action id="create" type="create"/>
                 <action id="edit" type="edit"/>
                 <action id="remove" type="remove"/>
             </actions>
             <columns>
-                <column id="name"/>
-                <column id="address"/>
-                <column id="gpu"/>
-                <column id="cpu"/>
-                <column id="hardwareButton"/>
-                <column id="statusLabel"/>
-                <column id="videoProcessings"/>
-                <column id="imageProcessings"/>
+                <column id="createTs"/>
             </columns>
             <rowsCount/>
             <buttonsPanel id="buttonsPanel"
                           alwaysVisible="true">
-                <button id="createBtn" action="nodesTable.create"/>
-                <button id="editBtn" action="nodesTable.edit"/>
-                <button id="removeBtn" action="nodesTable.remove"/>
+                <button id="createBtn" action="videoProcessingsTable.create"/>
+                <button id="editBtn" action="videoProcessingsTable.edit"/>
+                <button id="removeBtn" action="videoProcessingsTable.remove"/>
             </buttonsPanel>
         </groupTable>
         <hbox id="lookupActions" spacing="true" visible="false">

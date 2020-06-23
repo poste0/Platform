@@ -84,7 +84,7 @@ public class VideoBrowse extends StandardLookup<Video> {
 
     private List<Node> nodes;
 
-    private Map<Video, LookupField<String>> nodeMap;
+    private Map<Video, LookupField<Node>> nodeMap;
 
     @Inject
     private NodeService nodeService;
@@ -228,8 +228,9 @@ public class VideoBrowse extends StandardLookup<Video> {
                             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
                             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
                             RestTemplate restTemplate = new RestTemplate(factory);
-                            LookupField<String> nodeList = nodeMap.get(video);
-                            restTemplate.exchange(nodeList.getValue() + "/file?login=" + user.getLogin() + "&password=" + password.get() + "&cameraId=" + video.getCamera().getId().toString() + "&videoId=" + video.getId() , HttpMethod.POST, requestEntity, String.class);
+                            LookupField<Node> nodeList = nodeMap.get(video);
+                            Node node = nodeList.getValue();
+                            restTemplate.exchange(node.getAddress() + "/file?login=" + user.getLogin() + "&password=" + password.get() + "&cameraId=" + video.getCamera().getId().toString() + "&videoId=" + video.getId() + "&nodeId=" + node.getId(), HttpMethod.POST, requestEntity, String.class);
 
                             ui.access(() -> {
                                 video.setStatus("processing");
@@ -244,7 +245,7 @@ public class VideoBrowse extends StandardLookup<Video> {
 
             });
 
-            if(!video.getStatus().equals("ready")){
+            if(!video.getStatus().equals("ready") && !video.getStatus().equals("error")){
                 log.info("Video is not ready");
                 button.setEnabled(false);
             }
@@ -258,8 +259,8 @@ public class VideoBrowse extends StandardLookup<Video> {
         public Component generateCell(Entity entity) {
             Video video = (Video) entity;
 
-            LookupField<String> nodeList = components.create(LookupField.NAME);
-            Map<String, String> nodeListMap = nodes.stream()
+            LookupField<Node> nodeList = components.create(LookupField.NAME);
+            Map<String, Node> nodeListMap = nodes.stream()
                     .filter(node -> {
                         return nodeService.getStatus(node).equals("false");
                     })
@@ -268,10 +269,10 @@ public class VideoBrowse extends StandardLookup<Video> {
                         public String apply(Node node) {
                             return node.getName();
                         }
-                    }, new Function<Node, String>() {
+                    }, new Function<Node, Node>() {
                         @Override
-                        public String apply(Node node) {
-                            return node.getAddress();
+                        public Node apply(Node node) {
+                            return node;
                         }
                     }));
 
