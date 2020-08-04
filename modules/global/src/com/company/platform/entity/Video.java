@@ -6,6 +6,9 @@ import com.haulmont.cuba.core.entity.FileDescriptor;
 import com.haulmont.cuba.core.entity.StandardEntity;
 
 import javax.persistence.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Table(name = "PLATFORM_VIDEO")
 @Entity(name = "platform_Video")
@@ -84,9 +87,10 @@ public class Video extends StandardEntity {
     }
 
     public void setStatus(String status) {
-        if(!status.equals(Status.READY.getId()) && !status.equals(Status.PROCESSING.getId()) && !status.equals(Status.PROCESSED.getId())){
-            throw new IllegalArgumentException("Status must be one of the status enum values");
-        }
+        List<Status> allStatuses = Arrays.asList(Status.values());
+        allStatuses.stream().filter(status1 -> status.equals(status1.getId())).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Status must be one of the status enum values"));
+
 
         this.status = status;
     }

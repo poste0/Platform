@@ -3,6 +3,7 @@ package com.company.platform.web.screens.videoNew;
 import com.company.platform.entity.Node;
 import com.company.platform.service.NodeService;
 import com.company.platform.web.screens.ConfirmScreen;
+import com.company.platform.web.screens.videoplayer.VideoPlayerUtils;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.core.sys.AppContext;
@@ -100,39 +101,7 @@ public class VideoBrowse extends StandardLookup<Video> {
             button.setCaption("Watch");
             button.addClickListener(event -> {
                 layout = playerBox.unwrap(Layout.class);
-                GwtVideo videoPlayer = new GwtVideo();
-                StreamResource videoStreamResource = new StreamResource(new StreamResource.StreamSource() {
-                    @Override
-                    public InputStream getStream() {
-                        try {
-                            log.info("File {} is loaded", video.getFileDescriptor().getName());
-                            return loader.openStream(video.getFileDescriptor());
-                        } catch (FileStorageException e) {
-                            log.error("File {} is not loaded", video.getFileDescriptor().getName());
-                            e.printStackTrace();
-                        }
-                        return null;
-                    }
-                }, video.getName() + ".mp4");
-                videoPlayer.setSource(new ContentLengthConnectorResource(videoStreamResource, video.getFileDescriptor().getSize()));
-                videoPlayer.setStyleName("video/mp4");
-                videoPlayer.setId("streamVideo");
-                videoPlayer.addStyleName("video-js");
-                videoPlayer.setAutoplay(false);
-                final String attributeJs = "var player = document.getElementById('streamVideo'); player.setAttribute('data-setup', '{}')";
-                layout.getUI().getPage().addDependency(new Dependency(Dependency.Type.JAVASCRIPT, "https://vjs.zencdn.net/7.8.2/video.js"));
-                layout.getUI().getPage().addDependency(new Dependency(Dependency.Type.STYLESHEET, "https://vjs.zencdn.net/7.8.2/video-js.css"));
-                layout.getUI().getPage().getJavaScript().execute(attributeJs);
-
-                com.vaadin.ui.Button stopButton = new com.vaadin.ui.Button();
-                stopButton.setCaption("Stop");
-                stopButton.addClickListener(stopEvent -> {
-                    layout.removeAllComponents();
-                });
-
-                layout.removeAllComponents();
-                layout.addComponent(videoPlayer);
-                layout.addComponent(stopButton);
+                VideoPlayerUtils.renderVideoPlayer(loader, layout, video);
             });
 
             return button;
