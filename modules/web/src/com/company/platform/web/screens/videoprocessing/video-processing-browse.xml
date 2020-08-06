@@ -34,6 +34,7 @@
             <columns>
                 <column id="createTs"/>
                 <column id="openVideoProcessing" caption="Open video processing result"/>
+                <column id="video.message" caption="Message"/>
             </columns>
             <rowsCount/>
             <buttonsPanel id="buttonsPanel"

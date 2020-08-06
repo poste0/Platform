@@ -36,6 +36,7 @@ public class ImageProcessingBrowse extends StandardLookup<ImageProcessing> {
     private static final Logger log = LoggerFactory.getLogger(ImageProcessingBrowse.class);
 
     private Component renderImage(ImageProcessing imageProcessing){
+        //todo Create good rendering of images and messages
         VBoxLayout layout = components.create(VBoxLayout.NAME);
 
         imageProcessing.getImages().forEach(image -> {
@@ -45,7 +46,14 @@ public class ImageProcessingBrowse extends StandardLookup<ImageProcessing> {
             img.setScaleMode(Image.ScaleMode.CONTAIN);
             img.setSource(FileDescriptorResource.class).setFileDescriptor(imageFileDescriptor);
 
-            layout.add(img);
+            HBoxLayout hBoxLayout = components.create(HBoxLayout.NAME);
+            hBoxLayout.add(img);
+
+            Label<String> message = components.create(Label.NAME);
+            message.setValue(image.getMessage());
+
+            hBoxLayout.add(message);
+            layout.add(hBoxLayout);
         });
 
         return layout;

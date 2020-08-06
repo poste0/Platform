@@ -42,6 +42,9 @@ public class Video extends StandardEntity {
     @JoinColumn(name = "videoProcessingId")
     private VideoProcessing videoProcessing;
 
+    @Column(name = "message")
+    private String message;
+
     public String getName() {
         return name;
     }
@@ -101,5 +104,13 @@ public class Video extends StandardEntity {
 
     public void setVideoProcessing(VideoProcessing videoProcessing) {
         this.videoProcessing = videoProcessing;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

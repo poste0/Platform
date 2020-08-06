@@ -27,6 +27,9 @@ public class Image extends StandardEntity {
     @JoinColumn(name = "imageProcessingId")
     private ImageProcessing imageProcessing;
 
+    @Column(name = "message")
+    private String message;
+
 
     public String getName() {
         return name;
@@ -58,5 +61,13 @@ public class Image extends StandardEntity {
 
     public ImageProcessing getImageProcessing(){
         return imageProcessing;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }
