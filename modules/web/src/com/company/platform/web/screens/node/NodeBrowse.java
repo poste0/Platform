@@ -55,22 +55,19 @@ public class NodeBrowse extends StandardLookup<Node> {
                 throw new IllegalArgumentException();
             }
 
-            Button button = new WebButton();
+            Button button = components.create(Button.NAME);
             button.setCaption("hardware");
-            button.addClickListener(new Consumer<Button.ClickEvent>() {
-                @Override
-                public void accept(Button.ClickEvent clickEvent) {
-                    Node node = (Node) entity;
+            button.addClickListener(clickEvent -> {
+                Node node = (Node) entity;
 
-                    String cpu = nodeService.getCpu(node);
-                    String gpu = nodeService.getGpu(node);
+                String cpu = nodeService.getCpu(node);
+                String gpu = nodeService.getGpu(node);
 
-                    node.setCpu(cpu);
-                    node.setGpu(gpu);
+                node.setCpu(cpu);
+                node.setGpu(gpu);
 
-                    DataManager dataManager = AppBeans.get(DataManager.class);
-                    dataManager.commit(node);
-                }
+                DataManager dataManager = AppBeans.get(DataManager.class);
+                dataManager.commit(node);
             });
 
             return button;
@@ -120,7 +117,7 @@ public class NodeBrowse extends StandardLookup<Node> {
         Button button = components.create(Button.NAME);
         button.setCaption("Show image processings on this node");
         button.addClickListener(event -> {
-            ImageProcessingsBrowse imageProcessings = screens.create(ImageProcessingsBrowse.class, OpenMode.NEW_TAB, new MapScreenOptions(Collections.singletonMap("nodeId", node.getId())));
+            ImageProcessingsBrowse imageProcessings = screens.create(ImageProcessingsBrowse.class, OpenMode.THIS_TAB, new MapScreenOptions(Collections.singletonMap("nodeId", node.getId())));
             imageProcessings.show();
         });
 

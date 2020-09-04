@@ -15,6 +15,7 @@
         <property name="parentVideo" view="_local"/>
         <property name="fileDescriptor" view="_local"/>
         <property name="imageProcessing" view="_local"/>
+        <property name="message"/>
     </view>
     <view entity="platform_ImageProcessing" name="imageProcessing-view" systemProperties="true">
         <property name="node" view="_local"/>

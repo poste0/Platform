@@ -1,6 +1,7 @@
 package com.company.platform.web.screens.imageprocessings;
 
-import com.company.platform.web.screens.imageprocessing.ImageProcessingBrowse;
+import com.company.platform.entity.ImageProcessing;
+import com.company.platform.web.screens.image.ImageBrowse;
 import com.haulmont.cuba.gui.Screens;
 import com.haulmont.cuba.gui.UiComponents;
 import com.haulmont.cuba.gui.components.Button;
@@ -8,7 +9,6 @@ import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.GroupTable;
 import com.haulmont.cuba.gui.model.DataLoader;
 import com.haulmont.cuba.gui.screen.*;
-import com.company.platform.entity.ImageProcessing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,8 +54,10 @@ public class ImageProcessingsBrowse extends StandardLookup<ImageProcessing> {
         Button button = components.create(Button.NAME);
         button.setCaption("Open image processing");
         button.addClickListener(event -> {
-            ImageProcessingBrowse imageProcessingScreen = screens.create(ImageProcessingBrowse.class, OpenMode.NEW_TAB, new MapScreenOptions(Collections.singletonMap("imageProcessingId", imageProcessing.getId())));
-            imageProcessingScreen.show();
+            //ImageProcessingBrowse imageProcessingScreen = screens.create(ImageProcessingBrowse.class, OpenMode.NEW_TAB, new MapScreenOptions(Collections.singletonMap("imageProcessingId", imageProcessing.getId())));
+            //imageProcessingScreen.show();
+            ImageBrowse imageBrowseScreen = screens.create(ImageBrowse.class, OpenMode.THIS_TAB, new MapScreenOptions(Collections.singletonMap("imageProcessingId", imageProcessing.getId())));
+            imageBrowseScreen.show();
         });
 
         return button;
