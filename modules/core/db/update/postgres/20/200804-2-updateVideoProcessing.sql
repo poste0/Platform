@@ -1,0 +1,3 @@
+alter table PLATFORM_VIDEO_PROCESSING rename column videoid to videoid__u87433 ;
+alter table PLATFORM_VIDEO_PROCESSING drop constraint FK_PLATFORM_VIDEO_PROCESSING_ON_VIDEOID ;
+drop index IDX_PLATFORM_VIDEO_PROCESSING_ON_VIDEOID ;

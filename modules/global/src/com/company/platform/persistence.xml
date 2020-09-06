@@ -5,5 +5,8 @@
         <class>com.company.platform.entity.Camera</class>
         <class>com.company.platform.entity.Node</class>
         <class>com.company.platform.entity.Video</class>
+        <class>com.company.platform.entity.Image</class>
+        <class>com.company.platform.entity.ImageProcessing</class>
+        <class>com.company.platform.entity.VideoProcessing</class>
     </persistence-unit>
 </persistence>
