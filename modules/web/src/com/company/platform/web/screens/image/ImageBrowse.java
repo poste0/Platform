@@ -1,7 +1,6 @@
 package com.company.platform.web.screens.image;
 
 import com.company.platform.entity.Image;
-import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.entity.FileDescriptor;
 import com.haulmont.cuba.gui.UiComponents;
 import com.haulmont.cuba.gui.components.Component;

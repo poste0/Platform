@@ -4,6 +4,5 @@
         <item screen="platform_Camera.browse"/>
         <item screen="platform_Node.browse"/>
         <item screen="platform_Video.browse"/>
-        <item screen="platform_Image.browse"/>
     </menu>
 </menu-config>
