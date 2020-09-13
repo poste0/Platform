@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services xmlns="http://schemas.haulmont.com/cuba/rest-services-v2.xsd">
+    <service name="platform_RegistrationService">
+        <method name="register" anonymousAllowed="true">
+            <param name="login"/>
+            <param name="password"/>
+            <param name="name"/>
+        </method>
+    </service>
+    <service name="platform_CameraService">
+        <method name="getStatus">
+            <param name="camera"/>
+        </method>
+    </service>
+</services>
+

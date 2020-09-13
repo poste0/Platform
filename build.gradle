@@ -25,6 +25,7 @@ def coreModule = project(":${modulePrefix}-core")
 def webModule = project(":${modulePrefix}-web")
 def portalModule = project(":${modulePrefix}-portal")
 def webToolkitModule = project(":${modulePrefix}-web-toolkit")
+def frontModule = project(":${modulePrefix}-front")
 
 def servletApi = 'javax.servlet:javax.servlet-api:3.1.0'
 
@@ -45,6 +46,8 @@ cuba {
 dependencies {
     appComponent("com.haulmont.cuba:cuba-global:$cubaVersion")
     appComponent('com.haulmont.addon.restapi:restapi-global:7.1.1')
+    appComponent('com.haulmont.addon.restapi:restapi-global:7.1.0')
+    appComponent('com.haulmont.addon.restapi:restapi-global:7.1.0')
 }
 
 def postgres = 'org.postgresql:postgresql:42.2.5'
@@ -287,12 +290,48 @@ configure(portalModule) {
     }
 }
 
+configure(frontModule) {
+    apply(plugin: 'cuba')
+    apply(plugin: 'idea')
+    apply(plugin: 'war')
+    apply(plugin: 'maven')
+
+    buildDir = 'build-gradle'
+
+    def frontAppDir = "${modulePrefix}-front"
+
+
+    def mainBuildDir = 'build'
+
+
+    task buildFrontend(type: NpmTask, dependsOn: npmInstall) {
+        args = ['run', 'build']
+        inputs.files fileTree('./') {
+            exclude 'build'
+        }
+        outputs.dir "build"
+    }
+
+    assemble.dependsOn buildFrontend
+
+    task deploy(type: Copy, dependsOn: [assemble]) {
+        from file(mainBuildDir)
+        into "$cuba.tomcat.dir/webapps/$frontAppDir"
+    }
+
+    war {
+        from file(mainBuildDir)
+    }
+
+}
+
 
 task undeploy(type: Delete, dependsOn: ":${modulePrefix}-web:cleanConf") {
     delete("$cuba.tomcat.dir/shared")
     delete("$cuba.tomcat.dir/webapps/${modulePrefix}-core")
     delete("$cuba.tomcat.dir/webapps/${modulePrefix}")
     delete("$cuba.tomcat.dir/webapps/${modulePrefix}-portal")
+    delete("$cuba.tomcat.dir/webapps/${modulePrefix}-front")
 }
 
 task restart(dependsOn: ['stop', ":${modulePrefix}-core:deploy", ":${modulePrefix}-web:deploy", ":${modulePrefix}-portal:deploy", ":${modulePrefix}-web-toolkit:deploy"], description: 'Redeploys applications and restarts local Tomcat') {
