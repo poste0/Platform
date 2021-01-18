@@ -13,6 +13,7 @@ export class Camera extends StandardEntity {
   frameRate?: number | null;
   path?: string | null;
   videos?: Video[] | null;
+  status?: string | null;
 }
 export type CameraViewName = "_minimal" | "_local" | "_base";
 export type CameraView<V extends CameraViewName> = V extends "_local"
@@ -27,6 +28,7 @@ export type CameraView<V extends CameraViewName> = V extends "_local"
       | "weight"
       | "frameRate"
       | "path"
+      | "status"
     >
   : V extends "_base"
   ? Pick<
@@ -40,5 +42,6 @@ export type CameraView<V extends CameraViewName> = V extends "_local"
       | "weight"
       | "frameRate"
       | "path"
+      | "status"
     >
   : never;

@@ -100,5 +100,12 @@
   "camera.width": "Ширина",
   "camera.frameRate": "Скорость записи",
   "camera.path": "Путь",
-  "camera.cameraName": "Имя камеры"
+  "camera.cameraName": "Имя камеры",
+  "router.CameraManagement": "Камеры",
+  "url_address": "Адрес",
+  "port": "Порт",
+  "name": "Имя",
+  "status": "Статус",
+  "start": "Старт",
+  "stop": "Стоп"
 }

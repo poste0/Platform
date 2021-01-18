@@ -1,6 +1,8 @@
 package com.company.platform.entity;
 
+import com.company.platform.service.CameraService;
 import com.esotericsoftware.kryo.NotNull;
+import com.haulmont.chile.core.annotations.MetaProperty;
 import com.haulmont.cuba.core.entity.StandardEntity;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.UserSessionSource;
@@ -51,6 +53,10 @@ public class Camera extends StandardEntity {
 
     @OneToMany(mappedBy = "camera")
     private List<Video> videos;
+
+    @Transient
+    @MetaProperty
+    private CameraService.Status status;
 
     public void setUser(User user) {
         this.user = user;
@@ -131,5 +137,13 @@ public class Camera extends StandardEntity {
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public CameraService.Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(CameraService.Status status) {
+        this.status = status;
     }
 }

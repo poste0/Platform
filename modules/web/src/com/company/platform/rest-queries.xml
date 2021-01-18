@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<queries xmlns="http://schemas.haulmont.com/cuba/rest-queries.xsd">
+    <query name="getCameras" entity="platform_Camera" view="_local">
+        <jpql><![CDATA[SELECT c FROM platform_Camera c WHERE c.user.id = :id]]></jpql>
+        <params>
+            <param name="id" type="java.util.UUID"/>
+        </params>
+    </query>
+</queries>

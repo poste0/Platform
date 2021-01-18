@@ -7,8 +7,8 @@ import CameraList from "./CameraList";
 type Props = RouteComponentProps<{ entityId?: string }>;
 
 @observer
-export class CameraManagementa extends React.Component<Props> {
-  static PATH = "/cameraManagementa";
+export class CameraManagement extends React.Component<Props> {
+  static PATH = "/cameraManagement";
   static NEW_SUBPATH = "new";
 
   render() {

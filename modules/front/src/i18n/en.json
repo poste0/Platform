@@ -11,6 +11,7 @@
   "management.editor.error": "Error",
   "management.editor.cancel": "Cancel",
   "management.editor.submit": "Submit",
+  "router.CameraManagement": "CameraManagement",
   "common.alt.logo": "Logo",
   "home.welcome": "Welcome to",
   "router.home": "Home",
@@ -100,5 +101,12 @@
   "camera.width": "Width",
   "camera.frameRate": "Frame rate",
   "camera.path": "Path",
-  "camera.cameraName": "Camera name"
+  "camera.cameraName": "Camera name",
+  "router.CameraManagement": "Cameras",
+  "url_address": "Url address",
+  "port": "Port",
+  "name": "Name",
+  "status": "Status",
+  "start": "Start",
+  "stop": "Stop"
 }

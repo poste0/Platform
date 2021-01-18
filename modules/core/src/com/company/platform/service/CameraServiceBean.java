@@ -219,7 +219,7 @@ public class CameraServiceBean implements CameraService {
         return capture.isRecording();
     }
 
-    public void update(User user, Camera camera){
+    public void update(Camera camera){
         FFMpegFrameWrapper wrapper = new FFMpegFrameWrapper(camera);
         UserSession userSession = AppBeans.get(UserSessionSource.class).getUserSession();
         List<Capture> wrappers = ffMpegs.get(userSession.getUser());

@@ -31,7 +31,7 @@ public interface CameraService {
 
     boolean isRecording(Camera camera);
 
-    void update(User user, Camera camera);
+    void update(Camera camera);
 
     boolean testConnection(Camera camera);
 

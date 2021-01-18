@@ -1,4 +1,5 @@
-import { CameraManagementa} from "./app/cameraa/CameraManagementa";
+import { CameraManagement } from "./app/camera/CameraManagement";
+import { CameraManagementa } from "./app/cameraa/CameraManagementa";
 import { getMenuItems } from "@cuba-platform/react";
 
 export const menuItems = getMenuItems();
@@ -23,8 +24,8 @@ menuItems.push(userSettingsSubMenu);
 */
 
 menuItems.push({
-  pathPattern: "/cameraManagementa/:entityId?",
-  menuLink: "/cameraManagementa",
-  component: CameraManagementa,
-  caption: "CameraManagementa"
+  pathPattern: "/cameraManagement/:entityId?",
+  menuLink: "/cameraManagement",
+  component: CameraManagement,
+  caption: "CameraManagement"
 });

@@ -11,6 +11,16 @@
         <method name="getStatus">
             <param name="camera"/>
         </method>
+        <method name="init"/>
+        <method name="update">
+            <param name="camera"/>
+        </method>
+        <method name="write">
+            <param name="camera"/>
+        </method>
+        <method name="stop">
+            <param name="camera"/>
+        </method>
     </service>
 </services>
 
