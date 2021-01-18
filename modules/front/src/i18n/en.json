@@ -108,5 +108,11 @@
   "name": "Name",
   "status": "Status",
   "start": "Start",
-  "stop": "Stop"
+  "stop": "Stop",
+  "connected": "Connected",
+  "not_connected": "Not connected",
+  "recording_is_starting": "Recording is starting",
+  "recording_has_started": "Recording has started",
+  "recording_is_stopping": "Recording is stopping",
+  "recording_has_stopped": "Recording has stopped"
 }

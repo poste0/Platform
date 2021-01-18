@@ -4,7 +4,7 @@ import {Link} from "react-router-dom";
 
 import {observable} from "mobx";
 
-import {Modal, Button, Table, message, Spin} from "antd";
+import {Modal, Button, Table, message, Spin, Tooltip} from "antd";
 
 import {cubaREST} from "../../index";
 
@@ -76,7 +76,12 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
       render: (status: string) => (
         <>
           {
-            status === "\"CONNECTED\"" ? <CheckCircleTwoTone twoToneColor="#29e70b"/> : <CloseCircleTwoTone twoToneColor="#ff0000"/>
+            status === "\"CONNECTED\"" ? <Tooltip placement="topLeft" title={this.props.intl.formatMessage({id: "connected"})}>
+              <CheckCircleTwoTone twoToneColor="#29e70b"/>
+            </Tooltip> :
+              <Tooltip placement="topLeft" title={this.props.intl.formatMessage({id: "not_connected"})}>
+                <CloseCircleTwoTone twoToneColor="#ff0000"/>
+              </Tooltip>
           }
         </>
       )
@@ -93,14 +98,14 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
               onClick={
                 (event) => {
                   const key = 'recording';
-                  message.loading({content: 'Recording is starting', key}, 0);
+                  message.loading({content: this.props.intl.formatMessage({id: "recording_is_starting"}), key}, 0);
                   record.status = null;
                   restServices.platform_CameraService.write(cubaREST)({camera: record})
                     .then((result) => {
                       restServices.platform_CameraService.getStatus(cubaREST)({camera: record})
                         .then((result) => {
                           record.status = String(result);
-                          message.success({content: 'Recording has started', key}, 0);
+                          message.success({content: this.props.intl.formatMessage({id: "recording_has_started"}), key}, 0);
                           this.setState({});
                         })
                         .catch((error) => {
@@ -112,7 +117,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
                     })
                 }
               }
-            >Start</Button> : <></>
+            >{this.props.intl.formatMessage({id: "start"})}</Button> : <></>
           }
         </>
       )
@@ -128,14 +133,14 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
               onClick={
                 (event) => {
                   const key = 'recording';
-                  message.loading({content: 'Recording is stopping', key}, 0);
+                  message.loading({content: this.props.intl.formatMessage({id: "recording_is_stopping"}), key}, 0);
                   record.status = null;
                   restServices.platform_CameraService.stop(cubaREST)({camera: record})
                     .then((result) => {
                       restServices.platform_CameraService.getStatus(cubaREST)({camera: record})
                         .then((result) => {
                           record.status = String(result);
-                          message.success({content: 'Recording has stopped', key}, 0);
+                          message.success({content: this.props.intl.formatMessage({id: "recording_has_stopped"}), key}, 0);
                           this.setState({});
                         })
                         .catch((error) => {
@@ -147,7 +152,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
                     })
                 }
               }
-            >Stop</Button> : <></>
+            >{this.props.intl.formatMessage({id: "stop"})}</Button> : <></>
           }
         </>
       )

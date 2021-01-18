@@ -107,5 +107,11 @@
   "name": "Имя",
   "status": "Статус",
   "start": "Старт",
-  "stop": "Стоп"
+  "stop": "Стоп",
+  "connected": "Есть подключение",
+  "not_connected": "Нет подключения",
+  "recording_is_starting": "Запись начинается",
+  "recording_has_started": "Запись началась",
+  "recording_is_stopping": "Запись останавливается",
+  "recording_has_stopped": "Запись остановилась"
 }
