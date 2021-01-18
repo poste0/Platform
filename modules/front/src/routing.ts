@@ -1,5 +1,4 @@
 import { CameraManagement } from "./app/camera/CameraManagement";
-import { CameraManagementa } from "./app/cameraa/CameraManagementa";
 import { getMenuItems } from "@cuba-platform/react";
 
 export const menuItems = getMenuItems();
