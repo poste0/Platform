@@ -1,4 +1,5 @@
 {
+  "router.VideoCards": "VideoCards",
   "management.browser.delete.areYouSure": "Are you sure you want to delete {instanceName}?",
   "management.browser.delete.ok": "Delete",
   "management.browser.delete.cancel": "Cancel",
@@ -11,7 +12,7 @@
   "management.editor.error": "Error",
   "management.editor.cancel": "Cancel",
   "management.editor.submit": "Submit",
-  "router.CameraManagement": "CameraManagement",
+  "router.CameraManagement": "Cameras",
   "common.alt.logo": "Logo",
   "home.welcome": "Welcome to",
   "router.home": "Home",
@@ -102,7 +103,6 @@
   "camera.frameRate": "Frame rate",
   "camera.path": "Path",
   "camera.cameraName": "Camera name",
-  "router.CameraManagement": "Cameras",
   "url_address": "Url address",
   "port": "Port",
   "name": "Name",
@@ -114,5 +114,6 @@
   "recording_is_starting": "Recording is starting",
   "recording_has_started": "Recording has started",
   "recording_is_stopping": "Recording is stopping",
-  "recording_has_stopped": "Recording has stopped"
+  "recording_has_stopped": "Recording has stopped",
+  "router.VideoCards": "Videos"
 }

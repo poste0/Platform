@@ -3,7 +3,9 @@
 
     <view entity="platform_Video" name="video-view" extends="_local">
         <property name="camera" view="_local"/>
-        <property name="fileDescriptor" view="_local"/>
+        <property name="fileDescriptor" view="_local">
+            <property name="updateTs"/>
+        </property>
         <property name="parentVideo" view="_local"/>
         <property name="videoProcessing" view="_local"/>
     </view>

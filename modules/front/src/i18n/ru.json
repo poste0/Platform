@@ -113,5 +113,6 @@
   "recording_is_starting": "Запись начинается",
   "recording_has_started": "Запись началась",
   "recording_is_stopping": "Запись останавливается",
-  "recording_has_stopped": "Запись остановилась"
+  "recording_has_stopped": "Запись остановилась",
+  "router.VideoCards": "Видео"
 }

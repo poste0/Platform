@@ -1,3 +1,4 @@
+import { VideoCards } from "./app/video/VideoCards";
 import { CameraManagement } from "./app/camera/CameraManagement";
 import { getMenuItems } from "@cuba-platform/react";
 
@@ -27,4 +28,11 @@ menuItems.push({
   menuLink: "/cameraManagement",
   component: CameraManagement,
   caption: "CameraManagement"
+});
+
+menuItems.push({
+  pathPattern: "/videoCards",
+  menuLink: "/videoCards",
+  component: VideoCards,
+  caption: "VideoCards"
 });
