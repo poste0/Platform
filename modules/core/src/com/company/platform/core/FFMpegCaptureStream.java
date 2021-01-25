@@ -31,7 +31,8 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
     @Override
     protected File createFile() {
         StringBuilder pathBuilder = new StringBuilder();
-        pathBuilder.append(camera.getName())
+        pathBuilder.append("file/")
+                .append(camera.getName())
                 .append(".m3u8");
 
         String path = pathBuilder.toString();

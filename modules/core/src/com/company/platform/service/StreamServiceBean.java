@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -87,11 +88,32 @@ public class StreamServiceBean implements StreamService {
     @Override
     public void startStream(Camera camera) {
         Capture capture = getCapture(camera);
+        StringBuilder pathBuilder = new StringBuilder();
+        pathBuilder.append("file/")
+                .append(camera.getName())
+                .append("1.ts");
+
+        String path = pathBuilder.toString();
+
+        File file = new File(path);
+        if(file.exists()){
+            return;
+        }
         try {
             capture.process();
-            log.info("Stream has started");
+
+            do{
+                if(file.exists()){
+                    log.info("Stream has started");
+                    return;
+                }
+                Thread.sleep(100);
+            }
+            while (true);
         } catch (FrameGrabber.Exception | FrameRecorder.Exception e) {
             log.error("Stream has not been started");
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }

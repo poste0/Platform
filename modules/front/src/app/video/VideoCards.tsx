@@ -1,13 +1,19 @@
 import * as React from "react";
 import { observer } from "mobx-react";
 import { Video } from "../../cuba/entities/platform_Video";
-import {Card, Icon, message} from "antd";
-import {collection, EntityProperty, getCubaREST} from "@cuba-platform/react";
+import {Button, Card, Icon, message, Row} from "antd";
+import {collection, EntityProperty, getCubaREST, injectMainStore, MainStoreInjected} from "@cuba-platform/react";
 import ReactPlayer from "react-player";
 import {cubaREST} from "../../index";
+import {SerializedEntity} from "@cuba-platform/rest";
+import {showDeletionDialog} from "../App";
+import {FormattedMessage, injectIntl, WrappedComponentProps} from "react-intl";
+import {observable} from "mobx";
+import ButtonGroup from "antd/es/button/button-group";
 
+@injectMainStore
 @observer
-export class VideoCards extends React.Component {
+class VideoCardsComponent extends React.Component<MainStoreInjected & WrappedComponentProps> {
   dataCollection = collection<Video>(Video.NAME, {
     view: "video-view",
     sort: "-updateTs"
@@ -32,7 +38,24 @@ export class VideoCards extends React.Component {
       <div className="narrow-layout">
         {items.map(e => (
           <Card
-            title={e.name}
+            title={
+              <Row>
+                {e.name}
+                <ButtonGroup style={
+                  {marginLeft: '50%'}
+                }>
+                  <Button
+                    onClick={() => {
+                      showDeletionDialog(this.props, e, "platform_Video", (result) => {
+                        this.dataCollection.load();
+                      });
+                    }}
+                  >
+                    <FormattedMessage id="management.browser.remove"/>
+                  </Button>
+                </ButtonGroup>
+              </Row>
+            }
             key={e.id}
             style={{ marginBottom: "12px" }}
           >
@@ -51,3 +74,5 @@ export class VideoCards extends React.Component {
     );
   }
 }
+
+export default injectIntl(VideoCardsComponent)

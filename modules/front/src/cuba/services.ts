@@ -55,5 +55,31 @@ export var restServices = {
         fetchOpts
       )
     }
+  },
+  platform_StreamService: {
+    startStream: (cubaApp: CubaApp, fetchOpts?: FetchOptions) => (params: any) => {
+      return cubaApp.invokeService(
+        "platform_StreamService",
+        "startStream",
+        params,
+        fetchOpts
+      )
+    },
+
+    init: (cubaApp: CubaApp, fetchOpts?: FetchOptions) => () => {
+      return cubaApp.invokeService(
+        "platform_StreamService",
+        "init",
+        fetchOpts
+      )
+    },
+
+    stopStream: (cubaApp: CubaApp, fetchOpts?: FetchOptions) => () => {
+      return cubaApp.invokeService(
+        "platform_StreamService",
+        "stopStream",
+        fetchOpts
+      )
+    },
   }
 };

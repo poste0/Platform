@@ -1,11 +1,11 @@
 import * as React from "react";
 import { FormEvent } from "react";
-import { Alert, Button, Card, Form, message } from "antd";
+import {Alert, Button, Card, Form, Input, message} from "antd";
 import { observer } from "mobx-react";
 import { CameraManagement } from "./CameraManagement";
 import { FormComponentProps } from "antd/lib/form";
 import { Link, Redirect } from "react-router-dom";
-import { IReactionDisposer, observable, reaction, toJS } from "mobx";
+import {action, IReactionDisposer, observable, reaction, toJS} from "mobx";
 import {
   FormattedMessage,
   injectIntl,
@@ -19,12 +19,16 @@ import {
   extractServerValidationErrors,
   constructFieldsWithErrors,
   clearFieldErrors,
-  MultilineText
+  MultilineText, collection, MainStoreInjected, injectMainStore
 } from "@cuba-platform/react";
 
 import "../../app/App.css";
 
 import { Camera } from "../../cuba/entities/platform_Camera";
+import {cubaREST} from "../../index";
+import {restServices} from "../../cuba/services";
+import {User} from "../../cuba/entities/base/sec$User";
+import {BaseUuidEntity} from "../../cuba/entities/base/sys$BaseUuidEntity";
 
 type Props = FormComponentProps & EditorProps;
 
@@ -32,10 +36,11 @@ type EditorProps = {
   entityId: string;
 };
 
+@injectMainStore
 @observer
 class CameraEditComponent extends React.Component<
-  Props & WrappedComponentProps
-> {
+  Props & WrappedComponentProps & MainStoreInjected
+  > {
   dataInstance = instance<Camera>(Camera.NAME, {
     view: "_local",
     loadImmediately: false
@@ -65,6 +70,59 @@ class CameraEditComponent extends React.Component<
 
   @observable
   globalErrors: string[] = [];
+  @observable
+  address: string;
+
+  appState = this.props.mainStore!;
+  userCollection = collection<User>(User.NAME, {
+    view: "_local",
+    sort: "-updateTs",
+    filter: {
+      conditions:
+        [
+          {property: "login", operator: "=", value: this.appState.userName!}
+        ]
+    }
+  });
+
+  @action
+  formChange = () => {
+    this.address = "";
+
+    let fieldsValue = this.props.form.getFieldsValue(this.fields);
+
+    const protocol = "rtsp://";
+
+    this.address += protocol;
+    this.appendIfNotEmpty(this.props.form.getFieldValue('cameraName'), ":");
+    this.appendIfNotEmpty(this.props.form.getFieldValue('password'), "@");
+    this.appendIfNotEmpty(this.props.form.getFieldValue('urlAddress'), "");
+    if(this.props.form.getFieldValue('port') != undefined){
+      this.address += ":";
+      this.address += this.props.form.getFieldValue('port');
+    }
+    this.address += "/";
+    this.appendIfNotEmpty(this.props.form.getFieldValue('path'), "");
+    if(this.props.form.getFieldValue('options') != undefined && this.props.form.getFieldValue('options') != ""){
+      this.address += "?";
+      String(this.props.form.getFieldValue('options')).split("\n").forEach((option) => {
+        this.address += option;
+        this.address += "&";
+      });
+      this.address = this.address.substring(0, this.address.length - 1);
+    }
+  };
+
+  getFieldValue(p: string){
+    return this.props.form.getFieldValue(this.props.intl.formatMessage({id: p}));
+  }
+
+  appendIfNotEmpty = (value: string, addedValue: string) => {
+    if(value != undefined && value != ""){
+      this.address += value;
+      this.address += addedValue;
+    }
+  };
 
   handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -77,8 +135,22 @@ class CameraEditComponent extends React.Component<
         );
         return;
       }
+
+      const cameraJson = {
+        "address": this.address,
+        "urlAddress": this.props.form.getFieldValue('urlAddress'),
+        "port": this.props.form.getFieldValue('port'),
+        "name": this.props.form.getFieldValue('name'),
+        "height": this.props.form.getFieldValue('height'),
+        "weight": this.props.form.getFieldValue('weight'),
+        "frameRate": this.props.form.getFieldValue('frameRate'),
+        "path": this.props.form.getFieldValue('path'),
+        "user": this.userCollection.items[0],
+        "CREATED_BY": this.userCollection.items[0].login
+      };
+
       this.dataInstance
-        .update(this.props.form.getFieldsValue(this.fields))
+        .update(cameraJson)
         .then(() => {
           message.success(
             this.props.intl.formatMessage({ id: "management.editor.success" })
@@ -132,40 +204,61 @@ class CameraEditComponent extends React.Component<
 
     return (
       <Card className="narrow-layout">
-        <Form onSubmit={this.handleSubmit} layout="vertical">
+        <Form onSubmit={this.handleSubmit} layout="vertical" onChange={this.formChange} >
+
           <Field
             entityName={Camera.NAME}
-            propertyName="address"
+            propertyName={'urlAddress'}
             form={this.props.form}
-            formItemOpts={{ style: { marginBottom: "12px" } }}
+            formItemOpts={{ style: { marginBottom: "12px" }, label: this.props.intl.formatMessage({id: "camera.address"})}}
             getFieldDecoratorOpts={{
-              rules: [{ required: true }]
+              rules: [{ required: true }],
             }}
           />
 
           <Field
             entityName={Camera.NAME}
-            propertyName="urlAddress"
+            propertyName={'port'}
             form={this.props.form}
-            formItemOpts={{ style: { marginBottom: "12px" } }}
-            getFieldDecoratorOpts={{
-              rules: [{ required: true }]
-            }}
-          />
-
-          <Field
-            entityName={Camera.NAME}
-            propertyName="port"
-            form={this.props.form}
-            formItemOpts={{ style: { marginBottom: "12px" } }}
+            formItemOpts={{ style: { marginBottom: "12px" }, label: this.props.intl.formatMessage({id: "camera.port"})}}
             getFieldDecoratorOpts={{}}
           />
 
           <Field
             entityName={Camera.NAME}
-            propertyName="name"
+            propertyName={'name'}
             form={this.props.form}
-            formItemOpts={{ style: { marginBottom: "12px" } }}
+            formItemOpts={{ style: { marginBottom: "12px" }, label: this.props.intl.formatMessage({id: "camera.cameraName"}) }}
+            getFieldDecoratorOpts={{
+
+            }}
+          />
+
+          <Field
+            entityName={Camera.NAME}
+            propertyName={'cameraName'}
+            form={this.props.form}
+            formItemOpts={{ style: { marginBottom: "12px" }, label: this.props.intl.formatMessage({id: "camera.name"}) }}
+            getFieldDecoratorOpts={{
+
+            }}
+          />
+
+          <Field
+            entityName={Camera.NAME}
+            propertyName={'password'}
+            form={this.props.form}
+            formItemOpts={{ style: { marginBottom: "12px" }, label: this.props.intl.formatMessage({id: "camera.password"}) }}
+            getFieldDecoratorOpts={{
+
+            }}
+          />
+
+          <Field
+            entityName={Camera.NAME}
+            propertyName={'height'}
+            form={this.props.form}
+            formItemOpts={{ style: { marginBottom: "12px" }, label: this.props.intl.formatMessage({id: "camera.height"}) }}
             getFieldDecoratorOpts={{
               rules: [{ required: true }]
             }}
@@ -173,9 +266,9 @@ class CameraEditComponent extends React.Component<
 
           <Field
             entityName={Camera.NAME}
-            propertyName="height"
+            propertyName={'weight'}
             form={this.props.form}
-            formItemOpts={{ style: { marginBottom: "12px" } }}
+            formItemOpts={{ style: { marginBottom: "12px" }, label: this.props.intl.formatMessage({id: "camera.width"}) }}
             getFieldDecoratorOpts={{
               rules: [{ required: true }]
             }}
@@ -183,31 +276,41 @@ class CameraEditComponent extends React.Component<
 
           <Field
             entityName={Camera.NAME}
-            propertyName="weight"
+            propertyName={'frameRate'}
             form={this.props.form}
-            formItemOpts={{ style: { marginBottom: "12px" } }}
+            formItemOpts={{ style: { marginBottom: "12px" }, label: this.props.intl.formatMessage({id: "camera.frameRate"}) }}
             getFieldDecoratorOpts={{
-              rules: [{ required: true }]
+              rules: [{ required: true }],
             }}
+
           />
 
           <Field
             entityName={Camera.NAME}
-            propertyName="frameRate"
+            propertyName={'path'}
             form={this.props.form}
-            formItemOpts={{ style: { marginBottom: "12px" } }}
-            getFieldDecoratorOpts={{
-              rules: [{ required: true }]
-            }}
-          />
-
-          <Field
-            entityName={Camera.NAME}
-            propertyName="path"
-            form={this.props.form}
-            formItemOpts={{ style: { marginBottom: "12px" } }}
+            formItemOpts={{ style: { marginBottom: "12px"}, label: this.props.intl.formatMessage({id: "camera.path"}) }}
             getFieldDecoratorOpts={{}}
           />
+
+          <Field
+            entityName={Camera.NAME}
+            propertyName={'options'}
+            form={this.props.form}
+            formItemOpts={{ style: { marginBottom: "12px" }, label: this.props.intl.formatMessage({id: "camera.options"}) }}
+            getFieldDecoratorOpts={{
+
+            }}
+          />
+
+          <Form.Item>
+            <Input
+              id="address_item"
+              value={this.address}
+              disabled={true}
+              placeholder={this.props.intl.formatMessage({id: "camera.address"})}
+            />
+          </Form.Item>
 
           {this.globalErrors.length > 0 && (
             <Alert
@@ -252,8 +355,25 @@ class CameraEditComponent extends React.Component<
         this.props.form.setFieldsValue(
           this.dataInstance.getFieldValues(this.fields)
         );
+        if(this.dataInstance.getFieldValues(['address']) != undefined){
+          this.props.form.setFieldsValue({'cameraName': this.getCameraName()});
+          this.props.form.setFieldsValue({'password': this.getPassword()});
+          this.formChange();
+        }
       }
     );
+  }
+
+  getCameraName(): string {
+    return this.getCameraNameAndPassword()[0];
+  }
+
+  getPassword(): string {
+    return this.getCameraNameAndPassword()[1];
+  }
+
+  getCameraNameAndPassword(): string [] {
+    return this.dataInstance.getFieldValues(['address']).address.split('@')[0].split('://')[1].split(':');
   }
 
   componentWillUnmount() {

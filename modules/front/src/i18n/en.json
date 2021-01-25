@@ -1,6 +1,5 @@
 {
-  "router.VideoCards": "VideoCards",
-  "management.browser.delete.areYouSure": "Are you sure you want to delete {instanceName}?",
+  "management.browser.delete.areYouSure": "Are you sure you want to delete?",
   "management.browser.delete.ok": "Delete",
   "management.browser.delete.cancel": "Cancel",
   "management.browser.create": "Create",
@@ -12,6 +11,8 @@
   "management.editor.error": "Error",
   "management.editor.cancel": "Cancel",
   "management.editor.submit": "Submit",
+  "router.NodeManagement": "NodeManagement",
+  "router.VideoCards": "Videos",
   "router.CameraManagement": "Cameras",
   "common.alt.logo": "Logo",
   "home.welcome": "Welcome to",
@@ -115,5 +116,7 @@
   "recording_has_started": "Recording has started",
   "recording_is_stopping": "Recording is stopping",
   "recording_has_stopped": "Recording has stopped",
-  "router.VideoCards": "Videos"
+  "deleting_is_starting": "Deleting is starting",
+  "deleting_has_finished": "Deleting has finished",
+  "recording": "Recording"
 }

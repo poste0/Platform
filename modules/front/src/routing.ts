@@ -1,4 +1,4 @@
-import { VideoCards } from "./app/video/VideoCards";
+import VideoCards from "./app/video/VideoCards";
 import { CameraManagement } from "./app/camera/CameraManagement";
 import { getMenuItems } from "@cuba-platform/react";
 

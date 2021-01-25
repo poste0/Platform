@@ -22,5 +22,14 @@
             <param name="camera"/>
         </method>
     </service>
+    <service name="platform_StreamService">
+        <method name="startStream">
+            <param name="camera"/>
+        </method>
+        <method name="stopStream">
+            <param name="camera"/>
+        </method>
+        <method name="init"/>
+    </service>
 </services>
 

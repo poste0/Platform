@@ -1,5 +1,5 @@
 {
-  "management.browser.delete.areYouSure": "Вы уверены, что хотите удалить {instanceName}?",
+  "management.browser.delete.areYouSure": "Вы уверены, что хотите удалить?",
   "management.browser.delete.ok": "Удалить",
   "management.browser.delete.cancel": "Отмена",
   "management.browser.create": "Создать",
@@ -114,5 +114,8 @@
   "recording_has_started": "Запись началась",
   "recording_is_stopping": "Запись останавливается",
   "recording_has_stopped": "Запись остановилась",
-  "router.VideoCards": "Видео"
+  "router.VideoCards": "Видео",
+  "deleting_is_starting": "Удаление начинается",
+  "deleting_has_finished": "Удаление закончено",
+  "recording": "Записывается"
 }

@@ -1,7 +1,7 @@
 import * as React from "react";
 import "./App.css";
 
-import { Icon, Layout, Menu } from "antd";
+import {Icon, Layout, Menu, message, Modal} from "antd";
 import { observer } from "mobx-react";
 import Login from "./login/Login";
 import Centered from "./common/Centered";
@@ -19,9 +19,11 @@ import { CenteredLoader } from "./CenteredLoader";
 import {
   FormattedMessage,
   injectIntl,
-  IntlFormatters,
+  IntlFormatters, IntlShape,
   WrappedComponentProps
 } from "react-intl";
+import {StandardEntity} from "../cuba/entities/base/sys$StandardEntity";
+import {cubaREST} from "../index";
 
 @injectMainStore
 @observer
@@ -141,6 +143,32 @@ function collectRouteItems(items: Array<RouteItem | SubMenu>): RouteItem[] {
     },
     [] as Array<RouteItem>
   );
+}
+
+export function showDeletionDialog <T extends StandardEntity> (props: any, object: T, entityName: string, callback: (result: any) => void) {
+  Modal.confirm({
+    title: props.intl.formatMessage(
+      {id: "management.browser.delete.areYouSure"}
+    ),
+    okText: props.intl.formatMessage({
+      id: "management.browser.delete.ok"
+    }),
+    cancelText: props.intl.formatMessage({
+      id: "management.browser.delete.cancel"
+    }),
+    onOk: () => {
+      const key = 'deleting';
+      message.loading({content: props.intl.formatMessage({id: "deleting_is_starting"}), key}, 0);
+      cubaREST.deleteEntity(entityName, object.id)
+        .then((result) => {
+          message.success({content: props.intl.formatMessage({id: "deleting_has_finished"}), key}, 0);
+          callback(result);
+        })
+        .catch((error) => {
+          message.error({content: props.intl.formatMessage({id: "management.editor.error"}), key}, 0);
+        });
+    }
+  });
 }
 
 const App = injectIntl(AppComponent);

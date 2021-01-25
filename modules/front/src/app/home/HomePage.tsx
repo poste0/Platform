@@ -6,6 +6,7 @@ import {cubaREST} from "../../index";
 class HomePage extends React.Component {
   render() {
     restServices.platform_CameraService.init(cubaREST)();
+    restServices.platform_StreamService.init(cubaREST)();
     return (
       <div>
         <FormattedMessage id="home.welcome" /> Platform!

@@ -4,7 +4,7 @@ import {Link} from "react-router-dom";
 
 import {observable} from "mobx";
 
-import {Modal, Button, Table, message, Spin, Tooltip} from "antd";
+import {Modal, Button, Table, message, Spin, Tooltip, Row} from "antd";
 
 import {cubaREST} from "../../index";
 
@@ -25,8 +25,14 @@ import {
 } from "react-intl";
 import {restServices} from "../../cuba/services";
 
-import {CheckCircleOutlined, CheckCircleTwoTone, CloseCircleTwoTone} from "@ant-design/icons";
+import {CheckCircleOutlined, CheckCircleTwoTone, CloseCircleTwoTone, VideoCameraTwoTone} from "@ant-design/icons";
 import {render} from "react-dom";
+import {StandardEntity} from "../../cuba/entities/base/sys$StandardEntity";
+import {showDeletionDialog} from "../App";
+import ReactPlayer, {ReactPlayerProps} from "react-player";
+import cuba from "@cuba-platform/rest/dist-browser/cuba";
+import {ReactNode} from "react";
+import {Simulate} from "react-dom/test-utils";
 
 @injectMainStore
 @observer
@@ -36,14 +42,31 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
   @observable
   cameras: Camera[] = [];
 
+  @observable
+  isLoaded: boolean = false;
+
   constructor(props: any) {
     super(props);
+    this.getCameras();
+  }
+
+  getCameras() {
     cubaREST.loadEntities<Camera>('platform_Camera').then((cameras) => {
+      if (cameras.length == 0) {
+        this.isLoaded = true;
+      }
+      let count = 0;
       cameras.forEach((camera) => {
         restServices.platform_CameraService.getStatus(cubaREST)({camera: camera}).then((result) => {
           camera.status = String(result);
           this.cameras.push(camera);
-        });
+          count++;
+        })
+          .then((result) => {
+            if (count == cameras.length) {
+              this.isLoaded = true;
+            }
+          });
       });
     });
   }
@@ -73,18 +96,30 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
       title: this.props.intl.formatMessage({id: "status"}),
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <>
-          {
-            status === "\"CONNECTED\"" ? <Tooltip placement="topLeft" title={this.props.intl.formatMessage({id: "connected"})}>
-              <CheckCircleTwoTone twoToneColor="#29e70b"/>
-            </Tooltip> :
-              <Tooltip placement="topLeft" title={this.props.intl.formatMessage({id: "not_connected"})}>
-                <CloseCircleTwoTone twoToneColor="#ff0000"/>
+      render: (status: string) => {
+        let id;
+        let element;
+        if (status == "\"CONNECTED\"") {
+          id = 'connected';
+          element = <CheckCircleTwoTone twoToneColor="#29e70b"/>;
+        } else if (status == "\"RECORDING\"") {
+          id = 'recording';
+          element = <VideoCameraTwoTone/>
+        } else {
+          id = 'not_connected';
+          element = <CloseCircleTwoTone twoToneColor="#ff0000"/>;
+        }
+
+        return (
+          <>
+            {
+              <Tooltip placement="topLeft" title={this.props.intl.formatMessage({id})}>
+                {element}
               </Tooltip>
-          }
-        </>
-      )
+            }
+          </>
+        )
+      }
     },
 
     {
@@ -105,7 +140,10 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
                       restServices.platform_CameraService.getStatus(cubaREST)({camera: record})
                         .then((result) => {
                           record.status = String(result);
-                          message.success({content: this.props.intl.formatMessage({id: "recording_has_started"}), key}, 0);
+                          message.success({
+                            content: this.props.intl.formatMessage({id: "recording_has_started"}),
+                            key
+                          }, 0);
                           this.setState({});
                         })
                         .catch((error) => {
@@ -140,7 +178,10 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
                       restServices.platform_CameraService.getStatus(cubaREST)({camera: record})
                         .then((result) => {
                           record.status = String(result);
-                          message.success({content: this.props.intl.formatMessage({id: "recording_has_stopped"}), key}, 0);
+                          message.success({
+                            content: this.props.intl.formatMessage({id: "recording_has_stopped"}),
+                            key
+                          }, 0);
                           this.setState({});
                         })
                         .catch((error) => {
@@ -156,18 +197,103 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
           }
         </>
       )
+    },
+    {
+      title: this.props.intl.formatMessage({id: "management.browser.edit"}),
+      dataIndex: '',
+      key: 'edit',
+      render: (text: string, camera: Camera) => (
+        <>
+          {
+            <Link to={CameraManagement.PATH + "/" + camera.id} key="edit">
+              <Button
+                htmlType="button"
+                style={{margin: "0 12px 12px 0"}}
+                type="default"
+              >
+                <FormattedMessage id="management.browser.edit"/>
+              </Button>
+            </Link>
+          }
+        </>
+      )
+    },
+    {
+      title: this.props.intl.formatMessage({id: "management.browser.remove"}),
+      dataIndex: '',
+      key: 'delete',
+      render: (text: string, camera: Camera) => (
+        <>
+          {
+            <Button
+              htmlType="button"
+              style={{margin: "0 12px 12px 0"}}
+              onClick={() => showDeletionDialog(this.props, camera, 'platform_Camera', (result) => {
+                  if (this.cameras.length == 1) {
+                    this.cameras = [];
+                  } else if (this.cameras.length != 0) {
+                    this.cameras = this.deleteCamera(camera);
+                  }
+                }
+              )}
+              key="remove"
+              type="default"
+            >
+              <FormattedMessage id="management.browser.remove"/>
+            </Button>
+          }
+        </>
+      )
+    },
+    {
+      title: 'a',
+      dataIndex: '',
+      key: 'stream',
+      render: (text: string, camera: Camera) => {
+        let url = document.location.href.split('/');
+        camera.status = null;
+        return (
+          <div id="player">
+            <Button onClick={() => {
+              restServices.platform_StreamService.startStream(cubaREST)({camera: camera})
+                .then((result) => {
+                  render(
+                    <ReactPlayer
+                      url={url[0].concat('//').concat(url[2]).concat('/file/' + camera.name + ".m3u8")}
+                      controls={true} playing={true}>
+                    </ReactPlayer>,
+                    document.getElementById("player")
+                  );
+                })
+            }}>
+              Go
+            </Button>
+          </div>
+        )
+      }
     }
   ];
+
+  deleteCamera(camera: Camera) {
+    let result: Camera [] = [];
+    this.cameras.forEach((value) => {
+      if (camera.id != value.id) {
+        result.push(value);
+      }
+    });
+
+    return result;
+  }
 
   statusToIcon = {}
 
   @observable selectedRowKey: string | undefined;
 
-  showDeletionDialog = (e: SerializedEntity<Camera>) => {
+  showDeletionDialog = (e: Camera) => {
     Modal.confirm({
       title: this.props.intl.formatMessage(
         {id: "management.browser.delete.areYouSure"},
-        {instanceName: e._instanceName}
+        {instanceName: e.name}
       ),
       okText: this.props.intl.formatMessage({
         id: "management.browser.delete.ok"
@@ -178,7 +304,20 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
       onOk: () => {
         this.selectedRowKey = undefined;
 
-        return this.dataCollection.delete(e);
+        const key = 'deleting';
+        message.loading({content: this.props.intl.formatMessage({id: "deleting_is_starting"}), key}, 0);
+        cubaREST.deleteEntity('platform_Camera', e.id)
+          .then((result) => {
+            message.success({content: this.props.intl.formatMessage({id: "deleting_has_finished"}), key}, 0);
+            if (this.cameras.length == 1) {
+              this.cameras = [];
+            } else if (this.cameras.length != 0) {
+              this.cameras = this.cameras.splice(this.cameras.indexOf(e), 1);
+            }
+          })
+          .catch((error) => {
+            message.error({content: this.props.intl.formatMessage({id: "management.editor.error"}), key}, 0);
+          });
       }
     });
   };
@@ -223,7 +362,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
       </Button>
     ];
 
-    if (this.cameras.length == 0) {
+    if (!this.isLoaded) {
       return 'Loading';
     }
 
@@ -238,11 +377,30 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
       />
 
        */
-      <Table<Camera>
-        dataSource={this.cameras}
-        columns={this.fields}
-      >
-      </Table>
+      <div>
+        <Row>
+          <Link
+            to={CameraManagement.PATH + "/" + CameraManagement.NEW_SUBPATH}
+            key="create"
+          >
+            <Button
+              htmlType="button"
+              style={{margin: "0 12px 12px 0"}}
+              type="primary"
+              icon="plus"
+            >
+          <span>
+            <FormattedMessage id="management.browser.create"/>
+          </span>
+            </Button>
+          </Link>
+        </Row>
+        <Table<Camera>
+          dataSource={this.cameras}
+          columns={this.fields}
+        >
+        </Table>
+      </div>
     );
   }
 
