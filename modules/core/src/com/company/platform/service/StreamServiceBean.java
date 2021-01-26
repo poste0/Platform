@@ -121,7 +121,9 @@ public class StreamServiceBean implements StreamService {
     @Override
     public void stopStream(Camera camera) {
         Capture capture = getCapture(camera);
-        capture.stop();
-        log.info("Stream has started");
+        if(Objects.nonNull(capture)) {
+            capture.stop();
+            log.info("Stream has stopped");
+        }
     }
 }

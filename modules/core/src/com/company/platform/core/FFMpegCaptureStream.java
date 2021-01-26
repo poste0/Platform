@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 @Component(FFMpegCaptureStream.NAME)
 @Scope("prototype")
@@ -29,7 +30,7 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
     }
 
     @Override
-    protected File createFile() {
+    protected void createFile() {
         StringBuilder pathBuilder = new StringBuilder();
         pathBuilder.append("file/")
                 .append(camera.getName())
@@ -40,7 +41,6 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
         File file = new File(path);
         this.file = file;
         log.info("File has been created");
-        return file;
     }
 
     @Override
@@ -62,9 +62,16 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
     public void stop(){
         super.stop();
 
-        File file = new File(".");
+        final String dilimeter = "/";
+        String[] parts = this.file.getPath().split(dilimeter);
+        StringBuilder tsFileBuilder = new StringBuilder();
+        for (int i = 0; i < parts.length - 1; i++) {
+            tsFileBuilder.append(parts[i])
+                    .append(dilimeter);
+        }
+        File tsFile = new File(tsFileBuilder.toString());
         FileFilter filter = new WildcardFileFilter(camera.getName() + "*.ts");
-        File[] files = file.listFiles(filter);
+        File[] files = tsFile.listFiles(filter);
         for(File f: files){
             try {
                 Files.delete(f.toPath());
@@ -75,9 +82,8 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
             }
         }
 
-        file = new File(camera.getName() + ".m3u8");
         try {
-            Files.delete(file.toPath());
+            Files.delete(this.file.toPath());
             log.info("File m3u8 of live stream has been deleted");
         } catch (IOException e) {
             log.error("File m3u8 of live stream has not been deleted");

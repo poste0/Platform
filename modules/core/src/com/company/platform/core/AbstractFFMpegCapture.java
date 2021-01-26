@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 //@Component(AbstractFFMpegCapture.NAME)
@@ -27,7 +28,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
 
     protected Camera camera;
 
-    protected boolean isRecording;
+    protected AtomicBoolean isRecording;
 
     protected boolean isStopped = false;
 
@@ -40,7 +41,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
     public AbstractFFMpegCapture(Camera camera) throws FrameGrabber.Exception {
         this.grabber = FFmpegFrameGrabber.createDefault(camera.getAddress());
         this.camera = camera;
-        this.isRecording = false;
+        this.isRecording = new AtomicBoolean(false);
         this.executor = new ConcurrentTaskExecutor();
     }
 
@@ -69,14 +70,14 @@ public abstract class AbstractFFMpegCapture implements Capture {
         log.info("Grabber has been set up");
     }
 
-    protected abstract File createFile();
+    protected abstract void createFile();
 
     @Override
     public void process() throws FrameRecorder.Exception, FrameGrabber.Exception{
-        isRecording = true;
+        isRecording.set(true);
         setUpGrabber();
         startGrabber();
-        File file = createFile();
+        createFile();
         recorder = new HlsRecorder(file, grabber.getImageWidth(), grabber.getImageHeight());
         setUpRecorder();
         recorder.start();
@@ -85,7 +86,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
             AppContext.setSecurityContext(context);
             try {
                 int q = 0;
-                while (isRecording) {
+                while (isRecording.get()) {
                     q++;
                     if(q == grabber.getFrameRate()){
                         log.info("1 second has been recorder");
@@ -135,7 +136,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
     }
 
     public boolean isRecording(){
-        return isRecording;
+        return isRecording.get();
     }
 
     public void setCamera(Camera camera){
@@ -147,7 +148,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
     }
 
     public void stop(){
-        isRecording = false;
+        isRecording.set(false);
         while(!isStopped){
             log.info("Recording is being stopped");
             continue;

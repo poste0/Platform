@@ -31,7 +31,7 @@ import {StandardEntity} from "../../cuba/entities/base/sys$StandardEntity";
 import {showDeletionDialog} from "../App";
 import ReactPlayer, {ReactPlayerProps} from "react-player";
 import cuba from "@cuba-platform/rest/dist-browser/cuba";
-import {ReactNode} from "react";
+import {ReactElement, ReactNode} from "react";
 import {Simulate} from "react-dom/test-utils";
 
 @injectMainStore
@@ -246,33 +246,54 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
       )
     },
     {
-      title: 'a',
+      title: '',
       dataIndex: '',
       key: 'stream',
       render: (text: string, camera: Camera) => {
-        let url = document.location.href.split('/');
+        let url = this.getUrlToNginx();
         camera.status = null;
+        let player: ReactElement [] = [<ReactPlayer
+          url={url.concat('/file/' + camera.name + ".m3u8")}
+          playing={true}
+        >
+        </ReactPlayer>,
+          <Button onClick={() => {
+            restServices.platform_StreamService.stopStream(cubaREST)({camera: camera})
+              .then((result) => {
+                render(
+                  button,
+                  document.getElementById("player")
+                );
+              })
+          }}>
+            Stop
+          </Button>];
+
+        let button: ReactElement = <Button onClick={() => {
+          restServices.platform_StreamService.startStream(cubaREST)({camera: camera})
+            .then((result) => {
+              render(
+                player,
+                document.getElementById("player")
+              );
+            })
+        }}>
+          Go
+        </Button>;
         return (
           <div id="player">
-            <Button onClick={() => {
-              restServices.platform_StreamService.startStream(cubaREST)({camera: camera})
-                .then((result) => {
-                  render(
-                    <ReactPlayer
-                      url={url[0].concat('//').concat(url[2]).concat('/file/' + camera.name + ".m3u8")}
-                      controls={true} playing={true}>
-                    </ReactPlayer>,
-                    document.getElementById("player")
-                  );
-                })
-            }}>
-              Go
-            </Button>
+            {button}
           </div>
         )
       }
     }
   ];
+
+  getUrlToNginx() {
+    const delimiter = ':';
+    const urlParts = cubaREST.apiUrl.split(delimiter);
+    return urlParts[0] + delimiter + urlParts[1];
+  }
 
   deleteCamera(camera: Camera) {
     let result: Camera [] = [];
@@ -323,7 +344,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
   };
 
   render() {
-    console.log(this.cameras);
+    console.log(cubaREST.apiUrl);
     const buttons = [
       <Link
         to={CameraManagement.PATH + "/" + CameraManagement.NEW_SUBPATH}

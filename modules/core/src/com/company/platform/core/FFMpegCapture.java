@@ -95,19 +95,17 @@ public class FFMpegCapture extends AbstractFFMpegCapture {
     }
 
     @Override
-    protected File createFile(){
+    protected void createFile(){
         String name = prepareFile();
         File file = new File(name);
         try {
             file.createNewFile();
             this.file = file;
             log.info("File has been created");
-            return file;
         } catch (IOException e) {
             log.error("Fiel has not been created");
             e.printStackTrace();
         }
-        return null;
     }
 
     private String prepareFile(){
