@@ -8,17 +8,17 @@ export class UserSubstitution extends StandardEntity {
   endDate?: any | null;
 }
 export type UserSubstitutionViewName =
-  | "_minimal"
-  | "_local"
   | "_base"
+  | "_local"
+  | "_minimal"
   | "app"
   | "user.edit"
   | "usersubst.edit";
 export type UserSubstitutionView<
   V extends UserSubstitutionViewName
-> = V extends "_local"
+> = V extends "_base"
   ? Pick<UserSubstitution, "id" | "startDate" | "endDate">
-  : V extends "_base"
+  : V extends "_local"
   ? Pick<UserSubstitution, "id" | "startDate" | "endDate">
   : V extends "app"
   ? Pick<UserSubstitution, "id" | "substitutedUser">

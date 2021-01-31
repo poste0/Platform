@@ -5,11 +5,11 @@ export class RememberMeToken extends BaseUuidEntity {
   user?: User | null;
   token?: string | null;
 }
-export type RememberMeTokenViewName = "_minimal" | "_local" | "_base";
+export type RememberMeTokenViewName = "_base" | "_local" | "_minimal";
 export type RememberMeTokenView<
   V extends RememberMeTokenViewName
-> = V extends "_local"
+> = V extends "_base"
   ? Pick<RememberMeToken, "id" | "token">
-  : V extends "_base"
+  : V extends "_local"
   ? Pick<RememberMeToken, "id" | "token">
   : never;

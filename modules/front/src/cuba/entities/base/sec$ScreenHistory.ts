@@ -12,15 +12,15 @@ export class ScreenHistoryEntity extends BaseUuidEntity {
   displayUser?: string | null;
 }
 export type ScreenHistoryEntityViewName =
-  | "_minimal"
-  | "_local"
   | "_base"
+  | "_local"
+  | "_minimal"
   | "browse";
 export type ScreenHistoryEntityView<
   V extends ScreenHistoryEntityViewName
-> = V extends "_local"
+> = V extends "_base"
   ? Pick<ScreenHistoryEntity, "id" | "caption" | "url" | "displayUser">
-  : V extends "_base"
+  : V extends "_local"
   ? Pick<ScreenHistoryEntity, "id" | "caption" | "url" | "displayUser">
   : V extends "browse"
   ? Pick<

@@ -10,10 +10,10 @@ export class Image extends StandardEntity {
   imageProcessing?: ImageProcessing | null;
   message?: string | null;
 }
-export type ImageViewName = "_minimal" | "_local" | "_base" | "image-view";
-export type ImageView<V extends ImageViewName> = V extends "_local"
+export type ImageViewName = "_base" | "_local" | "_minimal" | "image-view";
+export type ImageView<V extends ImageViewName> = V extends "_base"
   ? Pick<Image, "id" | "name" | "message">
-  : V extends "_base"
+  : V extends "_local"
   ? Pick<Image, "id" | "name" | "message">
   : V extends "image-view"
   ? Pick<

@@ -21,15 +21,15 @@ export class SendingMessage extends StandardEntity {
   bodyContentType?: string | null;
 }
 export type SendingMessageViewName =
-  | "_minimal"
-  | "_local"
   | "_base"
+  | "_local"
+  | "_minimal"
   | "sendingMessage.browse"
-  | "sendingMessage.loadFromQueue"
-  | "sendingMessage.loadContentText";
+  | "sendingMessage.loadContentText"
+  | "sendingMessage.loadFromQueue";
 export type SendingMessageView<
   V extends SendingMessageViewName
-> = V extends "_local"
+> = V extends "_base"
   ? Pick<
       SendingMessage,
       | "id"
@@ -48,7 +48,7 @@ export type SendingMessageView<
       | "headers"
       | "bodyContentType"
     >
-  : V extends "_base"
+  : V extends "_local"
   ? Pick<
       SendingMessage,
       | "id"
@@ -85,6 +85,8 @@ export type SendingMessageView<
       | "updateTs"
       | "bodyContentType"
     >
+  : V extends "sendingMessage.loadContentText"
+  ? Pick<SendingMessage, "id" | "contentTextFile" | "contentText">
   : V extends "sendingMessage.loadFromQueue"
   ? Pick<
       SendingMessage,
@@ -113,6 +115,4 @@ export type SendingMessageView<
       | "attachments"
       | "contentTextFile"
     >
-  : V extends "sendingMessage.loadContentText"
-  ? Pick<SendingMessage, "id" | "contentTextFile" | "contentText">
   : never;

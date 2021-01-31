@@ -13,5 +13,5 @@ public interface StreamService {
 
     void init();
 
-    void update(User user, Camera camera);
+    void update(Camera camera);
 }

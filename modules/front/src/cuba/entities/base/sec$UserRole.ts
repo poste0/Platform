@@ -7,13 +7,13 @@ export class UserRole extends StandardEntity {
   role?: Role | null;
 }
 export type UserRoleViewName =
-  | "_minimal"
-  | "_local"
   | "_base"
-  | "user.edit"
-  | "tmp.user.edit";
-export type UserRoleView<V extends UserRoleViewName> = V extends "user.edit"
-  ? Pick<UserRole, "id" | "role">
-  : V extends "tmp.user.edit"
+  | "_local"
+  | "_minimal"
+  | "tmp.user.edit"
+  | "user.edit";
+export type UserRoleView<V extends UserRoleViewName> = V extends "tmp.user.edit"
   ? Pick<UserRole, "id" | "user" | "role">
+  : V extends "user.edit"
+  ? Pick<UserRole, "id" | "role">
   : never;

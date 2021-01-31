@@ -24,6 +24,9 @@ import {
 } from "react-intl";
 import {StandardEntity} from "../cuba/entities/base/sys$StandardEntity";
 import {cubaREST} from "../index";
+import {Camera} from "../cuba/entities/platform_Camera";
+import {restServices} from "../cuba/services";
+import {Node} from "../cuba/entities/platform_Node";
 
 @injectMainStore
 @observer
@@ -168,6 +171,46 @@ export function showDeletionDialog <T extends StandardEntity> (props: any, objec
           message.error({content: props.intl.formatMessage({id: "management.editor.error"}), key}, 0);
         });
     }
+  });
+}
+
+export function deleteFromDataSource<T extends StandardEntity>(value: T, dataSource: T []){
+  let result: T [] = [];
+  dataSource.forEach((element) => {
+    if (value.id != element.id) {
+      result.push(element);
+    }
+  });
+
+  return result;
+}
+
+export async function getAll<T extends StandardEntity>(method: any): Promise<T []>{
+  let dataSource: T [] = [];
+  let isLoaded: boolean = false;
+  method(cubaREST)()
+    .then((result: any) => {
+      console.log(result);
+      let Ts: T [] = JSON.parse(String(result));
+      if(Ts.length == 0){
+        isLoaded = true;
+      }
+
+      let count = 0;
+      Ts.forEach((node) => {
+        dataSource.push(node);
+        count++;
+      });
+      if(count == Ts.length){
+        isLoaded = true;
+      }
+    });
+  return new Promise<T []>((resolve, reject) => {
+    setInterval(() => {
+      if(isLoaded){
+        resolve(dataSource);
+      }
+    }, 100);
   });
 }
 

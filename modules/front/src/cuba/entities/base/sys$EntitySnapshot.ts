@@ -14,13 +14,13 @@ export class EntitySnapshot extends BaseUuidEntity {
   changeDate?: any | null;
 }
 export type EntitySnapshotViewName =
-  | "_minimal"
-  | "_local"
   | "_base"
+  | "_local"
+  | "_minimal"
   | "entitySnapshot.browse";
 export type EntitySnapshotView<
   V extends EntitySnapshotViewName
-> = V extends "_local"
+> = V extends "_base"
   ? Pick<
       EntitySnapshot,
       | "id"
@@ -31,7 +31,7 @@ export type EntitySnapshotView<
       | "label"
       | "changeDate"
     >
-  : V extends "_base"
+  : V extends "_local"
   ? Pick<
       EntitySnapshot,
       | "id"

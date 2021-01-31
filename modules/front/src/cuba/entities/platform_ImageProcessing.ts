@@ -7,9 +7,9 @@ export class ImageProcessing extends StandardEntity {
   images?: Image[] | null;
 }
 export type ImageProcessingViewName =
-  | "_minimal"
-  | "_local"
   | "_base"
+  | "_local"
+  | "_minimal"
   | "imageProcessing-view";
 export type ImageProcessingView<
   V extends ImageProcessingViewName

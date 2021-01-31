@@ -7,9 +7,9 @@ export class VideoProcessing extends StandardEntity {
   video?: Video | null;
 }
 export type VideoProcessingViewName =
-  | "_minimal"
-  | "_local"
   | "_base"
+  | "_local"
+  | "_minimal"
   | "processing-view";
 export type VideoProcessingView<
   V extends VideoProcessingViewName

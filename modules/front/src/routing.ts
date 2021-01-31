@@ -1,3 +1,4 @@
+import { NodeManagement } from "./app/node/NodeManagement";
 import VideoCards from "./app/video/VideoCards";
 import { CameraManagement } from "./app/camera/CameraManagement";
 import { getMenuItems } from "@cuba-platform/react";
@@ -35,4 +36,11 @@ menuItems.push({
   menuLink: "/videoCards",
   component: VideoCards,
   caption: "VideoCards"
+});
+
+menuItems.push({
+  pathPattern: "/nodeManagement/:entityId?",
+  menuLink: "/nodeManagement",
+  component: NodeManagement,
+  caption: "NodeManagement"
 });

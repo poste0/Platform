@@ -1,6 +1,11 @@
 package com.company.platform.service;
 
 import com.company.platform.entity.Node;
+import com.haulmont.cuba.core.global.AppBeans;
+import com.haulmont.cuba.core.global.DataManager;
+import com.haulmont.cuba.core.global.LoadContext;
+import com.haulmont.cuba.core.global.UserSessionSource;
+import com.haulmont.cuba.security.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -14,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
 
 @Service(NodeService.NAME)
 public class NodeServiceBean implements NodeService {
@@ -32,6 +38,19 @@ public class NodeServiceBean implements NodeService {
     @Override
     public String getStatus(Node node) {
         return getFromNode(node, "status");
+    }
+
+    @Override
+    public List<Node> getNodes() {
+        User user = AppBeans.get(UserSessionSource.class).getUserSession().getUser();
+        DataManager dataManager = AppBeans.get(DataManager.NAME);
+
+        return dataManager.loadList(
+                LoadContext.create(Node.class)
+                .setQuery(LoadContext.createQuery(
+                        "SELECT n FROM platform_Node n WHERE n.user.id = :id"
+                ).setParameter("id", user.getId()))
+        );
     }
 
     private boolean isConnected(Node node){

@@ -8,11 +8,11 @@ export class GroupHierarchy extends BaseUuidEntity {
   parent?: Group | null;
   level?: number | null;
 }
-export type GroupHierarchyViewName = "_minimal" | "_local" | "_base";
+export type GroupHierarchyViewName = "_base" | "_local" | "_minimal";
 export type GroupHierarchyView<
   V extends GroupHierarchyViewName
-> = V extends "_local"
+> = V extends "_base"
   ? Pick<GroupHierarchy, "id" | "level">
-  : V extends "_base"
+  : V extends "_local"
   ? Pick<GroupHierarchy, "id" | "level">
   : never;

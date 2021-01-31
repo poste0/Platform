@@ -13,10 +13,10 @@ export class Video extends StandardEntity {
   videoProcessing?: VideoProcessing | null;
   message?: string | null;
 }
-export type VideoViewName = "_minimal" | "_local" | "_base" | "video-view";
-export type VideoView<V extends VideoViewName> = V extends "_local"
+export type VideoViewName = "_base" | "_local" | "_minimal" | "video-view";
+export type VideoView<V extends VideoViewName> = V extends "_base"
   ? Pick<Video, "id" | "name" | "parentName" | "status" | "message">
-  : V extends "_base"
+  : V extends "_local"
   ? Pick<Video, "id" | "name" | "parentName" | "status" | "message">
   : V extends "video-view"
   ? Pick<

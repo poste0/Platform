@@ -118,5 +118,9 @@
   "recording_has_stopped": "Recording has stopped",
   "deleting_is_starting": "Deleting is starting",
   "deleting_has_finished": "Deleting has finished",
-  "recording": "Recording"
+  "recording": "Recording",
+  "live": "Live",
+  "address": "Address",
+  "cpu": "Cpu",
+  "gpu": "Gpu"
 }

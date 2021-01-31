@@ -6,6 +6,7 @@ import com.company.platform.core.FFMpegCapture;
 import com.company.platform.entity.Camera;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.DataManager;
+import com.haulmont.cuba.core.global.LoadContext;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
@@ -269,6 +270,21 @@ public class CameraServiceBean implements CameraService {
         CameraStatusBean statusBean = AppBeans.get(CameraStatusBean.NAME);
 
         return statusBean.getCameraStatus(testConnection(camera), isRecording(camera));
+    }
+
+    @Override
+    public List<Camera> getCameras() throws IllegalStateException {
+        User user = AppBeans.get(UserSessionSource.class).getUserSession().getUser();
+        DataManager dataManager = AppBeans.get(DataManager.NAME);
+
+        return dataManager.loadList(
+                LoadContext.create(Camera.class).setQuery(
+                        LoadContext.createQuery(
+                                "SELECT c FROM platform_Camera c WHERE c.user.id = :id"
+                        )
+                        .setParameter("id", user.getId())
+                )
+        );
     }
 
 

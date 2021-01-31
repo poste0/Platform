@@ -28,7 +28,7 @@ import {restServices} from "../../cuba/services";
 import {CheckCircleOutlined, CheckCircleTwoTone, CloseCircleTwoTone, VideoCameraTwoTone} from "@ant-design/icons";
 import {render} from "react-dom";
 import {StandardEntity} from "../../cuba/entities/base/sys$StandardEntity";
-import {showDeletionDialog} from "../App";
+import {deleteFromDataSource, getAll, showDeletionDialog} from "../App";
 import ReactPlayer, {ReactPlayerProps} from "react-player";
 import cuba from "@cuba-platform/rest/dist-browser/cuba";
 import {ReactElement, ReactNode} from "react";
@@ -47,15 +47,33 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
 
   constructor(props: any) {
     super(props);
-    this.getCameras();
+    getAll<Camera>(restServices.platform_CameraService.getCameras)
+      .then((result: Camera []) => {
+        let cameras: Camera [] = result;
+        let count = 0;
+        cameras.forEach((camera) => {
+          restServices.platform_CameraService.getStatus(cubaREST)({camera: camera}).then((result) => {
+            camera.status = String(result);
+            this.cameras.push(camera);
+            count++;
+          })
+            .then((result) => {
+              if(count == cameras.length){
+                this.isLoaded = true;
+              }
+            });
+        });
+      });
   }
 
   getCameras() {
-    cubaREST.loadEntities<Camera>('platform_Camera').then((cameras) => {
+    restServices.platform_CameraService.getCameras(cubaREST)().then((result) => {
+      let cameras: Camera [] = JSON.parse(String(result));
       if (cameras.length == 0) {
         this.isLoaded = true;
       }
       let count = 0;
+      console.log(cameras);
       cameras.forEach((camera) => {
         restServices.platform_CameraService.getStatus(cubaREST)({camera: camera}).then((result) => {
           camera.status = String(result);
@@ -69,6 +87,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
           });
       });
     });
+
   }
 
   // @ts-ignore
@@ -232,7 +251,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
                   if (this.cameras.length == 1) {
                     this.cameras = [];
                   } else if (this.cameras.length != 0) {
-                    this.cameras = this.deleteCamera(camera);
+                    this.cameras = deleteFromDataSource(camera, this.cameras);
                   }
                 }
               )}
@@ -266,7 +285,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
                 );
               })
           }}>
-            Stop
+            {this.getFormattedText("stop")}
           </Button>];
 
         let button: ReactElement = <Button onClick={() => {
@@ -278,7 +297,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
               );
             })
         }}>
-          Go
+          {this.getFormattedText("live")}
         </Button>;
         return (
           <div id="player">
@@ -289,21 +308,14 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
     }
   ];
 
-  getUrlToNginx() {
-    const delimiter = ':';
-    const urlParts = cubaREST.apiUrl.split(delimiter);
-    return urlParts[0] + delimiter + urlParts[1];
+  getFormattedText(key: string){
+    return this.props.intl.formatMessage({id: key});
   }
 
-  deleteCamera(camera: Camera) {
-    let result: Camera [] = [];
-    this.cameras.forEach((value) => {
-      if (camera.id != value.id) {
-        result.push(value);
-      }
-    });
-
-    return result;
+  getUrlToNginx() {
+    const delimiter = '/';
+    const urlParts = document.location.href.split(delimiter);
+    return urlParts[0].concat('//').concat(urlParts[2]);
   }
 
   statusToIcon = {}

@@ -14,12 +14,12 @@ export class Constraint extends StandardEntity {
   group?: Group | null;
 }
 export type ConstraintViewName =
-  | "_minimal"
-  | "_local"
   | "_base"
-  | "group.browse"
-  | "edit";
-export type ConstraintView<V extends ConstraintViewName> = V extends "_local"
+  | "_local"
+  | "_minimal"
+  | "edit"
+  | "group.browse";
+export type ConstraintView<V extends ConstraintViewName> = V extends "_base"
   ? Pick<
       Constraint,
       | "id"
@@ -33,7 +33,7 @@ export type ConstraintView<V extends ConstraintViewName> = V extends "_local"
       | "filterXml"
       | "isActive"
     >
-  : V extends "_base"
+  : V extends "_local"
   ? Pick<
       Constraint,
       | "id"
@@ -46,18 +46,6 @@ export type ConstraintView<V extends ConstraintViewName> = V extends "_local"
       | "groovyScript"
       | "filterXml"
       | "isActive"
-    >
-  : V extends "group.browse"
-  ? Pick<
-      Constraint,
-      | "id"
-      | "group"
-      | "entityName"
-      | "isActive"
-      | "operationType"
-      | "joinClause"
-      | "whereClause"
-      | "groovyScript"
     >
   : V extends "edit"
   ? Pick<
@@ -73,5 +61,17 @@ export type ConstraintView<V extends ConstraintViewName> = V extends "_local"
       | "groovyScript"
       | "filterXml"
       | "group"
+    >
+  : V extends "group.browse"
+  ? Pick<
+      Constraint,
+      | "id"
+      | "group"
+      | "entityName"
+      | "isActive"
+      | "operationType"
+      | "joinClause"
+      | "whereClause"
+      | "groovyScript"
     >
   : never;

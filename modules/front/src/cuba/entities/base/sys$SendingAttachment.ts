@@ -12,22 +12,33 @@ export class SendingAttachment extends StandardEntity {
   encoding?: string | null;
 }
 export type SendingAttachmentViewName =
-  | "_minimal"
-  | "_local"
   | "_base"
-  | "sendingAttachment.loadFromQueue"
-  | "sendingAttachment.browse";
+  | "_local"
+  | "_minimal"
+  | "sendingAttachment.browse"
+  | "sendingAttachment.loadFromQueue";
 export type SendingAttachmentView<
   V extends SendingAttachmentViewName
-> = V extends "_local"
+> = V extends "_base"
   ? Pick<
       SendingAttachment,
       "id" | "content" | "name" | "contentId" | "disposition" | "encoding"
     >
-  : V extends "_base"
+  : V extends "_local"
   ? Pick<
       SendingAttachment,
       "id" | "content" | "name" | "contentId" | "disposition" | "encoding"
+    >
+  : V extends "sendingAttachment.browse"
+  ? Pick<
+      SendingAttachment,
+      | "id"
+      | "content"
+      | "name"
+      | "contentId"
+      | "disposition"
+      | "encoding"
+      | "updateTs"
     >
   : V extends "sendingAttachment.loadFromQueue"
   ? Pick<
@@ -46,16 +57,5 @@ export type SendingAttachmentView<
       | "disposition"
       | "encoding"
       | "contentFile"
-    >
-  : V extends "sendingAttachment.browse"
-  ? Pick<
-      SendingAttachment,
-      | "id"
-      | "content"
-      | "name"
-      | "contentId"
-      | "disposition"
-      | "encoding"
-      | "updateTs"
     >
   : never;

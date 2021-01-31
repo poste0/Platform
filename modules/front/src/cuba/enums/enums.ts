@@ -4,9 +4,3 @@ export enum Status {
   PROCESSED = "PROCESSED",
   ERROR = "ERROR"
 }
-
-export enum CameraStatus {
-  NOT_CONNECTED,
-  CONNECTED,
-  RECORDING
-}

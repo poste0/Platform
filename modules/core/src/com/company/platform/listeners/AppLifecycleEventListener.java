@@ -30,7 +30,7 @@ public class AppLifecycleEventListener {
         users.forEach(user -> {
             List<Camera> cameras = dataManager.loadList(LoadContext.create(Camera.class).setQuery(LoadContext.createQuery("SELECT c FROM platform_Camera c WHERE c.user.id = :user").setParameter("user", user.getId())));
             cameras.forEach(camera -> {
-                streamService.update(user, camera);
+                streamService.update(camera);
                 streamService.startStream(camera);
             });
         });

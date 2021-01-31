@@ -2,6 +2,7 @@ package com.company.platform.listeners;
 
 import com.company.platform.entity.Camera;
 import com.company.platform.service.CameraService;
+import com.company.platform.service.StreamService;
 import com.haulmont.cuba.core.EntityManager;
 import com.haulmont.cuba.core.Persistence;
 import com.haulmont.cuba.core.Transaction;
@@ -28,6 +29,9 @@ public class CameraChangedListener {
     private CameraService cameraService;
 
     @Inject
+    private StreamService streamService;
+
+    @Inject
     private Persistence persistence;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -44,6 +48,7 @@ public class CameraChangedListener {
 
         if(Objects.nonNull(camera)) {
             cameraService.update(camera);
+            streamService.update(camera);
         }
     }
 }

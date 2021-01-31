@@ -21,6 +21,7 @@
         <method name="stop">
             <param name="camera"/>
         </method>
+        <method name="getCameras"/>
     </service>
     <service name="platform_StreamService">
         <method name="startStream">
@@ -30,6 +31,18 @@
             <param name="camera"/>
         </method>
         <method name="init"/>
+    </service>
+    <service name="platform_NodeService">
+        <method name="getCpu">
+            <param name="node"/>
+        </method>
+        <method name="getGpu">
+            <param name="node"/>
+        </method>
+        <method name="getStatus">
+            <param name="node"/>
+        </method>
+        <method name="getNodes"/>
     </service>
 </services>
 

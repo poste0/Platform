@@ -10,30 +10,33 @@ export class Role extends StandardEntity {
   permissions?: Permission[] | null;
 }
 export type RoleViewName =
-  | "_minimal"
-  | "_local"
   | "_base"
-  | "role.lookup"
+  | "_local"
+  | "_minimal"
   | "role.browse"
+  | "role.copy"
   | "role.edit"
   | "role.export"
-  | "role.copy";
-export type RoleView<V extends RoleViewName> = V extends "_minimal"
-  ? Pick<Role, "id" | "locName" | "name">
+  | "role.lookup";
+export type RoleView<V extends RoleViewName> = V extends "_base"
+  ? Pick<
+      Role,
+      "id" | "locName" | "name" | "description" | "type" | "defaultRole"
+    >
   : V extends "_local"
   ? Pick<
       Role,
       "id" | "name" | "locName" | "description" | "type" | "defaultRole"
     >
-  : V extends "_base"
-  ? Pick<
-      Role,
-      "id" | "locName" | "name" | "description" | "type" | "defaultRole"
-    >
-  : V extends "role.lookup"
-  ? Pick<Role, "id" | "name">
+  : V extends "_minimal"
+  ? Pick<Role, "id" | "locName" | "name">
   : V extends "role.browse"
   ? Pick<Role, "id" | "name">
+  : V extends "role.copy"
+  ? Pick<
+      Role,
+      "id" | "name" | "type" | "locName" | "permissions" | "description"
+    >
   : V extends "role.edit"
   ? Pick<Role, "id" | "name" | "type">
   : V extends "role.export"
@@ -47,9 +50,6 @@ export type RoleView<V extends RoleViewName> = V extends "_minimal"
       | "defaultRole"
       | "permissions"
     >
-  : V extends "role.copy"
-  ? Pick<
-      Role,
-      "id" | "name" | "type" | "locName" | "permissions" | "description"
-    >
+  : V extends "role.lookup"
+  ? Pick<Role, "id" | "name">
   : never;

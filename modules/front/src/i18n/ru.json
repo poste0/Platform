@@ -117,5 +117,10 @@
   "router.VideoCards": "Видео",
   "deleting_is_starting": "Удаление начинается",
   "deleting_has_finished": "Удаление закончено",
-  "recording": "Записывается"
+  "recording": "Записывается",
+  "live": "Прямой эфир",
+  "router.NodeManagement": "Узлы обработки",
+  "address": "Адрес",
+  "cpu": "Процессор",
+  "gpu": "Видеокарта"
 }
