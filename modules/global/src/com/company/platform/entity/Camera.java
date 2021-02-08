@@ -1,14 +1,20 @@
 package com.company.platform.entity;
 
+import com.company.platform.service.CameraService;
 import com.esotericsoftware.kryo.NotNull;
+import com.haulmont.chile.core.annotations.MetaProperty;
 import com.haulmont.cuba.core.entity.StandardEntity;
+import com.haulmont.cuba.core.entity.annotation.OnDelete;
+import com.haulmont.cuba.core.entity.annotation.PublishEntityChangedEvents;
 import com.haulmont.cuba.core.global.AppBeans;
+import com.haulmont.cuba.core.global.DeletePolicy;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.security.entity.User;
 
 import javax.persistence.*;
 import java.util.List;
 
+@PublishEntityChangedEvents
 @Table(name = "PLATFORM_CAMERA")
 @Entity(name = "platform_Camera")
 public class Camera extends StandardEntity {
@@ -50,7 +56,12 @@ public class Camera extends StandardEntity {
     private String path;
 
     @OneToMany(mappedBy = "camera")
+    @OnDelete(DeletePolicy.CASCADE)
     private List<Video> videos;
+
+    @Transient
+    @MetaProperty
+    private CameraService.Status status;
 
     public void setUser(User user) {
         this.user = user;
@@ -131,5 +142,13 @@ public class Camera extends StandardEntity {
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public CameraService.Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(CameraService.Status status) {
+        this.status = status;
     }
 }

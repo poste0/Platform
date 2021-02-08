@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services xmlns="http://schemas.haulmont.com/cuba/rest-services-v2.xsd">
+    <service name="platform_RegistrationService">
+        <method name="register" anonymousAllowed="true">
+            <param name="login"/>
+            <param name="password"/>
+            <param name="name"/>
+        </method>
+    </service>
+    <service name="platform_CameraService">
+        <method name="getStatus">
+            <param name="camera"/>
+        </method>
+        <method name="init"/>
+        <method name="update">
+            <param name="camera"/>
+        </method>
+        <method name="write">
+            <param name="camera"/>
+        </method>
+        <method name="stop">
+            <param name="camera"/>
+        </method>
+        <method name="getCameras"/>
+    </service>
+    <service name="platform_StreamService">
+        <method name="startStream">
+            <param name="camera"/>
+        </method>
+        <method name="stopStream">
+            <param name="camera"/>
+        </method>
+        <method name="init"/>
+    </service>
+    <service name="platform_NodeService">
+        <method name="getCpu">
+            <param name="node"/>
+        </method>
+        <method name="getGpu">
+            <param name="node"/>
+        </method>
+        <method name="getStatus">
+            <param name="node"/>
+        </method>
+        <method name="getNodes"/>
+        <method name="getConnectedNodes"/>
+        <method name="processVideo">
+            <param name="nodeId"/>
+            <param name="videoId"/>
+            <param name="login"/>
+            <param name="password"/>
+        </method>
+    </service>
+</services>
+

@@ -83,7 +83,7 @@ public class NodeBrowse extends StandardLookup<Node> {
             }
 
             Node node = (Node) entity;
-            String status = nodeService.getStatus(node);
+            String status = nodeService.getStatus(node).toString();
 
             Label<String> label = components.create(Label.class);
             label.setValue(status);

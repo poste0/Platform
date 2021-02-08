@@ -11,6 +11,7 @@ import org.bytedeco.javacv.FrameRecorder;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.List;
 
 public interface CameraService {
     String NAME = "platform_CameraService";
@@ -31,9 +32,11 @@ public interface CameraService {
 
     boolean isRecording(Camera camera);
 
-    void update(User user, Camera camera);
+    void update(Camera camera);
 
     boolean testConnection(Camera camera);
 
     Status getStatus(Camera camera);
+
+    List<Camera> getCameras() throws IllegalStateException;
 }

@@ -137,8 +137,8 @@ public class CameraEdit extends StandardEditor<Camera> {
 
         User user = AppBeans.get(UserSessionSource.class).getUserSession().getUser();
         camera.setUser(user);
-        cameraService.update(user, camera);
-        streamService.update(user, camera);
+        cameraService.update(camera);
+        streamService.update(camera);
 
         //if(!isStreamStarted){
         //    streamService.startStream(camera);
