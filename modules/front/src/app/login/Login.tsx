@@ -1,30 +1,33 @@
 import * as React from "react";
-import { ChangeEvent, FormEvent } from "react";
-import { Button, Form, Icon, Input, message } from "antd";
-import { observer } from "mobx-react";
-import { action, observable } from "mobx";
-import { injectMainStore, MainStoreInjected } from "@cuba-platform/react";
+import {ChangeEvent, FormEvent} from "react";
+import {Button, Form, Icon, Input, message} from "antd";
+import {observer} from "mobx-react";
+import {action, observable} from "mobx";
+import {injectMainStore, MainStore, MainStoreInjected} from "@cuba-platform/react";
 import "./Login.css";
 import logo from "./logo.png";
-import { LanguageSwitcher } from "../../i18n/LanguageSwitcher";
+import {LanguageSwitcher} from "../../i18n/LanguageSwitcher";
 import {
   FormattedMessage,
-  injectIntl,
   WrappedComponentProps
 } from "react-intl";
 import {restServices} from "../../cuba/services";
 import {cubaREST} from "../../index";
+import {render} from "react-dom";
+import Register from "../register/Register";
 
 
 @injectMainStore
 @observer
-class Login extends React.Component<MainStoreInjected & WrappedComponentProps> {
-  @observable login: string;
-  @observable password: string;
-  @observable performingLoginRequest = false;
-  @observable register_login: string;
-  @observable register_password: string;
-  @observable register_name: string;
+export default class Login extends React.Component<MainStoreInjected & WrappedComponentProps> {
+  @observable
+  login: string;
+
+  @observable
+  password: string;
+
+  @observable
+  performingLoginRequest = false;
 
   @action
   changeLogin = (e: ChangeEvent<HTMLInputElement>) => {
@@ -37,18 +40,10 @@ class Login extends React.Component<MainStoreInjected & WrappedComponentProps> {
   };
 
   @action
-  changeLoginRegister = (e: ChangeEvent<HTMLInputElement>) => {
-    this.register_login = e.target.value;
-  };
-
-  @action
-  changePasswordRegister = (e: ChangeEvent<HTMLInputElement>) => {
-    this.register_password = e.target.value;
-  };
-
-  @action
-  changeNameRegister = (e: ChangeEvent<HTMLInputElement>) => {
-    this.register_name = e.target.value;
+  doLogin = (e: FormEvent) => {
+    e.preventDefault();
+    this.processLogin()
+    this.performingLoginRequest = true;
   };
 
   processLogin = () => {
@@ -62,117 +57,77 @@ class Login extends React.Component<MainStoreInjected & WrappedComponentProps> {
       .catch(
         action(() => {
           this.performingLoginRequest = false;
-          message.error(this.props.intl.formatMessage({ id: "login.failed" }));
+          message.error(this.props.intl.formatMessage({id: "login.failed"}));
         })
       );
-  }
-
-  @action
-  doLogin = (e: FormEvent) => {
-    e.preventDefault();
-    this.performingLoginRequest = true;
-    this.processLogin();
   };
 
-  @action
-  doRegister = (e: FormEvent) => {
-    restServices.platform_RegistrationService.register(cubaREST)
-    ({login: this.register_login, password: this.register_password, name: this.register_name})
-      .then((result) => {
-        this.processLogin();
-      })
-      .catch((result) => {
-        message.error(this.props.intl.formatMessage({ id: "register.failed" }));
-      });
+  static processLogin = (login: string, password: string, mainStore: MainStore, callback?: (result: any) => void) => {
+    mainStore!.login(login, password)
+      .then(callback);
   }
 
   render() {
     return (
-      <div className="login-form">
-        <img
-          src={logo}
-          alt={this.props.intl.formatMessage({ id: "common.alt.logo" })}
-          className="logo"
-        />
-        <div className="title">Platform</div>
-        <Form layout="vertical" onSubmit={this.doLogin}>
-          <Form.Item>
-            <Input
-              id="input_login"
-              placeholder={this.props.intl.formatMessage({
-                id: "login.placeholder.login"
-              })}
-              onChange={this.changeLogin}
-              value={this.login}
-              prefix={<Icon type="user" style={{ color: "rgba(0,0,0,.25)" }} />}
-              size="large"
-            />
-          </Form.Item>
-          <Form.Item>
-            <Input
-              id="input_password"
-              placeholder={this.props.intl.formatMessage({
-                id: "login.placeholder.password"
-              })}
-              onChange={this.changePassword}
-              value={this.password}
-              type="password"
-              prefix={<Icon type="lock" style={{ color: "rgba(0,0,0,.25)" }} />}
-              size="large"
-            />
-          </Form.Item>
-          <Form.Item>
-            <div style={{ float: "right" }}>
-              <LanguageSwitcher className="language-switcher" />
-            </div>
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              size="large"
-              block={true}
-              loading={this.performingLoginRequest}
-            >
-              <FormattedMessage id="login.loginBtn" />
-            </Button>
-          </Form.Item>
-        </Form>
-        <Form onSubmit={this.doRegister}>
-          <Input
-            id="input_login_register"
-            onChange={this.changeLoginRegister}
-            value={this.register_login}
-            placeholder={this.props.intl.formatMessage({
-              id: "login.placeholder.login"
-            })}
-          />
-          <Input
-            id="input_password_register"
-            type="password"
-            onChange={this.changePasswordRegister}
-            value={this.register_password}
-            placeholder={this.props.intl.formatMessage({
-              id: "login.placeholder.password"
-            })}
-          />
-          <Input
-            id="input_name"
-            onChange={this.changeNameRegister}
-            value={this.register_name}
-            placeholder={this.props.intl.formatMessage({
-              id: "register.name"
-            })}
-          />
+        <div className="login-form" id="login-form">
+          <img
+            src={logo}
+            alt={this.props.intl.formatMessage({id: "common.alt.logo"})}
+            className="logo"/>
+          <div className="title">Platform</div>
+          <Form layout="vertical" onSubmit={this.doLogin}>
+            <Form.Item>
+              <Input
+                id="input_login"
+                placeholder={this.props.intl.formatMessage({
+                  id: "login.placeholder.login"
+                })}
+                onChange={this.changeLogin}
+                value={this.login}
+                prefix={<Icon type="user" style={{color: "rgba(0,0,0,.25)"}}/>}
+                size="large"/>
+            </Form.Item>
+            <Form.Item>
+              <Input
+                id="input_password"
+                placeholder={this.props.intl.formatMessage({
+                  id: "login.placeholder.password"
+                })}
+                onChange={this.changePassword}
+                value={this.password}
+                type="password"
+                prefix={<Icon type="lock" style={{color: "rgba(0,0,0,.25)"}}/>}
+                size="large"/>
+            </Form.Item>
+            <Form.Item>
+              <div style={{float: "right"}}>
+                <LanguageSwitcher className="language-switcher"/>
+              </div>
+            </Form.Item>
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                block={true}
+                loading={this.performingLoginRequest}>
+                <FormattedMessage id="login.loginBtn"/>
+              </Button>
+            </Form.Item>
+          </Form>
           <Button
             type="primary"
-            htmlType="submit">
-            Register
+            htmlType="submit"
+            size="large"
+            block={true}
+            onClick={() => {
+              render([<Register intl={this.props.intl} mainStore={this.props.mainStore}/>], document.getElementById("login-form"));
+            }}>
+            <FormattedMessage id="register"/>
           </Button>
-        </Form>
-      </div>
+        </div>
     );
   }
 }
 
-export default injectIntl(Login);
+

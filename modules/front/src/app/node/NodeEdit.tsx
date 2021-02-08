@@ -1,11 +1,11 @@
 import * as React from "react";
-import { FormEvent } from "react";
-import { Alert, Button, Card, Form, message } from "antd";
-import { observer } from "mobx-react";
-import { NodeManagement } from "./NodeManagement";
-import { FormComponentProps } from "antd/lib/form";
-import { Link, Redirect } from "react-router-dom";
-import { IReactionDisposer, observable, reaction, toJS } from "mobx";
+import {FormEvent} from "react";
+import {Alert, Button, Card, Form, message} from "antd";
+import {observer} from "mobx-react";
+import {NodeManagement} from "./NodeManagement";
+import {FormComponentProps} from "antd/lib/form";
+import {Link, Redirect} from "react-router-dom";
+import {IReactionDisposer, observable, reaction, toJS} from "mobx";
 import {
   FormattedMessage,
   injectIntl,
@@ -24,7 +24,7 @@ import {
 
 import "../../app/App.css";
 
-import { Node } from "../../cuba/entities/platform_Node";
+import {Node} from "../../cuba/entities/platform_Node";
 import {User} from "../../cuba/entities/base/sec$User";
 
 type Props = FormComponentProps & EditorProps;
@@ -42,6 +42,7 @@ class NodeEditComponent extends React.Component<Props & WrappedComponentProps & 
   });
 
   appState = this.props.mainStore!;
+
   userCollection = collection<User>(User.NAME, {
     view: "_local",
     filter: {
@@ -53,6 +54,7 @@ class NodeEditComponent extends React.Component<Props & WrappedComponentProps & 
 
   @observable
   updated = false;
+
   reactionDisposer: IReactionDisposer;
 
   fields = ["name", "address"];
@@ -78,11 +80,10 @@ class NodeEditComponent extends React.Component<Props & WrappedComponentProps & 
         user: this.userCollection.items[0]
       };
 
-      this.dataInstance
-        .update(node)
+      this.dataInstance.update(node)
         .then(() => {
           message.success(
-            this.props.intl.formatMessage({ id: "management.editor.success" })
+            this.props.intl.formatMessage({id: "management.editor.success"})
           );
           this.updated = true;
         })
@@ -117,7 +118,7 @@ class NodeEditComponent extends React.Component<Props & WrappedComponentProps & 
             });
           } else {
             message.error(
-              this.props.intl.formatMessage({ id: "management.editor.error" })
+              this.props.intl.formatMessage({id: "management.editor.error"})
             );
           }
         });
@@ -126,10 +127,10 @@ class NodeEditComponent extends React.Component<Props & WrappedComponentProps & 
 
   render() {
     if (this.updated) {
-      return <Redirect to={NodeManagement.PATH} />;
+      return <Redirect to={NodeManagement.PATH}/>;
     }
 
-    const { status } = this.dataInstance;
+    const {status} = this.dataInstance;
 
     return (
       <Card className="narrow-layout">
@@ -138,34 +139,31 @@ class NodeEditComponent extends React.Component<Props & WrappedComponentProps & 
             entityName={Node.NAME}
             propertyName="name"
             form={this.props.form}
-            formItemOpts={{ style: { marginBottom: "12px" } }}
+            formItemOpts={{style: {marginBottom: "12px"}}}
             getFieldDecoratorOpts={{
-              rules: [{ required: true }]
-            }}
-          />
+              rules: [{required: true}]
+            }}/>
 
           <Field
             entityName={Node.NAME}
             propertyName="address"
             form={this.props.form}
-            formItemOpts={{ style: { marginBottom: "12px" } }}
+            formItemOpts={{style: {marginBottom: "12px"}}}
             getFieldDecoratorOpts={{
-              rules: [{ required: true }]
-            }}
-          />
+              rules: [{required: true}]
+            }}/>
 
           {this.globalErrors.length > 0 && (
             <Alert
-              message={<MultilineText lines={toJS(this.globalErrors)} />}
+              message={<MultilineText lines={toJS(this.globalErrors)}/>}
               type="error"
-              style={{ marginBottom: "24px" }}
-            />
+              style={{marginBottom: "24px"}}/>
           )}
 
-          <Form.Item style={{ textAlign: "center" }}>
+          <Form.Item style={{textAlign: "center"}}>
             <Link to={NodeManagement.PATH}>
               <Button htmlType="button">
-                <FormattedMessage id="management.editor.cancel" />
+                <FormattedMessage id="management.editor.cancel"/>
               </Button>
             </Link>
             <Button
@@ -173,9 +171,8 @@ class NodeEditComponent extends React.Component<Props & WrappedComponentProps & 
               htmlType="submit"
               disabled={status !== "DONE" && status !== "ERROR"}
               loading={status === "LOADING"}
-              style={{ marginLeft: "8px" }}
-            >
-              <FormattedMessage id="management.editor.submit" />
+              style={{marginLeft: "8px"}}>
+              <FormattedMessage id="management.editor.submit"/>
             </Button>
           </Form.Item>
         </Form>

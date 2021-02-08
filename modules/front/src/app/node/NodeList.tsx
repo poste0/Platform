@@ -4,13 +4,11 @@ import { Link } from "react-router-dom";
 
 import { observable } from "mobx";
 
-import {Modal, Button, Table, Row, Radio, message} from "antd";
+import {Modal, Button, Table, Row, Radio, message, Tooltip} from "antd";
 
 import {
-  collection,
   injectMainStore,
-  MainStoreInjected,
-  DataTable, DataCollectionStore
+  MainStoreInjected
 } from "@cuba-platform/react";
 
 import { Node } from "../../cuba/entities/platform_Node";
@@ -23,6 +21,7 @@ import {
 import {restServices} from "../../cuba/services";
 import {cubaREST} from "../../index";
 import {deleteFromDataSource, getAll, showDeletionDialog} from "../App";
+import {CheckCircleTwoTone, CloseCircleTwoTone} from "@ant-design/icons";
 
 @injectMainStore
 @observer
@@ -30,19 +29,6 @@ class NodeListComponent extends React.Component<
   MainStoreInjected & WrappedComponentProps
 > {
   appState = this.props.mainStore!;
-
-  /*dataCollection: DataCollectionStore<Node> = collection<Node>(Node.NAME, {
-    view: "_local",
-    sort: "-updateTs",
-    filter: {
-      conditions:
-        [
-          {property: "user.login", operator: "=", value: this.appState.userName!}
-        ]
-    }
-  });
-
-   */
 
   @observable
   nodes: Node [] = [];
@@ -55,14 +41,28 @@ class NodeListComponent extends React.Component<
     getAll(restServices.platform_NodeService.getNodes)
       .then((result: Node []) => {
         this.nodes = result;
-        this.isLoaded = true;
+      })
+      .then((result) => {
+        let nodesWithStatus: Node [] = [];
+        this.nodes.forEach((node) => {
+          restServices.platform_NodeService.getStatus(cubaREST)({node: node})
+            .then((result: string) => {
+              node.status = result;
+              nodesWithStatus.push(node);
+            })
+            .then((result) => {
+              if(nodesWithStatus.length == this.nodes.length){
+                this.nodes = nodesWithStatus;
+                this.isLoaded = true;
+              }
+            })
+        })
       })
   }
 
   getNodes(){
     restServices.platform_NodeService.getNodes(cubaREST)()
       .then((result) => {
-        console.log(result);
         let nodes: Node [] = JSON.parse(String(result));
         if(nodes.length == 0){
           this.isLoaded = true;
@@ -100,6 +100,43 @@ class NodeListComponent extends React.Component<
       dataIndex: 'gpu',
       key: 'gpu'
     },
+    {
+      title: this.props.intl.formatMessage({id: 'status'}),
+      dataIndex: 'status',
+      key: 'status',
+      render: (text: string, node: Node) => {
+        if(node != null){
+          let id;
+          let element;
+          if(node.status == "\"CONNECTED\""){
+            id = "connected";
+            element = <CheckCircleTwoTone twoToneColor="#29e70b"/>;
+          }
+          else if(node.status == "\"NOT_CONNECTED\""){
+            id = "not_connected";
+            element = <CloseCircleTwoTone twoToneColor="#ff0000"/>;
+          }
+          else{
+            id = "problems";
+            element = "Some problems with connection";
+          }
+
+          return (
+            <>
+              {
+                <Tooltip placement="topLeft" title={this.props.intl.formatMessage({id})}>
+                  {element}
+                </Tooltip>
+              }
+            </>
+          );
+        }
+
+        return (
+          <></>
+        )
+      }
+    }
   ];
 
   @observable selectedRowKey: string | undefined;
@@ -145,14 +182,12 @@ class NodeListComponent extends React.Component<
     const buttons = [
       <Link
         to={NodeManagement.PATH + "/" + NodeManagement.NEW_SUBPATH}
-        key="create"
-      >
+        key="create">
         <Button
           htmlType="button"
           style={{ margin: "0 12px 12px 0" }}
           type="primary"
-          icon="plus"
-        >
+          icon="plus">
           <span>
             <FormattedMessage id="management.browser.create" />
           </span>
@@ -163,8 +198,7 @@ class NodeListComponent extends React.Component<
           htmlType="button"
           style={{ margin: "0 12px 12px 0" }}
           disabled={!this.selectedRowKey}
-          type="default"
-        >
+          type="default">
           <FormattedMessage id="management.browser.edit" />
         </Button>
       </Link>,
@@ -174,19 +208,17 @@ class NodeListComponent extends React.Component<
         disabled={!this.selectedRowKey}
         onClick={this.deleteSelectedRow}
         key="remove"
-        type="default"
-      >
+        type="default">
         <FormattedMessage id="management.browser.remove" />
       </Button>,
       <Button
         htmlType="button"
         style={{ margin: "0 12px 12px 0" }}
-        disabled={!this.selectedRowKey}
+        disabled={!this.selectedRowKey || this.getRecordById(this.selectedRowKey!)!.status != "\"CONNECTED\""}
         key="remove"
         type="default"
-        onClick={this.getInfo}
-      >
-        info
+        onClick={this.getInfo}>
+        <FormattedMessage id="get_hardware_info"/>
       </Button>
     ];
 
@@ -205,8 +237,7 @@ class NodeListComponent extends React.Component<
                 this.handleRowSelectionChange([String(selectedRows[0].id)]);
               }
             }
-          }
-        >
+          }>
         </Table>
       </div>
     );
@@ -218,25 +249,33 @@ class NodeListComponent extends React.Component<
     let index = nodes.indexOf(node);
     let cpu = '';
     let gpu = '';
-
     const key = 'load';
+
     message.loading({content: ' ', key: key}, 0);
     restServices.platform_NodeService.getCpu(cubaREST)({node: node})
       .then((result: string) => {
         cpu = result;
-      });
-    restServices.platform_NodeService.getGpu(cubaREST)({node: node})
-      .then((result: string) => {
-        gpu = result;
-      });
+        restServices.platform_NodeService.getGpu(cubaREST)({node: node})
+          .then((result: string) => {
+            gpu = result;
 
-    node.cpu = cpu;
-    node.gpu = gpu;
+            node.cpu = cpu;
+            node.gpu = gpu;
 
-    this.nodes = [];
-    nodes[index] = node;
-    this.nodes = nodes;
+            this.nodes = this.changeNode(node, index);
+          });
+      });
     message.success({content: ' ', key: key}, 0);
+  }
+
+  changeNode(node: Node, index: number){
+    let result: Node [] = [];
+    this.nodes.forEach((node) => {
+      result.push(node);
+    });
+    result[index] = node;
+
+    return result;
   }
 
   getRecordById(id: string): Node{

@@ -122,5 +122,14 @@
   "live": "Live",
   "address": "Address",
   "cpu": "Cpu",
-  "gpu": "Gpu"
+  "gpu": "Gpu",
+  "ready": "Ready for processing",
+  "processing": "Processing",
+  "processed": "Processed",
+  "error": "error",
+  "process": "Process",
+  "get_hardware_info": "Get CPU and GPU information",
+  "show_processings": "Show processings of this video",
+  "node": "Node",
+  "register": "Create an account"
 }

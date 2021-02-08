@@ -24,9 +24,8 @@ import {
 } from "react-intl";
 import {StandardEntity} from "../cuba/entities/base/sys$StandardEntity";
 import {cubaREST} from "../index";
-import {Camera} from "../cuba/entities/platform_Camera";
-import {restServices} from "../cuba/services";
-import {Node} from "../cuba/entities/platform_Node";
+import {ProcessingManagement} from "./processing/Processing";
+import Register from "./register/Register";
 
 @injectMainStore
 @observer
@@ -44,7 +43,7 @@ class AppComponent extends React.Component<
     if (loginRequired) {
       return (
         <Centered>
-          <Login />
+          <Login intl={this.props.intl}/>
         </Centered>
       );
     }
@@ -86,6 +85,8 @@ class AppComponent extends React.Component<
                     component={route.component}
                   />
                 ))}
+                <Route path={"/processing/:videoId?"} component={ProcessingManagement}/>
+                <Route path={"/register"} component={Register}/>
               </Switch>
             </Layout.Content>
           </Layout>

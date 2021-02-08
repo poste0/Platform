@@ -43,6 +43,13 @@
             <param name="node"/>
         </method>
         <method name="getNodes"/>
+        <method name="getConnectedNodes"/>
+        <method name="processVideo">
+            <param name="nodeId"/>
+            <param name="videoId"/>
+            <param name="login"/>
+            <param name="password"/>
+        </method>
     </service>
 </services>
 

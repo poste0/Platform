@@ -7,6 +7,7 @@ export class Node extends StandardEntity {
   gpu?: string | null;
   cpu?: string | null;
   user?: User | null;
+  status?: string | null;
 }
 export type NodeViewName = "_base" | "_local" | "_minimal";
 export type NodeView<V extends NodeViewName> = V extends "_base"

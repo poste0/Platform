@@ -14,6 +14,21 @@ export class Camera extends StandardEntity {
   path?: string | null;
   videos?: Video[] | null;
   status?: any | null;
+
+  static copy(camera: Camera): Camera {
+    let result: Camera = new Camera();
+    result.id = camera.id;
+    result.address = camera.address;
+    result.urlAddress = camera.urlAddress;
+    result.port = camera.port;
+    result.name = camera.name;
+    result.height = camera.height;
+    result.weight = camera.weight;
+    result.frameRate = camera.frameRate;
+    result.path = camera.path;
+
+    return result;
+  }
 }
 export type CameraViewName = "_base" | "_local" | "_minimal";
 export type CameraView<V extends CameraViewName> = V extends "_base"
