@@ -28,9 +28,10 @@ public class RegistrationServiceBean implements RegistrationService{
 
     private static final String GROUP_ID = "0fa2b1a5-1d68-4d69-9fbd-dff348347f93";
 
-    private static final String ROLE_ID = "cd541dd4-eeb7-cd5b-847e-d32236552fa9";
+    private static final String ROLE_ID = "0c018061-b26f-4de2-a5be-dff348347f93";
 
     private static final String QUERY = "SELECT u from sec$User u WHERE u.loginLowerCase = :login";
+
     @Override
     public User register(String login, String password, String name) throws IllegalArgumentException {
         if(dataManager.getCount(LoadContext.create(User.class)
@@ -51,7 +52,7 @@ public class RegistrationServiceBean implements RegistrationService{
 
         dataManager.commit(new CommitContext(userRole, user));
 
-        log.info("User has been regstered");
+        log.info("User has been registered");
 
         return user;
 

@@ -39,6 +39,8 @@ create table PLATFORM_VIDEO (
     parentName varchar(255),
     status varchar(255) not null,
     parentVideo uuid,
+    videoProcessingId uuid,
+    message varchar(255),
     --
     primary key (ID)
 )^
@@ -63,3 +65,55 @@ create table PLATFORM_NODE (
     primary key (ID)
 )^
 -- end PLATFORM_NODE
+-- begin PLATFORM_IMAGE
+create table PLATFORM_IMAGE (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    name varchar(255) not null,
+    fileDescriptorId uuid,
+    parentVideoId uuid,
+    imageProcessingId uuid,
+    message varchar(255),
+    --
+    primary key (ID)
+)^
+-- end PLATFORM_IMAGE
+-- begin PLATFORM_IMAGE_PROCESSING
+create table PLATFORM_IMAGE_PROCESSING (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    nodeId uuid,
+    --
+    primary key (ID)
+)^
+-- end PLATFORM_IMAGE_PROCESSING
+-- begin PLATFORM_VIDEO_PROCESSING
+create table PLATFORM_VIDEO_PROCESSING (
+    ID uuid,
+    VERSION integer not null,
+    CREATE_TS timestamp,
+    CREATED_BY varchar(50),
+    UPDATE_TS timestamp,
+    UPDATED_BY varchar(50),
+    DELETE_TS timestamp,
+    DELETED_BY varchar(50),
+    --
+    nodeId uuid,
+    --
+    primary key (ID)
+)^
+-- end PLATFORM_VIDEO_PROCESSING

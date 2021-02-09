@@ -44,6 +44,12 @@ class NodeListComponent extends React.Component<
       })
       .then((result) => {
         let nodesWithStatus: Node [] = [];
+
+        if(this.nodes.length == 0){
+          this.isLoaded = true;
+          return;
+        }
+
         this.nodes.forEach((node) => {
           restServices.platform_NodeService.getStatus(cubaREST)({node: node})
             .then((result: string) => {

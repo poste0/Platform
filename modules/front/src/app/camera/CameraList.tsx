@@ -47,6 +47,10 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
       .then((result: Camera []) => {
         let cameras: Camera [] = result;
         let count = 0;
+        if(cameras.length == 0){
+          this.isLoaded = true;
+          return;
+        }
 
         cameras.forEach((camera) => {
           restServices.platform_CameraService.getStatus(cubaREST)({camera: camera}).then((result) => {
@@ -243,6 +247,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
             } else if (this.cameras.length != 0) {
               this.cameras = deleteFromDataSource(this.getRecordById(this.selectedRowKey!), this.cameras);
             }
+            this.selectedRowKey = undefined;
           }
         )}
         key="remove"
@@ -350,7 +355,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
     const record: Camera | undefined = this.cameras.find(record => record.id === id);
 
     if (!record) {
-      throw new Error("Cannot find entity with id " + id);
+      return new Camera();
     }
 
     return record;

@@ -37,6 +37,8 @@ export default class Register extends React.Component<MainStoreInjected & Wrappe
 
   @action
   doRegister = (e: FormEvent) => {
+    e.preventDefault();
+
     restServices.platform_RegistrationService.register(cubaREST)
     ({login: this.register_login, password: this.register_password, name: this.register_name})
       .then((result) => {
