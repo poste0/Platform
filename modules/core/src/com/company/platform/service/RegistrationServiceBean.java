@@ -1,6 +1,5 @@
 package com.company.platform.service;
 
-import com.haulmont.cuba.core.entity.contracts.Id;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.security.entity.Group;
 import com.haulmont.cuba.security.entity.Role;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.UUID;
+
 @Service(RegistrationService.NAME)
 public class RegistrationServiceBean implements RegistrationService{
 

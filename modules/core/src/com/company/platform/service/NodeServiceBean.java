@@ -1,5 +1,6 @@
 package com.company.platform.service;
 
+import com.company.platform.core.RestBean;
 import com.company.platform.entity.Node;
 import com.company.platform.entity.NodeStatus;
 import com.company.platform.entity.Video;
@@ -12,14 +13,12 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -82,50 +81,50 @@ public class NodeServiceBean implements NodeService {
     @Override
     public void processVideo(UUID nodeId, UUID videoId, String login, String password) {
         User user = AppBeans.get(UserSessionSource.class).getUserSession().getUser();
-        Map<String, Object> confirmScreenOptionsMap = new HashMap<>();
-        confirmScreenOptionsMap.put("user", user);
-        confirmScreenOptionsMap.put("login", login);
-        confirmScreenOptionsMap.put("password", password);
+        boolean isConfirmed = isUserConfirmed(user, login, password);
 
-        AtomicBoolean isConfirmed = new AtomicBoolean(false);
+        if (isConfirmed) {
+            Video video = dataManager.load(Id.of(videoId, Video.class)).view("video-view").one();
+            FileSystemResource value = getFile(video);
+            Node node = dataManager.load(Id.of(nodeId, Node.class)).one();
 
+            RestBean restBean = AppBeans.get(RestBean.NAME);
+            restBean.setMethod(HttpMethod.POST);
+            restBean.setContentType(MediaType.MULTIPART_FORM_DATA);
+            restBean.addToBody("file", value);
+            String url = node.getAddress() + "/file?login=" + user.getLogin() + "&password=" + password + "&cameraId=" + video.getCamera().getId().toString() + "&videoId=" + video.getId() + "&nodeId=" + node.getId();
+            restBean.setUrl(url);
+            ResponseEntity<String> response = restBean.process();
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                video.setStatus("processing");
+                dataManager.commit(video);
+            }
+        }
+
+    }
+
+    private boolean isUserConfirmed(User user, String login, String password){
         PasswordEncryption encryption = AppBeans.get(PasswordEncryption.NAME);
 
         if (encryption.checkPassword(user, password) && login.equals(user.getLogin())) {
             log.info("User is confirmed");
-            isConfirmed.set(true);
+            return true;
         } else {
-            throw new IllegalArgumentException("User is not confirmed");
+            return false;
         }
-
-        Video video = dataManager.load(Id.of(videoId, Video.class)).view("video-view").one();
-
-        if (isConfirmed.get()) {
-            LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-            File file = new File(video.getFileDescriptor().getName());
-            try {
-                FileUtils.copyInputStreamToFile(loader.openStream(video.getFileDescriptor()), file);
-                log.info("File {} has been copied", video.getFileDescriptor().getName());
-            } catch (IOException | FileStorageException e) {
-                log.error("File {} has not been copied", video.getFileDescriptor().getName());
-                e.printStackTrace();
-            }
-            FileSystemResource value = new FileSystemResource(file);
-            map.add("file", value);
-            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-            factory.setBufferRequestBody(false);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
-            RestTemplate restTemplate = new RestTemplate(factory);
-            Node node = dataManager.load(Id.of(nodeId, Node.class)).one();
-            restTemplate.exchange(node.getAddress() + "/file?login=" + user.getLogin() + "&password=" + password + "&cameraId=" + video.getCamera().getId().toString() + "&videoId=" + video.getId() + "&nodeId=" + node.getId(), HttpMethod.POST, requestEntity, String.class);
-
-            video.setStatus("processing");
-            dataManager.commit(video);
     }
 
-}
+    private FileSystemResource getFile(Video video){
+        File file = new File(video.getFileDescriptor().getName());
+        try {
+            FileUtils.copyInputStreamToFile(loader.openStream(video.getFileDescriptor()), file);
+            log.info("File {} has been copied", video.getFileDescriptor().getName());
+        } catch (IOException | FileStorageException e) {
+            log.error("File {} has not been copied", video.getFileDescriptor().getName());
+        }
+        return new FileSystemResource(file);
+    }
 
     private boolean isConnected(Node node) {
         try {
@@ -146,12 +145,13 @@ public class NodeServiceBean implements NodeService {
         String result = "";
         if (isConnected(node)) {
             try {
-                SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-                RestTemplate template = new RestTemplate(factory);
-                HttpHeaders headers = new HttpHeaders();
-                LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-                HttpEntity entity = new HttpEntity(map, headers);
-                result = template.exchange(node.getAddress() + "/" + path, HttpMethod.GET, entity, String.class).getBody();
+                RestBean restBean = AppBeans.get(RestBean.NAME);
+                restBean.setUrl(node.getAddress() + "/" + path);
+                restBean.setMethod(HttpMethod.GET);
+                ResponseEntity<String> response = restBean.process();
+                if(response.getStatusCode() == HttpStatus.OK){
+                    result = response.getBody();
+                }
             } catch (RestClientException e) {
                 log.error("Rest error");
                 result = "No node";

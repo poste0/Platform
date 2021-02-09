@@ -16,24 +16,22 @@ import java.util.List;
 public interface CameraService {
     String NAME = "platform_CameraService";
 
-    public enum Status{
+    enum Status{
         NOT_CONNECTED, CONNECTED, RECORDING;
     }
 
-    //FFmpegFrameGrabber getGrabber(String address) throws FrameGrabber.Exception;
+    void write(Camera camera) throws IllegalStateException;
 
-    //FFmpegFrameRecorder getRecorder(File file, FFmpegFrameGrabber grabber) throws FrameRecorder.Exception;
-
-    void write(Camera camera) throws FrameGrabber.Exception, FrameRecorder.Exception;
-
-    void stop(Camera camera);
+    void stop(Camera camera) throws IllegalStateException;
 
     void init();
 
+    @Deprecated
     boolean isRecording(Camera camera);
 
     void update(Camera camera);
 
+    @Deprecated
     boolean testConnection(Camera camera);
 
     Status getStatus(Camera camera);

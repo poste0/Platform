@@ -40,119 +40,9 @@ import java.util.stream.Collectors;
 
 @Service(CameraService.NAME)
 public class CameraServiceBean implements CameraService {
-
-
-    public FFmpegFrameGrabber getGrabber(String address) throws FrameGrabber.Exception {
-        FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(address);
-        return grabber;
-    }
-
-    public FFmpegFrameRecorder getRecorder(File file, FFmpegFrameGrabber grabber) throws FrameRecorder.Exception {
-        FFmpegFrameRecorder recorder = FFmpegFrameRecorder.createDefault(file, grabber.getImageWidth(), grabber.getImageHeight());
-        set(grabber, recorder);
-        return recorder;
-    }
-
-    private void set(FFmpegFrameGrabber grabber, FFmpegFrameRecorder recorder) {
-        recorder.setVideoCodec(grabber.getVideoCodec());
-        recorder.setVideoBitrate(grabber.getVideoBitrate());
-        recorder.setFrameRate(grabber.getFrameRate());
-    }
-
-    private class FFMpegFrameWrapper{
-
-        private FFmpegFrameGrabber grabber;
-
-        private FFmpegFrameRecorder recorder;
-
-        private Camera camera;
-
-        private File file;
-
-        private String name;
-
-        private boolean isRecording;
-
-        public FFMpegFrameWrapper(Camera camera){
-            this.camera = camera;
-            this.name = prepareFile(camera);
-            isRecording = false;
-        }
-
-        private void createFile(){
-            this.name = prepareFile(this.camera);
-            file = new File(name);
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-        private String prepareFile(Camera item){
-            if(Objects.isNull(item)){
-                throw new IllegalArgumentException();
-            }
-
-            /*File file;
-            File path = new File(item.getId().toString());
-            if(!path.exists()) {
-                path.mkdir();
-            }
-            file = new File(path.getAbsolutePath() + "/" + LocalDateTime.now() + ".avi");
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
-            File path = new File(item.getId().toString());
-            if(!path.exists()) {
-                path.mkdir();
-            }
-            String name = path.getAbsolutePath() + "/" + LocalDateTime.now() + ".avi";
-            return name;
-        }
-
-        public FFmpegFrameGrabber getGrabber() throws FrameGrabber.Exception {
-            if(grabber == null) {
-                grabber = FFmpegFrameGrabber.createDefault(camera.getAddress());
-                grabber.setOption("rtsp_transport", "tcp");
-                grabber.setFrameRate(camera.getFrameRate());
-                grabber.setImageHeight(camera.getHeight());
-                grabber.setImageWidth(camera.getWeight());
-            }
-            return grabber;
-        }
-
-        public FFmpegFrameRecorder getRecorder() throws FrameRecorder.Exception {
-            if(recorder == null) {
-                recorder = FFmpegFrameRecorder.createDefault(file, grabber.getImageWidth(), grabber.getImageHeight());
-            }
-            set();
-            return recorder;
-        }
-
-        private void set(){
-            recorder.setVideoCodec(grabber.getVideoCodec());
-            recorder.setVideoBitrate(grabber.getVideoBitrate());
-            recorder.setFrameRate(grabber.getFrameRate());
-            recorder.setImageHeight(grabber.getImageHeight() / 4);
-            recorder.setImageWidth(grabber.getImageWidth() / 4);
-        }
-
-    }
-
     private Map<User, List<Capture>> ffMpegs;
 
-    private Executor executor;
-
-    private SecurityContext context;
-
     private static final Logger log = LoggerFactory.getLogger(CameraServiceBean.class);
-
-    public CameraServiceBean(){
-
-    }
 
     public void init(){
         if(ffMpegs == null) {
@@ -166,8 +56,7 @@ public class CameraServiceBean implements CameraService {
 
     private List<UserSession> getSessions(){
         UserSessions tempUserSessions = AppBeans.get(UserSessions.NAME);
-        List<UserSession> userSessions = tempUserSessions.getUserSessionsStream().collect(Collectors.toList());
-        return userSessions;
+        return tempUserSessions.getUserSessionsStream().collect(Collectors.toList());
     }
 
     private void processSessions(List<UserSession> userSessions){
@@ -175,53 +64,61 @@ public class CameraServiceBean implements CameraService {
         userSessions.stream()
                 .filter(userSession -> !ffMpegs.containsKey(userSession.getUser()))
                 .forEach(userSession -> {
-                    List<Camera> cameras = dataManager.loadValue("SELECT c FROM platform_Camera c " +
-                            "WHERE c.user.id = :user", Camera.class).setParameters(Collections.singletonMap("user", userSession.getUser().getId())).list();
+                    List<Camera> cameras = dataManager.loadValue(
+                            "SELECT c FROM platform_Camera c " +
+                            "WHERE c.user.id = :user", Camera.class
+                    ).setParameters(Collections.singletonMap("user", userSession.getUser().getId())).list();
                     List<Capture> wrappers = new ArrayList<>();
-                    cameras.forEach(camera -> {
-                        wrappers.add(AppBeans.getPrototype(FFMpegCapture.NAME, camera));
-                    });
+                    cameras.forEach(camera -> wrappers.add(AppBeans.getPrototype(FFMpegCapture.NAME, camera)));
                     ffMpegs.put(userSession.getUser(), wrappers);
                 });
     }
 
-    public void write(Camera camera) throws FrameGrabber.Exception {
+    @Override
+    public void write(Camera camera) throws IllegalStateException {
+        if(!this.getStatus(camera).equals(Status.CONNECTED)){
+            throw new IllegalStateException("Camera status is not connected.");
+        }
+
         Capture capture = getWrapper(camera);
         try {
             capture.process();
-        } catch (FrameRecorder.Exception e) {
-            e.printStackTrace();
+        } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
+            log.error("Error on recording for camera {}", camera.getId(), e);
         }
     }
 
     private Capture getWrapper(Camera camera){
         UserSession session = AppBeans.get(UserSessionSource.class).getUserSession();
         List<Capture> wrappers = ffMpegs.get(session.getUser());
-        Capture capture = null;
+        Capture capture;
         for(Capture w: wrappers){
             if(w.getCamera().getId().equals(camera.getId())){
                 capture = w;
+                return capture;
             }
         }
-        return capture;
+
+        final String errorMessage = String.format("There is no wrapper for camera with id %s", camera.getId());
+        log.error(errorMessage);
+        throw new RuntimeException(errorMessage);
     }
 
-    public void stop(Camera camera) {
+    public void stop(Camera camera) throws IllegalStateException {
+        if(!this.getStatus(camera).equals(Status.RECORDING)){
+            throw new IllegalStateException("Camera status is not recording");
+        }
+
         Capture capture = getWrapper(camera);
         capture.stop();
-
     }
 
     public boolean isRecording(Camera camera){
-        /*FFMpegFrameWrapper wrapper = getWrapper(camera);
-        return wrapper.isRecording;
-         */
         Capture capture = getWrapper(camera);
         return capture.isRecording();
     }
 
     public void update(Camera camera){
-        FFMpegFrameWrapper wrapper = new FFMpegFrameWrapper(camera);
         UserSession userSession = AppBeans.get(UserSessionSource.class).getUserSession();
         List<Capture> wrappers = ffMpegs.get(userSession.getUser());
         wrappers.add(AppBeans.getPrototype(FFMpegCapture.NAME, camera));
