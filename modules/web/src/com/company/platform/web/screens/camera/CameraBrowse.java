@@ -344,13 +344,8 @@ public class CameraBrowse extends StandardLookup<Camera> {
             throw new IllegalArgumentException();
         }
 
-        try {
-            log.info("Recording has started");
-            service.write(item);
-        } catch (FrameGrabber.Exception | FrameRecorder.Exception e) {
-            log.error("Recording error");
-            isVideo.setValue(e.getMessage());
-        }
+        log.info("Recording has started");
+        service.write(item);
     }
 
 
