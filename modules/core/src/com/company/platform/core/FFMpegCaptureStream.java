@@ -46,13 +46,13 @@ public class FFMpegCaptureStream extends AbstractFFMpegCapture {
     @Override
     protected void setUpRecorder(){
         super.setUpRecorder();
-        recorder.setOption("f", "hls");
-        recorder.setOption("hls_time", "4");
-
         int hw = Math.max(camera.getHeight(), camera.getWeight());
         hw = hw / 500;
-        recorder.setImageHeight(camera.getHeight() / hw);
-        recorder.setImageWidth(camera.getWeight() / hw);
+
+        recorderBuilder.with("f", "hls")
+                .with("hls_time", "4")
+                .withHeight(camera.getHeight() / hw)
+                .withWidth(camera.getWeight() / hw);
 
         log.info("Recorder has been set up");
 

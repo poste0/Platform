@@ -3,6 +3,7 @@ package com.company.platform.service;
 import com.company.platform.core.CameraStatusBean;
 import com.company.platform.core.Capture;
 import com.company.platform.core.FFMpegCapture;
+import com.company.platform.core.FFMpegGrabberBuilder;
 import com.company.platform.entity.Camera;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.DataManager;
@@ -128,39 +129,15 @@ public class CameraServiceBean implements CameraService {
     }
 
     public boolean testConnection(Camera camera){
-        try(Socket socket = new Socket()) {
-            Pattern pattern = Pattern.compile("([0-9]{1,3}[\\.]){3}[0-9]{1,3}");
-            Matcher matcher = pattern.matcher(camera.getAddress());
-            matcher.find();
-            final String address = matcher.group(0);
-
-            int port = 5000;
-            final String[] splitAddress = camera.getAddress().split("([0-9]{1,3}[\\.]){3}[0-9]{1,3}");
-            if(splitAddress.length == 2){
-                if(splitAddress[1].charAt(0) == ':'){
-                    if(splitAddress[1].contains("/")){
-                        port = Integer.valueOf(splitAddress[1].substring(1).split("/")[0]);
-                    }
-                    else {
-                        port = Integer.valueOf(splitAddress[1].substring(1));
-                    }
-                }
-
-            }
-
-            log.info(address);
-            log.info(String.valueOf(port));
-
-            socket.connect(new InetSocketAddress(address, port), 500);
-            boolean result = socket.isConnected();
-            socket.close();
-            log.info(String.valueOf(result));
-            return result;
-        } catch (IOException e) {
-            log.error("Test is failed");
+        try {
+            FFMpegGrabberBuilder grabberBuilder = new FFMpegGrabberBuilder(camera.getAddress());
+            grabberBuilder.withOption("rtsp_transport", "tcp");
+            grabberBuilder.build().start();
+            grabberBuilder.build().stop();
+        } catch (FrameGrabber.Exception e) {
             return false;
         }
-
+        return true;
     }
 
     public Status getStatus(Camera camera){

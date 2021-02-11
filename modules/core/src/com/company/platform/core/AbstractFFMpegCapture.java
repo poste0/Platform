@@ -22,9 +22,9 @@ import java.util.function.BiConsumer;
 public abstract class AbstractFFMpegCapture implements Capture {
     public static final String NAME = "platform_AbstractFFMpegCapture";
 
-    protected FFmpegFrameGrabber grabber;
+    protected FFMpegGrabberBuilder grabberBuilder;
 
-    protected FFmpegFrameRecorder recorder;
+    protected FFMpegRecorderBuilder recorderBuilder;
 
     protected Camera camera;
 
@@ -39,7 +39,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
     private static final Logger log = LoggerFactory.getLogger(AbstractFFMpegCapture.class);
 
     public AbstractFFMpegCapture(Camera camera) throws FrameGrabber.Exception {
-        this.grabber = FFmpegFrameGrabber.createDefault(camera.getAddress());
+        this.grabberBuilder = new FFMpegGrabberBuilder(camera.getAddress());
         this.camera = camera;
         this.isRecording = new AtomicBoolean(false);
         this.executor = new ConcurrentTaskExecutor();
@@ -47,25 +47,25 @@ public abstract class AbstractFFMpegCapture implements Capture {
 
 
     protected void setUpRecorder(){
-        recorder.setVideoCodec(grabber.getVideoCodec());
-        recorder.setVideoBitrate(grabber.getVideoBitrate());
-        recorder.setFrameRate(grabber.getFrameRate());
-        recorder.setImageHeight(camera.getHeight());
-        recorder.setImageWidth(camera.getWeight());
-        recorder.setGopSize((int) grabber.getFrameRate());
-        recorder.setAudioCodec(grabber.getAudioCodec());
-        recorder.setAudioChannels(grabber.getAudioChannels());
-        recorder.setOption("movflags", "faststart");
-        recorder.setOption("crf", "20");
-        recorder.setOption("sc_threshold", "0");
+        recorderBuilder.withCodec()
+                .withBitrate()
+                .withFrameRate()
+                .withHeight(camera.getHeight())
+                .withWidth(camera.getWeight())
+                .withGopSize()
+                .withAudioCodec()
+                .withAudioChannels()
+                .with("movflags", "faststart")
+                .with("crf", "20")
+                .with("sc_threshold", "0");
 
         log.info("Recorder has been set up");
     }
 
     protected void setUpGrabber() throws FrameGrabber.Exception{
-        grabber.setOption("rtsp_transport", "tcp");
-        grabber.setImageHeight(camera.getHeight());
-        grabber.setImageWidth(camera.getWeight());
+        grabberBuilder.withOption("rtsp_transport", "tcp")
+                .withWidth(camera.getWeight())
+                .withHeight(camera.getHeight());
 
         log.info("Grabber has been set up");
     }
@@ -78,9 +78,10 @@ public abstract class AbstractFFMpegCapture implements Capture {
         setUpGrabber();
         startGrabber();
         createFile();
-        recorder = new HlsRecorder(file, grabber.getImageWidth(), grabber.getImageHeight());
+        FFmpegFrameGrabber grabber = grabberBuilder.build();
+        recorderBuilder = new FFMpegRecorderBuilder(file, grabber);
         setUpRecorder();
-        recorder.start();
+        recorderBuilder.build().start();
         final SecurityContext context = AppContext.getSecurityContext();
         executor.execute(() -> {
             AppContext.setSecurityContext(context);
@@ -93,7 +94,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
                         q = 0;
                     }
                     Frame frame = grabber.grab();
-                    recorder.record(frame);
+                    recorderBuilder.build().record(frame);
                 }
             } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
                 log.error("Recording has errors");
@@ -107,6 +108,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
     }
 
     private void startGrabber() throws FrameGrabber.Exception {
+        FFmpegFrameGrabber grabber = grabberBuilder.build();
         grabber.start();
 
         int failCounter = 0;
@@ -120,8 +122,9 @@ public abstract class AbstractFFMpegCapture implements Capture {
                     throw new IllegalStateException("Frame rate of the camera is not equal to the rate of the grabber. May be the frame rate of the camera is wrong.");
                 }
 
-                grabber = FFmpegFrameGrabber.createDefault(camera.getAddress());
-                setUpGrabber();
+                grabberBuilder = new FFMpegGrabberBuilder(camera.getAddress());
+                setUpRecorder();
+                grabber = grabberBuilder.build();
                 grabber.start();
 
                 log.info("Grabber has started");
@@ -155,8 +158,8 @@ public abstract class AbstractFFMpegCapture implements Capture {
         }
         isStopped = false;
         try {
-            recorder.stop();
-            grabber.stop();
+            recorderBuilder.build().stop();
+            grabberBuilder.build().stop();
 
             log.info("Recording has stopped");
         } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
