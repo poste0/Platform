@@ -9,20 +9,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import java.util.UUID;
 
 @Service(RegistrationService.NAME)
 public class RegistrationServiceBean implements RegistrationService{
 
-    @Inject
-    private Metadata metadata;
+    private final Metadata metadata;
 
-    @Inject
-    private DataManager dataManager;
+    private final DataManager dataManager;
 
-    @Inject
-    private PasswordEncryption passwordEncryption;
+    private final PasswordEncryption passwordEncryption;
 
     private static final Logger log = LoggerFactory.getLogger(RegistrationServiceBean.class);
 
@@ -31,6 +27,12 @@ public class RegistrationServiceBean implements RegistrationService{
     private static final String ROLE_ID = "0c018061-b26f-4de2-a5be-dff348347f93";
 
     private static final String QUERY = "SELECT u from sec$User u WHERE u.loginLowerCase = :login";
+
+    public RegistrationServiceBean(Metadata metadata, DataManager dataManager, PasswordEncryption passwordEncryption) {
+        this.metadata = metadata;
+        this.dataManager = dataManager;
+        this.passwordEncryption = passwordEncryption;
+    }
 
     @Override
     public User register(String login, String password, String name) throws IllegalArgumentException {

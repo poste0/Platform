@@ -6,45 +6,37 @@ import com.company.platform.entity.NodeStatus;
 import com.company.platform.entity.Video;
 import com.haulmont.cuba.core.entity.contracts.Id;
 import com.haulmont.cuba.core.global.*;
-import com.haulmont.cuba.core.sys.AppContext;
-import com.haulmont.cuba.core.sys.SecurityContext;
 import com.haulmont.cuba.security.entity.User;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.*;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service(NodeService.NAME)
 public class NodeServiceBean implements NodeService {
     private static final Logger log = LoggerFactory.getLogger(NodeServiceBean.class);
 
-    @Inject
-    private DataManager dataManager;
+    private final DataManager dataManager;
 
-    @Inject
-    private FileLoader loader;
+    private final FileLoader loader;
+
+    public NodeServiceBean(DataManager dataManager, FileLoader loader) {
+        this.dataManager = dataManager;
+        this.loader = loader;
+    }
 
     @Override
     public String getCpu(Node node) {

@@ -3,6 +3,7 @@ package com.company.platform.entity;
 import com.company.platform.service.CameraService;
 import com.esotericsoftware.kryo.NotNull;
 import com.haulmont.chile.core.annotations.MetaProperty;
+import com.haulmont.chile.core.annotations.NamePattern;
 import com.haulmont.cuba.core.entity.StandardEntity;
 import com.haulmont.cuba.core.entity.annotation.OnDelete;
 import com.haulmont.cuba.core.entity.annotation.PublishEntityChangedEvents;
@@ -17,6 +18,7 @@ import java.util.List;
 @PublishEntityChangedEvents
 @Table(name = "PLATFORM_CAMERA")
 @Entity(name = "platform_Camera")
+@NamePattern("%s|address")
 public class Camera extends StandardEntity {
     private static final long serialVersionUID = -8832880328485561860L;
     @Column(name = "ADDRESS", nullable = false)

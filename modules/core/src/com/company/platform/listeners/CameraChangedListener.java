@@ -7,17 +7,12 @@ import com.haulmont.cuba.core.EntityManager;
 import com.haulmont.cuba.core.Persistence;
 import com.haulmont.cuba.core.Transaction;
 import com.haulmont.cuba.core.app.events.EntityChangedEvent;
-import com.haulmont.cuba.core.global.AppBeans;
-import com.haulmont.cuba.core.global.DataManager;
-import com.haulmont.cuba.core.global.UserSessionSource;
-import com.haulmont.cuba.security.global.UserSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import javax.inject.Inject;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -25,21 +20,24 @@ import java.util.UUID;
 public class CameraChangedListener {
     private static final Logger logger = LoggerFactory.getLogger(CameraChangedListener.class);
 
-    @Inject
-    private CameraService cameraService;
+    private final CameraService cameraService;
 
-    @Inject
-    private StreamService streamService;
+    private final StreamService streamService;
 
-    @Inject
-    private Persistence persistence;
+    private final Persistence persistence;
+
+    public CameraChangedListener(CameraService cameraService, StreamService streamService, Persistence persistence) {
+        this.cameraService = cameraService;
+        this.streamService = streamService;
+        this.persistence = persistence;
+    }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void afterCommit(EntityChangedEvent<Camera, UUID> event) {
         logger.info("Camera after commit event");
         logger.info(event.getEntityId().toString());
 
-        Camera camera = null;
+        Camera camera;
         try(Transaction transaction = persistence.createTransaction()){
             EntityManager entityManager = persistence.getEntityManager();
             camera = entityManager.find(Camera.class, event.getEntityId().getValue());

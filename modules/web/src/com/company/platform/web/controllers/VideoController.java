@@ -10,38 +10,42 @@ import com.haulmont.cuba.core.sys.SecurityContext;
 import com.haulmont.cuba.security.app.TrustedClientService;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.UUID;
 
 @Controller
 @RequestMapping("/myapi")
 public class VideoController {
-    @Inject
-    private FileLoader loader;
+    private final FileLoader loader;
 
-    @Inject
-    private DataManager dataManager;
+    private final DataManager dataManager;
 
-    @Inject
-    private Configuration configuration;
+    private final Configuration configuration;
 
-    @Inject
-    private TrustedClientService clientService;
+    private final TrustedClientService clientService;
+
+    private static final Logger log = LoggerFactory.getLogger(VideoController.class);
+
+    public VideoController(FileLoader loader, DataManager dataManager, Configuration configuration, TrustedClientService clientService) {
+        this.loader = loader;
+        this.dataManager = dataManager;
+        this.configuration = configuration;
+        this.clientService = clientService;
+    }
 
     @RequestMapping(value = "/video", produces = "video/mp4")
     public void getVideo(HttpServletRequest request, HttpServletResponse response, @RequestParam("videoId") String videoId){
         String password = configuration.getConfig(WebAuthConfig.class).getTrustedClientPassword();
         UserSession session = clientService.getSystemSession(password);
         SecurityContext context = new SecurityContext(session);
-        SecurityContext previousContext = AppContext.getSecurityContext();
         AppContext.setSecurityContext(context);
 
         Video video = dataManager.load(Id.of(UUID.fromString(videoId), Video.class)).view("video-view").one();
@@ -54,18 +58,18 @@ public class VideoController {
             try {
                 response.getWriter().println(e.getMessage());
             } catch (IOException ex) {
-                ex.printStackTrace();
+                log.error(ex.getLocalizedMessage());
             }
         }
 
     }
 
     @RequestMapping("/hello")
-    public void hello(HttpServletRequest request, HttpServletResponse response){
+    public void hello(HttpServletResponse response){
         try {
             response.getWriter().println("hello");
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getLocalizedMessage());
         }
     }
 }

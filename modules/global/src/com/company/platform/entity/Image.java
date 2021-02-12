@@ -1,6 +1,6 @@
 package com.company.platform.entity;
 
-import com.esotericsoftware.kryo.NotNull;
+import com.haulmont.chile.core.annotations.NamePattern;
 import com.haulmont.cuba.core.entity.FileDescriptor;
 import com.haulmont.cuba.core.entity.StandardEntity;
 
@@ -8,11 +8,11 @@ import javax.persistence.*;
 
 @Table(name = "PLATFORM_IMAGE")
 @Entity(name = "platform_Image")
+@NamePattern("%s|name")
 public class Image extends StandardEntity {
     private static final long serialVersionUID = 718762005463730156L;
 
     @Column(name = "name", nullable = false)
-    @NotNull
     private String name;
 
     @OneToOne(fetch = FetchType.LAZY)

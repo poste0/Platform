@@ -1,13 +1,14 @@
 package com.company.platform.entity;
 
+import com.haulmont.chile.core.annotations.NamePattern;
 import com.haulmont.cuba.core.entity.StandardEntity;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.List;
 
 @Table(name = "PLATFORM_IMAGE_PROCESSING")
 @Entity(name = "platform_ImageProcessing")
+@NamePattern("%s|id")
 public class ImageProcessing extends StandardEntity {
     private static final long serialVersionUID = 362899307054057812L;
 

@@ -5,7 +5,6 @@ import org.bytedeco.ffmpeg.avformat.AVStream;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 
 import java.io.File;
-import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.Buffer;
 
@@ -13,40 +12,8 @@ import static org.bytedeco.ffmpeg.global.avformat.*;
 import static org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_NONE;
 
 public class HlsRecorder extends FFmpegFrameRecorder {
-    public HlsRecorder(File file, int audioChannels) {
-        super(file, audioChannels);
-    }
-
-    public HlsRecorder(String filename, int audioChannels) {
-        super(filename, audioChannels);
-    }
-
     public HlsRecorder(File file, int imageWidth, int imageHeight) {
         super(file, imageWidth, imageHeight);
-    }
-
-    public HlsRecorder(String filename, int imageWidth, int imageHeight) {
-        super(filename, imageWidth, imageHeight);
-    }
-
-    public HlsRecorder(File file, int imageWidth, int imageHeight, int audioChannels) {
-        super(file, imageWidth, imageHeight, audioChannels);
-    }
-
-    public HlsRecorder(String filename, int imageWidth, int imageHeight, int audioChannels) {
-        super(filename, imageWidth, imageHeight, audioChannels);
-    }
-
-    public HlsRecorder(OutputStream outputStream, int audioChannels) {
-        super(outputStream, audioChannels);
-    }
-
-    public HlsRecorder(OutputStream outputStream, int imageWidth, int imageHeight) {
-        super(outputStream, imageWidth, imageHeight);
-    }
-
-    public HlsRecorder(OutputStream outputStream, int imageWidth, int imageHeight, int audioChannels) {
-        super(outputStream, imageWidth, imageHeight, audioChannels);
     }
 
     @Override

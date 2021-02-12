@@ -13,11 +13,11 @@ public class RestBean {
 
     private MediaType contentType;
 
-    private MultiValueMap<String, Object> map;
+    private final MultiValueMap<String, Object> map;
 
     private String url;
 
-    private SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+    private final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
 
     private HttpMethod method;
 

@@ -1,25 +1,23 @@
 package com.company.platform.entity;
 
-import com.esotericsoftware.kryo.NotNull;
-import com.haulmont.chile.core.annotations.MetaProperty;
+import com.haulmont.chile.core.annotations.NamePattern;
 import com.haulmont.cuba.core.entity.FileDescriptor;
 import com.haulmont.cuba.core.entity.StandardEntity;
 
 import javax.persistence.*;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Table(name = "PLATFORM_VIDEO")
 @Entity(name = "platform_Video")
+@NamePattern("%s|name")
 public class Video extends StandardEntity {
     private static final long serialVersionUID = 5007256048789074873L;
 
     @Column(name = "name", nullable = false)
-    @NotNull
     private String name;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fileDescriptorId")
     private FileDescriptor fileDescriptor;
 
@@ -31,7 +29,6 @@ public class Video extends StandardEntity {
     private String parentName;
 
     @Column(name = "status", nullable = false)
-    @NotNull
     private String status;
 
     @ManyToOne

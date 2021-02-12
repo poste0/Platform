@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service(StreamService.NAME)
@@ -53,8 +51,7 @@ public class StreamServiceBean implements StreamService {
 
     private List<UserSession> getSessions(){
         UserSessions tempUserSessions = AppBeans.get(UserSessions.NAME);
-        List<UserSession> userSessions = tempUserSessions.getUserSessionsStream().collect(Collectors.toList());
-        return userSessions;
+        return tempUserSessions.getUserSessionsStream().collect(Collectors.toList());
     }
 
     private void processSessions(List<UserSession> userSessions){
@@ -65,9 +62,7 @@ public class StreamServiceBean implements StreamService {
                     List<Camera> cameras = dataManager.loadValue("SELECT c FROM platform_Camera c " +
                             "WHERE c.user.id = :user", Camera.class).setParameters(Collections.singletonMap("user", userSession.getUser().getId())).list();
                     List<Capture> wrappers = new ArrayList<>();
-                    cameras.forEach(camera -> {
-                        wrappers.add(AppBeans.getPrototype(FFMpegCaptureStream.NAME, camera));
-                    });
+                    cameras.forEach(camera -> wrappers.add(AppBeans.getPrototype(FFMpegCaptureStream.NAME, camera)));
                     ffMpegs.put(userSession.getUser(), wrappers);
                 });
     }
@@ -88,12 +83,10 @@ public class StreamServiceBean implements StreamService {
     @Override
     public void startStream(Camera camera) {
         Capture capture = getCapture(camera);
-        StringBuilder pathBuilder = new StringBuilder();
-        pathBuilder.append("file/")
-                .append(camera.getName())
-                .append("1.ts");
 
-        String path = pathBuilder.toString();
+        String path = "file/" +
+                camera.getName() +
+                "1.ts";
 
         File file = new File(path);
         if(file.exists()){
@@ -111,10 +104,9 @@ public class StreamServiceBean implements StreamService {
             }
             while (true);
         } catch (FrameGrabber.Exception | FrameRecorder.Exception e) {
-            log.error("Stream has not been started");
-            e.printStackTrace();
+            log.error("Stream has not been started", e);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("The thread is interrupted", e);
         }
     }
 

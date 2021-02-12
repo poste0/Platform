@@ -1,24 +1,20 @@
 package com.company.platform.core;
 
 import com.company.platform.entity.Camera;
-import com.company.platform.entity.Video;
-import com.haulmont.cuba.core.global.DataManager;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.SecurityContext;
-import org.bytedeco.javacv.*;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.FrameRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
-import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 
-//@Component(AbstractFFMpegCapture.NAME)
 public abstract class AbstractFFMpegCapture implements Capture {
     public static final String NAME = "platform_AbstractFFMpegCapture";
 
@@ -62,7 +58,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
         log.info("Recorder has been set up");
     }
 
-    protected void setUpGrabber() throws FrameGrabber.Exception{
+    protected void setUpGrabber() {
         grabberBuilder.withOption("rtsp_transport", "tcp")
                 .withWidth(camera.getWeight())
                 .withHeight(camera.getHeight());
@@ -97,8 +93,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
                     recorderBuilder.build().record(frame);
                 }
             } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
-                log.error("Recording has errors");
-                e.printStackTrace();
+                log.error("Recording has errors", e);
             } finally {
                 log.info("Recording has stopped");
                 isStopped = true;
@@ -130,8 +125,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
                 log.info("Grabber has started");
             }
         } catch (FrameGrabber.Exception e) {
-            log.error("Grabber has not started");
-            e.printStackTrace();
+            log.error("Grabber has not started", e);
         }
 
 
@@ -154,7 +148,6 @@ public abstract class AbstractFFMpegCapture implements Capture {
         isRecording.set(false);
         while(!isStopped){
             log.info("Recording is being stopped");
-            continue;
         }
         isStopped = false;
         try {
@@ -163,8 +156,7 @@ public abstract class AbstractFFMpegCapture implements Capture {
 
             log.info("Recording has stopped");
         } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
-            log.error("Recording has not stopped");
-            e.printStackTrace();
+            log.error("Recording has not stopped", e);
         }
     }
 
