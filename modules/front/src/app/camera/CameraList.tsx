@@ -4,7 +4,7 @@ import {Link} from "react-router-dom";
 
 import {observable} from "mobx";
 
-import {Modal, Button, Table, message, Spin, Tooltip, Row} from "antd";
+import {Modal, Button, Table, message, Tooltip, Row} from "antd";
 
 import {cubaREST} from "../../index";
 
@@ -47,7 +47,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
       .then((result: Camera []) => {
         let cameras: Camera [] = result;
         let count = 0;
-        if(cameras.length == 0){
+        if(cameras.length === 0){
           this.isLoaded = true;
           return;
         }
@@ -59,7 +59,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
             count++;
           })
             .then((result) => {
-              if(count == cameras.length){
+              if(count === cameras.length){
                 this.isLoaded = true;
               }
             });
@@ -96,10 +96,10 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
           let id;
           let element;
 
-          if (status == "\"CONNECTED\"") {
+          if (status === "\"CONNECTED\"") {
             id = 'connected';
             element = <CheckCircleTwoTone twoToneColor="#29e70b"/>;
-          } else if (status == "\"RECORDING\"") {
+          } else if (status === "\"RECORDING\"") {
             id = 'recording';
             element = <VideoCameraTwoTone/>
           } else {
@@ -199,9 +199,9 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
         cubaREST.deleteEntity('platform_Camera', e.id)
           .then(() => {
             message.success({content: this.props.intl.formatMessage({id: "deleting_has_finished"}), key}, 0);
-            if (this.cameras.length == 1) {
+            if (this.cameras.length === 1) {
               this.cameras = [];
-            } else if (this.cameras.length != 0) {
+            } else if (this.cameras.length !== 0) {
               this.cameras = this.cameras.splice(this.cameras.indexOf(e), 1);
             }
           })
@@ -242,9 +242,9 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
         htmlType="button"
         style={{margin: "0 12px 12px 0"}}
         onClick={() => showDeletionDialog(this.props, this.getRecordById(this.selectedRowKey!), 'platform_Camera', (result) => {
-            if (this.cameras.length == 1) {
+            if (this.cameras.length === 1) {
               this.cameras = [];
-            } else if (this.cameras.length != 0) {
+            } else if (this.cameras.length !== 0) {
               this.cameras = deleteFromDataSource(this.getRecordById(this.selectedRowKey!), this.cameras);
             }
             this.selectedRowKey = undefined;
@@ -286,7 +286,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
               })
           }
         }
-        disabled={!this.selectedRowKey || this.getRecordById(this.selectedRowKey!).status != "\"CONNECTED\""}>
+        disabled={!this.selectedRowKey || this.getRecordById(this.selectedRowKey!).status !== "\"CONNECTED\""}>
         {this.props.intl.formatMessage({id: "start"})}
       </Button>,
 
@@ -321,7 +321,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
               })
           }
         }
-        disabled={!this.selectedRowKey || this.getRecordById(this.selectedRowKey).status == "\"CONNECTED\""}>
+        disabled={!this.selectedRowKey || this.getRecordById(this.selectedRowKey).status === "\"CONNECTED\""}>
         {this.props.intl.formatMessage({id: "stop"})}
       </Button>
     ];
@@ -375,7 +375,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
     }
 
     const record = this.getRecordById(this.selectedRowKey!);
-    if(record.status == "\"CONNECTED\""){
+    if(record.status === "\"CONNECTED\""){
       return true;
     }
     return false;

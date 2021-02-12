@@ -1,14 +1,14 @@
 import * as React from "react";
 import {observer} from "mobx-react";
 import {Video} from "../../cuba/entities/platform_Video";
-import {Button, Card, Form, Icon, Input, message, Modal, Row, Select, Table} from "antd";
-import {collection, EntityProperty, getCubaREST, injectMainStore, MainStoreInjected} from "@cuba-platform/react";
+import {Button, Card, Icon, Input, message, Modal, Row, Select, Table} from "antd";
+import {collection, injectMainStore, MainStoreInjected} from "@cuba-platform/react";
 import ReactPlayer from "react-player";
 import {cubaREST} from "../../index";
-import {getAll, showDeletionDialog} from "../App";
+import {showDeletionDialog} from "../App";
 import {FormattedMessage, injectIntl, WrappedComponentProps} from "react-intl";
 import {action, observable} from "mobx";
-import {ChangeEvent, ReactElement, ReactNode} from "react";
+import {ChangeEvent, ReactElement} from "react";
 import {restServices} from "../../cuba/services";
 import {Node} from "../../cuba/entities/platform_Node";
 import {Link} from "react-router-dom";
@@ -79,7 +79,7 @@ class VideoCardsComponent extends React.Component<MainStoreInjected & WrappedCom
     return (
       <div className="narrow-layout" id="mainDiv">
         {items.map(e => {
-          let processButton: ReactElement = e.status == "ready" || e.status == "error" ?
+          let processButton: ReactElement = e.status === "ready" || e.status === "error" ?
             <Button
               htmlType="button"
               style={{margin: "0 12px 12px 0"}}
@@ -124,7 +124,7 @@ class VideoCardsComponent extends React.Component<MainStoreInjected & WrappedCom
                 Modal.confirm(
                   {
                     content: [loginInput, passwordInput, nodeInput],
-                    okButtonProps: {disabled: this.nodes.length == 0},
+                    okButtonProps: {disabled: this.nodes.length === 0},
                     onOk: () => {
                       if(login === this.props.mainStore!.userName){
                         this.props.mainStore!.login(login, password)

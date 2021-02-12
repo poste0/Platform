@@ -1,5 +1,5 @@
 import {injectMainStore, MainStoreInjected} from "@cuba-platform/react";
-import {injectIntl, WrappedComponentProps} from "react-intl";
+import {WrappedComponentProps} from "react-intl";
 import {observer} from "mobx-react";
 import React, {ChangeEvent, FormEvent} from "react";
 import {action, observable} from "mobx";
@@ -39,8 +39,9 @@ export default class Register extends React.Component<MainStoreInjected & Wrappe
   doRegister = (e: FormEvent) => {
     e.preventDefault();
 
-    restServices.platform_RegistrationService.register(cubaREST)
-    ({login: this.register_login, password: this.register_password, name: this.register_name})
+    restServices.platform_RegistrationService.register(cubaREST)(
+      {login: this.register_login, password: this.register_password, name: this.register_name}
+      )
       .then((result) => {
         message.success("");
         Login.processLogin(this.register_login, this.register_password, this.props.mainStore!);

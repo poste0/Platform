@@ -93,7 +93,7 @@ class CameraEditComponent extends React.Component<Props & WrappedComponentProps 
     this.appendIfNotEmpty(this.props.form.getFieldValue('password'), "@");
     this.appendIfNotEmpty(this.props.form.getFieldValue('urlAddress'), "");
 
-    if (this.props.form.getFieldValue('port') != undefined) {
+    if (this.props.form.getFieldValue('port') !== undefined) {
       this.address += ":";
       this.address += this.props.form.getFieldValue('port');
     }
@@ -101,7 +101,7 @@ class CameraEditComponent extends React.Component<Props & WrappedComponentProps 
     this.address += "/";
     this.appendIfNotEmpty(this.props.form.getFieldValue('path'), "");
 
-    if (this.props.form.getFieldValue('options') != undefined && this.props.form.getFieldValue('options') != "") {
+    if (this.props.form.getFieldValue('options') !== undefined && this.props.form.getFieldValue('options') !== "") {
       this.address += "?";
       String(this.props.form.getFieldValue('options')).split("\n").forEach((option) => {
         this.address += option;
@@ -349,7 +349,7 @@ class CameraEditComponent extends React.Component<Props & WrappedComponentProps 
         this.props.form.setFieldsValue(
           this.dataInstance.getFieldValues(this.fields)
         );
-        if (this.dataInstance.getFieldValues(['address']) != undefined) {
+        if (this.dataInstance.getFieldValues(['address']) !== undefined) {
           this.props.form.setFieldsValue({'cameraName': this.getCameraName()});
           this.props.form.setFieldsValue({'password': this.getPassword()});
           this.formChange();

@@ -19,8 +19,7 @@ import { CenteredLoader } from "./CenteredLoader";
 import {
   FormattedMessage,
   injectIntl,
-  IntlFormatters, IntlShape,
-  WrappedComponentProps
+  IntlFormatters, WrappedComponentProps
 } from "react-intl";
 import {StandardEntity} from "../cuba/entities/base/sys$StandardEntity";
 import {cubaREST} from "../index";
@@ -178,7 +177,7 @@ export function showDeletionDialog <T extends StandardEntity> (props: any, objec
 export function deleteFromDataSource<T extends StandardEntity>(value: T, dataSource: T []){
   let result: T [] = [];
   dataSource.forEach((element) => {
-    if (value.id != element.id) {
+    if (value.id !== element.id) {
       result.push(element);
     }
   });
@@ -193,7 +192,7 @@ export async function getAll<T extends StandardEntity>(method: any): Promise<T [
     .then((result: any) => {
       console.log(result);
       let Ts: T [] = JSON.parse(String(result));
-      if(Ts.length == 0){
+      if(Ts.length === 0){
         isLoaded = true;
       }
 
@@ -202,7 +201,7 @@ export async function getAll<T extends StandardEntity>(method: any): Promise<T [
         dataSource.push(node);
         count++;
       });
-      if(count == Ts.length){
+      if(count === Ts.length){
         isLoaded = true;
       }
     });

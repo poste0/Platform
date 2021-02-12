@@ -39,10 +39,8 @@ export class Processing extends React.Component<ProcessingProps>{
   );
 
   render() {
-    const {status, items} = this.videoProcessings;
+    const {status} = this.videoProcessings;
     const imageStatus = this.imageProcessings.status;
-    const imageItems = this.imageProcessings.items;
-
     if(status === "LOADING" || imageStatus === "LOADING"){
       return <Icon type="spin"/>;
     }

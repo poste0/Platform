@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 import { observable } from "mobx";
 
-import {Modal, Button, Table, Row, Radio, message, Tooltip} from "antd";
+import {Modal, Button, Table, Row, message, Tooltip} from "antd";
 
 import {
   injectMainStore,
@@ -45,7 +45,7 @@ class NodeListComponent extends React.Component<
       .then((result) => {
         let nodesWithStatus: Node [] = [];
 
-        if(this.nodes.length == 0){
+        if(this.nodes.length === 0){
           this.isLoaded = true;
           return;
         }
@@ -57,7 +57,7 @@ class NodeListComponent extends React.Component<
               nodesWithStatus.push(node);
             })
             .then((result) => {
-              if(nodesWithStatus.length == this.nodes.length){
+              if(nodesWithStatus.length === this.nodes.length){
                 this.nodes = nodesWithStatus;
                 this.isLoaded = true;
               }
@@ -70,7 +70,7 @@ class NodeListComponent extends React.Component<
     restServices.platform_NodeService.getNodes(cubaREST)()
       .then((result) => {
         let nodes: Node [] = JSON.parse(String(result));
-        if(nodes.length == 0){
+        if(nodes.length === 0){
           this.isLoaded = true;
         }
 
@@ -79,7 +79,7 @@ class NodeListComponent extends React.Component<
           this.nodes.push(node);
           count++;
         });
-        if(count == nodes.length){
+        if(count === nodes.length){
           this.isLoaded = true;
         }
       });
@@ -114,11 +114,11 @@ class NodeListComponent extends React.Component<
         if(node != null){
           let id;
           let element;
-          if(node.status == "\"CONNECTED\""){
+          if(node.status === "\"CONNECTED\""){
             id = "connected";
             element = <CheckCircleTwoTone twoToneColor="#29e70b"/>;
           }
-          else if(node.status == "\"NOT_CONNECTED\""){
+          else if(node.status === "\"NOT_CONNECTED\""){
             id = "not_connected";
             element = <CloseCircleTwoTone twoToneColor="#ff0000"/>;
           }
@@ -167,9 +167,9 @@ class NodeListComponent extends React.Component<
         cubaREST.deleteEntity('platform_Node', e.id)
           .then((result) => {
             message.success({content: this.props.intl.formatMessage({id: "deleting_has_finished"}), key}, 0);
-            if (this.nodes.length == 1) {
+            if (this.nodes.length === 1) {
               this.nodes = [];
-            } else if (this.nodes.length != 0) {
+            } else if (this.nodes.length !== 0) {
               this.nodes = this.nodes.splice(this.nodes.indexOf(e), 1);
             }
           })
@@ -220,7 +220,7 @@ class NodeListComponent extends React.Component<
       <Button
         htmlType="button"
         style={{ margin: "0 12px 12px 0" }}
-        disabled={!this.selectedRowKey || this.getRecordById(this.selectedRowKey!)!.status != "\"CONNECTED\""}
+        disabled={!this.selectedRowKey || this.getRecordById(this.selectedRowKey!)!.status !== "\"CONNECTED\""}
         key="remove"
         type="default"
         onClick={this.getInfo}>
@@ -303,9 +303,9 @@ class NodeListComponent extends React.Component<
   deleteSelectedRow = () => {
     const node: Node = this.getRecordById(this.selectedRowKey!);
     showDeletionDialog(this.props, node, "platform_Node", (result) => {
-      if (this.nodes.length == 1) {
+      if (this.nodes.length === 1) {
         this.nodes = [];
-      } else if (this.nodes.length != 0) {
+      } else if (this.nodes.length !== 0) {
         this.nodes = deleteFromDataSource(node, this.nodes);
       }
     });

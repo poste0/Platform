@@ -11,8 +11,6 @@ import {
   FormattedMessage,
   WrappedComponentProps
 } from "react-intl";
-import {restServices} from "../../cuba/services";
-import {cubaREST} from "../../index";
 import {render} from "react-dom";
 import Register from "../register/Register";
 
