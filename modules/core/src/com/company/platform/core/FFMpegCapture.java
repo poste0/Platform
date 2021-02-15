@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,21 +24,20 @@ import java.util.Objects;
 public class FFMpegCapture extends AbstractFFMpegCapture {
     public static final String NAME = "platform_FFMpegCapture";
 
+    @Inject
+    private Metadata metadata;
 
-    private final Metadata metadata;
+    @Inject
+    private DataManager dataManager;
 
-    private final DataManager dataManager;
-
-    private final FileLoader fileLoader;
+    @Inject
+    private FileLoader fileLoader;
 
     private static final Logger log = LoggerFactory.getLogger(FFMpegCapture.class);
 
 
-    public FFMpegCapture(Camera camera, Metadata metadata, DataManager dataManager, FileLoader fileLoader) throws FrameGrabber.Exception {
+    public FFMpegCapture(Camera camera) throws FrameGrabber.Exception {
         super(camera);
-        this.metadata = metadata;
-        this.dataManager = dataManager;
-        this.fileLoader = fileLoader;
     }
 
     private void after(){

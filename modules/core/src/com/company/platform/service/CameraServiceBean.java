@@ -4,6 +4,7 @@ import com.company.platform.core.CameraStatusBean;
 import com.company.platform.core.Capture;
 import com.company.platform.core.FFMpegCapture;
 import com.company.platform.core.FFMpegGrabberBuilder;
+import com.company.platform.core.cameraprocessing.CameraReadWriteHandler;
 import com.company.platform.entity.Camera;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.DataManager;
@@ -59,13 +60,15 @@ public class CameraServiceBean implements CameraService {
 
     @Override
     public void write(Camera camera) throws IllegalStateException {
-        if(!this.getStatus(camera).equals(Status.CONNECTED)){
-            throw new IllegalStateException("Camera status is not connected.");
-        }
-
         Capture capture = getWrapper(camera);
         try {
-            capture.process();
+            CameraReadWriteHandler handler = CameraReadWriteHandler.getDefaultHandler();
+            if(handler.handle(capture, "WRITE")){
+                capture.process();
+            }
+            else{
+                throw new IllegalStateException("Can't write");
+            }
         } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
             log.error("Error on recording for camera {}", camera.getId(), e);
         }
@@ -88,12 +91,14 @@ public class CameraServiceBean implements CameraService {
     }
 
     public void stop(Camera camera) throws IllegalStateException {
-        if(!this.getStatus(camera).equals(Status.RECORDING)){
-            throw new IllegalStateException("Camera status is not recording");
-        }
-
+        CameraReadWriteHandler handler = CameraReadWriteHandler.getDefaultHandler();
         Capture capture = getWrapper(camera);
-        capture.stop();
+        if(handler.handle(capture, "STOP")) {
+            capture.stop();
+        }
+        else{
+            throw new IllegalStateException("Can't stop");
+        }
     }
 
     public boolean isRecording(Camera camera){
