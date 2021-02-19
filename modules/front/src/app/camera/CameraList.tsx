@@ -4,7 +4,7 @@ import {Link} from "react-router-dom";
 
 import {observable} from "mobx";
 
-import {Modal, Button, Table, message, Tooltip, Row} from "antd";
+import {Modal, Button, Table, message, Tooltip, Row, Spin} from "antd";
 
 import {cubaREST} from "../../index";
 
@@ -22,7 +22,7 @@ import {
 } from "react-intl";
 import {restServices} from "../../cuba/services";
 
-import {CheckCircleTwoTone, CloseCircleTwoTone, VideoCameraTwoTone} from "@ant-design/icons";
+import {CheckCircleTwoTone, CloseCircleTwoTone, QuestionOutlined, VideoCameraTwoTone} from "@ant-design/icons";
 import {render} from "react-dom";
 import {deleteFromDataSource, getAll, showDeletionDialog} from "../App";
 import ReactPlayer from "react-player";
@@ -46,25 +46,22 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
     getAll<Camera>(restServices.platform_CameraService.getCameras)
       .then((result: Camera []) => {
         let cameras: Camera [] = result;
-        let count = 0;
-        if(cameras.length === 0){
-          this.isLoaded = true;
-          return;
-        }
 
+        this.cameras = cameras;
+        this.isLoaded = true;
         cameras.forEach((camera) => {
           restServices.platform_CameraService.getStatus(cubaREST)({camera: camera}).then((result) => {
             camera.status = String(result);
-            this.cameras.push(camera);
-            count++;
-          })
-            .then((result) => {
-              if(count === cameras.length){
-                this.isLoaded = true;
-              }
-            });
+            this.cameras.find((v) => v.id === camera.id)!.status = String(result);
+            this.reload();
+          });
         });
       });
+  }
+
+  reload(){
+    this.isLoaded = false;
+    this.isLoaded = true;
   }
 
   fields = [
@@ -96,7 +93,11 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
           let id;
           let element;
 
-          if (status === "\"CONNECTED\"") {
+          if(status == null){
+            id = 'loading_status';
+            element = <Spin/>;
+          }
+          else if (status === "\"CONNECTED\"") {
             id = 'connected';
             element = <CheckCircleTwoTone twoToneColor="#29e70b"/>;
           } else if (status === "\"RECORDING\"") {
@@ -156,7 +157,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
                 document.getElementById("player")
               );
             })
-        }}>
+        }} disabled={camera.status !== "\"CONNECTED\"" && camera.status !== "\"RECORDING\""}>
           {this.getFormattedText("live")}
         </Button>;
 
@@ -321,7 +322,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
               })
           }
         }
-        disabled={!this.selectedRowKey || this.getRecordById(this.selectedRowKey).status === "\"CONNECTED\""}>
+        disabled={!this.selectedRowKey || this.getRecordById(this.selectedRowKey).status !== "\"RECORDING\""}>
         {this.props.intl.formatMessage({id: "stop"})}
       </Button>
     ];

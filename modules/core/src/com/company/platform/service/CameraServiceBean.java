@@ -6,9 +6,11 @@ import com.company.platform.core.FFMpegCapture;
 import com.company.platform.core.FFMpegGrabberBuilder;
 import com.company.platform.core.cameraprocessing.CameraReadWriteHandler;
 import com.company.platform.entity.Camera;
+import com.haulmont.cuba.core.Persistence;
+import com.haulmont.cuba.core.Transaction;
+import com.haulmont.cuba.core.TypedQuery;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.DataManager;
-import com.haulmont.cuba.core.global.LoadContext;
 import com.haulmont.cuba.core.global.UserSessionSource;
 import com.haulmont.cuba.security.app.UserSessions;
 import com.haulmont.cuba.security.entity.User;
@@ -20,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service(CameraService.NAME)
@@ -117,14 +120,21 @@ public class CameraServiceBean implements CameraService {
 
     public boolean testConnection(Camera camera){
         try {
-            FFMpegGrabberBuilder grabberBuilder = new FFMpegGrabberBuilder(camera.getAddress());
-            grabberBuilder.withOption("rtsp_transport", "tcp");
-            grabberBuilder.build().start();
-            grabberBuilder.build().stop();
-        } catch (FrameGrabber.Exception e) {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            return executor.submit(() -> {
+                try {
+                    FFMpegGrabberBuilder grabberBuilder = new FFMpegGrabberBuilder(camera.getAddress());
+                    grabberBuilder.withOption("rtsp_transport", "tcp");
+                    grabberBuilder.build().startUnsafe();
+                    grabberBuilder.build().releaseUnsafe();
+                } catch (FrameGrabber.Exception e) {
+                    return false;
+                }
+                return true;
+            }).get(10, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             return false;
         }
-        return true;
     }
 
     public Status getStatus(Camera camera){
@@ -136,16 +146,19 @@ public class CameraServiceBean implements CameraService {
     @Override
     public List<Camera> getCameras() throws IllegalStateException {
         User user = AppBeans.get(UserSessionSource.class).getUserSession().getUser();
-        DataManager dataManager = AppBeans.get(DataManager.NAME);
 
-        return dataManager.loadList(
-                LoadContext.create(Camera.class).setQuery(
-                        LoadContext.createQuery(
-                                "SELECT c FROM platform_Camera c WHERE c.user.id = :id"
-                        )
-                        .setParameter("id", user.getId())
-                )
-        );
+        Persistence persistence = AppBeans.get(Persistence.class);
+        List<Camera> result;
+        try(Transaction tx = persistence.createTransaction()) {
+            TypedQuery<Camera> query = persistence.getEntityManager().createNativeQuery(
+                    "SELECT * FROM platform_Camera WHERE user_id = ?id AND deleted_by is null",
+                    Camera.class
+            );
+            query.setParameter("id", user.getId());
+            result = query.getResultList();
+            tx.commit();
+        }
+        return result;
     }
 
 
