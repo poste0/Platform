@@ -141,7 +141,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
               .then((result) => {
                 render(
                   button,
-                  document.getElementById("player")
+                  document.getElementById("player" + camera.id)
                 );
               })
           }}>
@@ -154,7 +154,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
             .then((result) => {
               render(
                 player,
-                document.getElementById("player")
+                document.getElementById("player" + camera.id)
               );
             })
         }} disabled={camera.status !== "\"CONNECTED\"" && camera.status !== "\"RECORDING\""}>
@@ -162,7 +162,7 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
         </Button>;
 
         return (
-          <div id="player">
+          <div id={"player" + camera.id}>
             {button}
           </div>
         );

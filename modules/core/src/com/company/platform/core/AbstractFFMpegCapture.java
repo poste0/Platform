@@ -118,8 +118,11 @@ public abstract class AbstractFFMpegCapture implements Capture {
                 }
 
                 grabberBuilder = new FFMpegGrabberBuilder(camera.getAddress());
-                setUpRecorder();
                 grabber = grabberBuilder.build();
+                setUpGrabber();
+                createFile();
+                recorderBuilder = new FFMpegRecorderBuilder(file, grabber);
+                setUpRecorder();
                 grabber.start();
 
                 log.info("Grabber has started");
