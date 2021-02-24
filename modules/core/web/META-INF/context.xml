@@ -8,7 +8,7 @@
       maxIdle="2"
       maxWaitMillis="5000"
       driverClassName="org.postgresql.Driver"
-      url="jdbc:postgresql://localhost/postgres"
+      url="jdbc:postgresql://postgres/postgres"
       username="postgres"
       password="qwerty"/>
 
