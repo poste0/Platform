@@ -1,6 +1,6 @@
 
 buildscript {
-    ext.cubaVersion = '7.2.11'
+    ext.cubaVersion = '7.2.0'
     repositories {
         maven {
             url 'https://dl.bintray.com/cuba-platform/main'
@@ -44,7 +44,7 @@ cuba {
 
 dependencies {
     appComponent("com.haulmont.cuba:cuba-global:$cubaVersion")
-    appComponent('com.haulmont.addon.restapi:restapi-global:7.1.1')
+    appComponent('com.haulmont.addon.restapi:restapi-global:7.2.2')
     appComponent('com.haulmont.addon.restapi:restapi-global:7.1.0')
     appComponent('com.haulmont.addon.restapi:restapi-global:7.1.0')
 }
