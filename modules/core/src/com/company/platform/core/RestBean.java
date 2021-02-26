@@ -23,7 +23,6 @@ public class RestBean {
 
     public RestBean(){
         map = new LinkedMultiValueMap<>();
-        factory.setBufferRequestBody(false);
     }
 
     public ResponseEntity<String> process() throws IllegalStateException{
