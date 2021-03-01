@@ -4,7 +4,6 @@
         <method name="register" anonymousAllowed="true">
             <param name="login"/>
             <param name="password"/>
-            <param name="name"/>
         </method>
     </service>
     <service name="platform_CameraService">

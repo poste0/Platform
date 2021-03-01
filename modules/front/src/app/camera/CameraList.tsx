@@ -22,7 +22,7 @@ import {
 } from "react-intl";
 import {restServices} from "../../cuba/services";
 
-import {CheckCircleTwoTone, CloseCircleTwoTone, QuestionOutlined, VideoCameraTwoTone} from "@ant-design/icons";
+import {CheckCircleTwoTone, CloseCircleTwoTone, VideoCameraTwoTone} from "@ant-design/icons";
 import {render} from "react-dom";
 import {deleteFromDataSource, getAll, showDeletionDialog} from "../App";
 import ReactPlayer from "react-player";

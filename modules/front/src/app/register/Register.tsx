@@ -40,7 +40,7 @@ export default class Register extends React.Component<MainStoreInjected & Wrappe
     e.preventDefault();
 
     restServices.platform_RegistrationService.register(cubaREST)(
-      {login: this.register_login, password: this.register_password, name: this.register_name}
+      {login: this.register_login, password: this.register_password}
       )
       .then((result) => {
         message.success("");
@@ -71,15 +71,6 @@ export default class Register extends React.Component<MainStoreInjected & Wrappe
             value={this.register_password}
             placeholder={this.props.intl.formatMessage({
               id: "login.placeholder.password"
-            })}/>
-        </Form.Item>
-        <Form.Item>
-          <Input
-            id="input_name"
-            onChange={this.changeNameRegister}
-            value={this.register_name}
-            placeholder={this.props.intl.formatMessage({
-              id: "register.name"
             })}/>
         </Form.Item>
         <Form.Item>

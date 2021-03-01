@@ -5,5 +5,5 @@ import com.haulmont.cuba.security.entity.User;
 public interface RegistrationService {
     String NAME = "platform_RegistrationService";
 
-    User register(String login, String password, String name) throws IllegalArgumentException;
+    User register(String login, String password) throws IllegalArgumentException;
 }

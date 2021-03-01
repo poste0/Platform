@@ -42,7 +42,7 @@ public class RegisterScreen extends Screen {
                 return;
             }
 
-            User user = service.register(loginTextField.getRawValue(), passwordTextField.getRawValue(), nameTextField.getRawValue());
+            User user = service.register(loginTextField.getRawValue(), passwordTextField.getRawValue());
 
             close(WINDOW_COMMIT_AND_CLOSE_ACTION);
         }

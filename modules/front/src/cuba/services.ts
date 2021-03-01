@@ -21,7 +21,6 @@ export type platform_CameraService_write_params = {
 export type platform_RegistrationService_register_params = {
   login: string;
   password: string;
-  name: string;
 };
 
 export type platform_StreamService_startStream_params = {
