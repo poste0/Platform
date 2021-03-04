@@ -45,23 +45,16 @@ class CameraListComponent extends React.Component<MainStoreInjected & WrappedCom
 
     getAll<Camera>(restServices.platform_CameraService.getCameras)
       .then((result: Camera []) => {
-        let cameras: Camera [] = result;
-
         this.cameras = cameras;
         this.isLoaded = true;
-        cameras.forEach((camera) => {
+        this.cameras.forEach((camera) => {
           restServices.platform_CameraService.getStatus(cubaREST)({camera: camera}).then((result) => {
             camera.status = String(result);
             this.cameras.find((v) => v.id === camera.id)!.status = String(result);
-            this.reload();
+            this.setState({});
           });
         });
       });
-  }
-
-  reload(){
-    this.isLoaded = false;
-    this.isLoaded = true;
   }
 
   fields = [
