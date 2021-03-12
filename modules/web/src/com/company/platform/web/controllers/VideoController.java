@@ -12,6 +12,7 @@ import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,7 +42,7 @@ public class VideoController {
         this.clientService = clientService;
     }
 
-    @RequestMapping(value = "/video", produces = "video/mp4")
+    @RequestMapping(value = "/video")
     public void getVideo(HttpServletRequest request, HttpServletResponse response, @RequestParam("videoId") String videoId){
         String password = configuration.getConfig(WebAuthConfig.class).getTrustedClientPassword();
         UserSession session = clientService.getSystemSession(password);
