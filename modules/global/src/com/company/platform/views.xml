@@ -12,6 +12,7 @@
     <view entity="platform_VideoProcessing" name="processing-view" systemProperties="true">
         <property name="node"/>
         <property name="video"/>
+        <property name="resultVideo"/>
     </view>
     <view entity="platform_Image" name="image-view">
         <property name="parentVideo" view="_local"/>
