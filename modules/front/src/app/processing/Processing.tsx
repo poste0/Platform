@@ -1,5 +1,4 @@
 import {collection, DataCollectionStore} from "@cuba-platform/react";
-import React, {ReactNode} from "react";
 import {Button, Icon, Table} from "antd";
 import {RouteComponentProps} from "react-router";
 import {observer} from "mobx-react";
@@ -8,9 +7,8 @@ import {ImageProcessing} from "../../cuba/entities/platform_ImageProcessing";
 import ReactPlayer from "react-player";
 import {observable} from "mobx";
 import {cubaREST} from "../../index";
-import {Link} from "react-router-dom";
-import {ExpandOutlined, NodeExpandOutlined} from "@ant-design/icons";
 import {Image} from "../../cuba/entities/platform_Image";
+import React from "react";
 
 type Props = RouteComponentProps<{ videoId?: string }>;
 
@@ -99,7 +97,7 @@ export class Processing extends React.Component<ProcessingProps> {
         title: 'image',
         render: (text: string, image: Image) => {
           return (
-            <img src={cubaREST.apiUrl + "v2/files/" + image.fileDescriptor!.id + "?access_token=" + cubaREST.restApiToken}/>
+            <img src={cubaREST.apiUrl + "v2/files/" + image.fileDescriptor!.id + "?access_token=" + cubaREST.restApiToken} alt=""/>
           )
         }
       },
