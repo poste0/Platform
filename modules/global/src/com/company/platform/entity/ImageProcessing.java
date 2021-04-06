@@ -20,6 +20,7 @@ public class ImageProcessing extends StandardEntity {
     private List<Image> images;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "videoId")
     private Video video;
 
 

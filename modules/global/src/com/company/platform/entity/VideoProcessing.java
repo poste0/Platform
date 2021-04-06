@@ -16,6 +16,7 @@ public class VideoProcessing extends StandardEntity {
     private Node node;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "videoId")
     private Video video;
 
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "videoProcessing")
