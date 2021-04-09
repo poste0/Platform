@@ -1,5 +1,6 @@
 package com.company.platform.service;
 
+import com.company.platform.entity.Camera;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.security.entity.Group;
 import com.haulmont.cuba.security.entity.Role;
@@ -16,6 +17,7 @@ public class RegistrationServiceBean implements RegistrationService{
 
     private final Metadata metadata;
 
+    @javax.inject.Inject
     private final DataManager dataManager;
 
     private final PasswordEncryption passwordEncryption;
@@ -52,12 +54,28 @@ public class RegistrationServiceBean implements RegistrationService{
 
         UserRole userRole = createUserRole(role, user);
 
-        dataManager.commit(new CommitContext(userRole, user));
+        Camera camera = createDefaultUserCamera(user);
+
+        dataManager.commit(new CommitContext(userRole, user, camera));
 
         log.info("User has been registered");
 
         return user;
 
+    }
+
+    private Camera createDefaultUserCamera(User user) {
+        Camera camera = dataManager.create(Camera.class);
+        camera.setId(user.getId());
+        String userId = user.getId().toString();
+        camera.setUrlAddress(userId);
+        camera.setAddress(userId);
+        camera.setName(userId);
+        camera.setWeight(-1);
+        camera.setHeight(-1);
+        camera.setFrameRate(-1);
+        camera.setUser(user);
+        return camera;
     }
 
     private User createUser(String login, String password){

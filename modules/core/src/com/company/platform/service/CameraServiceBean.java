@@ -151,7 +151,7 @@ public class CameraServiceBean implements CameraService {
         List<Camera> result;
         try(Transaction tx = persistence.createTransaction()) {
             TypedQuery<Camera> query = persistence.getEntityManager().createNativeQuery(
-                    "SELECT * FROM platform_Camera WHERE user_id = ?id AND deleted_by is null",
+                    "SELECT * FROM platform_Camera WHERE user_id = ?id AND deleted_by is null AND user_id != id",
                     Camera.class
             );
             query.setParameter("id", user.getId());

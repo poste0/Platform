@@ -2,7 +2,7 @@ import * as React from "react";
 import {observer} from "mobx-react";
 import {Video} from "../../cuba/entities/platform_Video";
 import {Button, Card, Icon, Input, message, Modal, Row, Select, Table} from "antd";
-import {collection, injectMainStore, MainStoreInjected} from "@cuba-platform/react";
+import {collection, injectMainStore, MainStoreInjected, instance, FileUpload} from "@cuba-platform/react";
 import ReactPlayer from "react-player";
 import {cubaREST} from "../../index";
 import {showDeletionDialog} from "../App";
@@ -69,6 +69,9 @@ class VideoCardsComponent extends React.Component<MainStoreInjected & WrappedCom
       });
   }
 
+  @observable
+  fileId: string | undefined;
+
   render() {
     const {status, items} = this.dataCollection;
 
@@ -78,6 +81,43 @@ class VideoCardsComponent extends React.Component<MainStoreInjected & WrappedCom
 
     return (
       <div className="narrow-layout" id="mainDiv">
+        <FileUpload onChange={(file) => {
+          console.log(file);
+          if(file == null){
+            cubaREST.deleteEntity("sys$FileDescriptor", this.fileId);
+          }
+          if(file != null && file.name.endsWith("mp4")) {
+            this.fileId = file.id
+          }
+          else{
+            this.fileId = undefined;
+          }
+        }}/>
+        <Button onClick={() => {
+          cubaREST.getUserInfo()
+            .then((result) => {
+              const id = result.id;
+              console.log(id);
+              let video = instance<Video>(Video.NAME, {loadImmediately: false});
+              const videoJson = {
+                "name": "name",
+                "status": "ready",
+                "camera": {
+                  "id": id
+                },
+                "fileDescriptor": {
+                  "id": this.fileId
+                }
+              };
+              video.setItem(new Video());
+              video.update(videoJson);
+              window.location.reload();
+            });
+        }}
+                disabled={this.fileId === undefined}
+        >
+          <FormattedMessage id="add_video"/>
+        </Button>
         {items.map(e => {
           let processButton: ReactElement = e.status === "ready" || e.status === "error" ?
             <Button

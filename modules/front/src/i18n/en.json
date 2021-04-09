@@ -132,5 +132,6 @@
   "show_processings": "Show processings of this video",
   "node": "Node",
   "register": "Create an account",
-  "loading_status": "Loading status"
+  "loading_status": "Loading status",
+  "add_video": "Add video"
 }
