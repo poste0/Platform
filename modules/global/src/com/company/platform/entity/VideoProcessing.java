@@ -15,8 +15,12 @@ public class VideoProcessing extends StandardEntity {
     @JoinColumn(name = "nodeId")
     private Node node;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "videoProcessing")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "videoId")
     private Video video;
+
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "videoProcessing")
+    private Video resultVideo;
 
     public void setNode(Node node) {
         this.node = node;
@@ -32,5 +36,13 @@ public class VideoProcessing extends StandardEntity {
 
     public void setVideo(Video video) {
         this.video = video;
+    }
+
+    public Video getResultVideo() {
+        return resultVideo;
+    }
+
+    public void setResultVideo(Video resultVideo) {
+        this.resultVideo = resultVideo;
     }
 }

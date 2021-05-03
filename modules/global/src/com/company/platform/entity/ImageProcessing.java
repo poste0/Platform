@@ -19,6 +19,10 @@ public class ImageProcessing extends StandardEntity {
     @OneToMany(mappedBy = "imageProcessing")
     private List<Image> images;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "videoId")
+    private Video video;
+
 
     public void setNode(Node node) {
         this.node = node;
@@ -34,5 +38,13 @@ public class ImageProcessing extends StandardEntity {
 
     public void setImages(List<Image> images) {
         this.images = images;
+    }
+
+    public Video getVideo() {
+        return video;
+    }
+
+    public void setVideo(Video video) {
+        this.video = video;
     }
 }

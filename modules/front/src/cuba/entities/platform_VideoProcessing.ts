@@ -5,6 +5,7 @@ export class VideoProcessing extends StandardEntity {
   static NAME = "platform_VideoProcessing";
   node?: Node | null;
   video?: Video | null;
+  resultVideo?: Video | null;
 }
 export type VideoProcessingViewName =
   | "_base"
@@ -26,5 +27,6 @@ export type VideoProcessingView<
       | "deletedBy"
       | "node"
       | "video"
+      | "resultVideo"
     >
   : never;

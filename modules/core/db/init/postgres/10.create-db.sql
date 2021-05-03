@@ -97,6 +97,7 @@ create table PLATFORM_IMAGE_PROCESSING (
     DELETED_BY varchar(50),
     --
     nodeId uuid,
+    videoId uuid,
     --
     primary key (ID)
 )^
@@ -113,6 +114,7 @@ create table PLATFORM_VIDEO_PROCESSING (
     DELETED_BY varchar(50),
     --
     nodeId uuid,
+    videoId uuid,
     --
     primary key (ID)
 )^
